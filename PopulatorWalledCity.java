@@ -156,10 +156,9 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	}
 
 	//****************************  FUNCTION - updateWorldExplored *************************************************************************************//
-	public /*synchronized*/void updateWorldExplored(World world_) {
-		long var1=Building.getWorldCode(world_);
-	if(var1!=explrWorldCode && var1!=-1){
-			setNewWorld(world_,"Starting to survey a world for city generation...");
+	public synchronized void updateWorldExplored(World world_) {//should test synchronized or not
+		if (checkNewWorld(world_))
+		{setNewWorld(world_,"Starting to survey a world for city generation...");
 			
 			if(this==master){
 				//kill zombies
@@ -183,7 +182,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 							cityLocations.add(new int[]{Integer.parseInt(split[0]),Integer.parseInt(split[1]),Integer.parseInt(split[2])});
 						}
 					}
-				}catch(IOException e) {System.out.println(e.getMessage()); }
+				}catch(IOException e) {System.err.println(e.getMessage()); }
 				finally{ try{ if(br!=null) br.close();} catch(IOException e) {} }
 		   }
 		}
@@ -198,9 +197,10 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	//****************************  FUNCTION - chatCityBuilt *************************************************************************************//
 	
 	public void chatBuildingCity(String chatString, String logString){
-		if(logString!=null) logOrPrint(logString);				
+		if(logString!=null) logOrPrint(logString);
+		if(!CityBuiltMessage) return;
 		List playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
-		if(playerList!=null && CityBuiltMessage /*&& FMLClientHandler.instance().getClient().currentScreen == null*/ ){			
+		if(playerList!=null ){			
 			FMLClientHandler.instance().getClient().ingameGUI.getChatGUI().printChatMessage(chatString);
 			/*for (int index = 0; index < playerList.size(); ++index)
 	        {
@@ -214,12 +214,11 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 		if(!CityBuiltMessage) return;
 		List playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
 		if(playerList==null){
-			citiesBuiltMessages.add(args);
+			//citiesBuiltMessages.add(args);
 		}else{
 			for (int index = 0; index < playerList.size(); ++index)
 	        {
-	            EntityPlayerMP player = (EntityPlayerMP)playerList.get(index);
-	            
+	            EntityPlayerMP player = (EntityPlayerMP)playerList.get(index);            
 			String dirStr="";
 			int dI=args[0] - (int)player.posX;
 			int dK=args[2] - (int)player.posZ;
@@ -240,9 +239,9 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	//****************************  FUNCTION - generate *************************************************************************************//
 	
 	public final void generate( World world, Random random, int i, int k ) {
-		if(CityBuiltMessage && world.playerEntities!=null)
+		/*if(CityBuiltMessage && world.playerEntities!=null)
 			while(citiesBuiltMessages.size()>0) 
-				chatCityBuilt(citiesBuiltMessages.remove());
+				chatCityBuilt(citiesBuiltMessages.remove());*/
 		
 		if(cityStyles.size() > 0 && cityIsSeparated(i,k,CITY_TYPE_SURFACE) && random.nextFloat() < GlobalFrequency){		
 			exploreThreads.add(new WorldGenWalledCity(this, world, random, i, k,TriesPerChunk, GlobalFrequency));
@@ -282,7 +281,6 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 					if(read.startsWith( "CityBuiltMessage" )) CityBuiltMessage = readIntParam(lw,1,":",read)==1;
 					if(read.startsWith( "LogActivated" )) logActivated = readIntParam(lw,1,":",read)==1;
 					if(read.startsWith( "RejectOnPreexistingArtifacts" )) RejectOnPreexistingArtifacts = readIntParam(lw,1,":",read)==1;
-					//if(read.startsWith( "GlobalChallengeSlider" )) GlobalChallengeSlider = readFloatParam(lw,GlobalChallengeSlider,":",read);
 					readChestItemsList(lw,read,br);
 		
 				}

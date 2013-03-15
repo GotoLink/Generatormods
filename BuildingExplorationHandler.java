@@ -21,19 +21,24 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Random;
 import java.util.logging.Logger;
 
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.chunk.IChunkProvider;
+import net.minecraft.world.chunk.storage.AnvilChunkLoader;
 import net.minecraft.world.gen.ChunkProviderEnd;
 import net.minecraft.world.gen.ChunkProviderFlat;
 import net.minecraft.world.gen.ChunkProviderGenerate;
 import net.minecraft.world.gen.ChunkProviderHell;
+import net.minecraft.world.storage.ISaveHandler;
 import net.minecraftforge.event.ForgeSubscribe;
 import net.minecraftforge.event.terraingen.PopulateChunkEvent;
 import net.minecraftforge.event.world.WorldEvent.Unload;
@@ -50,14 +55,12 @@ public abstract class BuildingExplorationHandler
 	protected final static int CHUNKS_AT_WORLD_START=256;
 	public final static int MAX_CHUNKS_PER_TICK=100;
 	public final static int[] NO_CALL_CHUNK=null;
-	//private final static int MIN_CHUNK_SEPARATION_FROM_PLAYER=6;
+	//private final static int MIN_CHUNK_SEPARATION_FROM_PLAYER=6;UNUSED
 	
 	protected final static File BASE_DIRECTORY=getMinecraftBaseDir();
-	//protected final static File SAVES_DIRECTORY=new File(BASE_DIRECTORY,"saves"); UNUSED
 	protected final static File CONFIG_DIRECTORY=new File(Loader.instance().getConfigDir(),"generatormods");
 	
 	public BuildingExplorationHandler master=null;
-	protected long explrWorldCode;
 	protected boolean isCreatingDefaultChunks=false, isFlushingGenThreads=false, isAboutToFlushGenThreads=false;
 	protected boolean errFlag=false, dataFilesLoaded=false;
 	//protected LinkedList<int[]> lightingList=new LinkedList<int[]>();UNUSED
@@ -67,14 +70,11 @@ public abstract class BuildingExplorationHandler
 	protected LinkedList<WorldGeneratorThread> exploreThreads=new LinkedList<WorldGeneratorThread>();
 	public int[] flushCallChunk=NO_CALL_CHUNK;
 	public PrintWriter lw=null;
-	//public float GlobalChallengeSlider=1.0F;UNUSED
-	
+	private World currentWorld=null;
  	int[] chestTries=new int[]{4,6,6,6};
 	int[][][] chestItems=new int[][][]{null,null,null,null};
  	
 	public static Logger logger=FMLLog.getLogger();
-	
-	Random rand=new Random();
 	
 	abstract public void updateWorldExplored(World world);
 	abstract public void loadDataFiles();
@@ -99,10 +99,14 @@ public abstract class BuildingExplorationHandler
 	//**************************** FORGE EVENTS ********************************************************************************************//
 	@ForgeSubscribe
 	public void onWorldUnloaded(Unload event){
-		//kill zombies
-		for(WorldGeneratorThread wgt: exploreThreads) killZombie(wgt);
-			exploreThreads=new LinkedList<WorldGeneratorThread>();
-		explrWorldCode=-1;
+		//kill zombies should free some memory
+		if(this==master)
+		{
+		for(WorldGeneratorThread wgt: exploreThreads)
+			{
+			killZombie(wgt);
+			}	
+		}
 		chunksExploredThisTick=0;
 		chunksExploredFromStart=0;
 	}
@@ -120,19 +124,18 @@ public abstract class BuildingExplorationHandler
 	{
 	    @Override
 	    public void generate(Random random, int chunkX, int chunkZ, World world, IChunkProvider chunkGenerator, IChunkProvider chunkProvider)
-	    {  	
+	    {  	if (world.getWorldInfo().isMapFeaturesEnabled())
+	    { //if structures are enabled
 	        if (world.getBiomeGenForCoords(chunkX, chunkZ) == BiomeGenBase.hell && chunkGenerator instanceof ChunkProviderHell)
-	        {	
+	        {	//can generate in Nether
 	            generateNether(world, random, chunkX*16, chunkZ*16);
 	        }
-	        else if (world.getBiomeGenForCoords(chunkX, chunkZ) == BiomeGenBase.sky && chunkGenerator instanceof ChunkProviderEnd)
-	        {
-	            //do not generate in the end
-	        }
-	        else if (chunkGenerator instanceof ChunkProviderGenerate||(chunkGenerator instanceof ChunkProviderFlat && world.getWorldInfo().isMapFeaturesEnabled()))
-	        {	
+	        else if ((chunkGenerator instanceof ChunkProviderGenerate||chunkGenerator instanceof ChunkProviderFlat))
+	        {	//can generate in normal world or flat world
 	            generateSurface(world, random, chunkX*16, chunkZ*16);
 	        }
+	        //shouldn't generate anywhere else
+	    }
 	    }
 	}
 	
@@ -169,7 +172,7 @@ public abstract class BuildingExplorationHandler
 	
 	//****************************  FUNCTION - setNewWorld *************************************************************************************//
 	public void setNewWorld(World world,String newWorldStr){
-		explrWorldCode=Building.getWorldCode(world);
+		
 		chunksExploredThisTick=0;
 		chunksExploredFromStart=0;
 		if(world.getTotalWorldTime()==0) 
@@ -185,7 +188,7 @@ public abstract class BuildingExplorationHandler
 		//SMP - world.chunkProvider.chunkExists(chunkI, chunkK) calls ChunkProviderServer.java which returns id2ChunkMap.containsKey(ChunkCoordIntPair.chunkXZ2Int(i, j));
 		//If we call this after, no building is spawned !!
 		if(world.getChunkProvider().chunkExists(chunkI, chunkK)){ 
-			logOrPrint("Chunk already exist at"+chunkI+chunkK);
+			logOrPrint("Chunk already exist at"+chunkI+","+chunkK);
 			return true;
 		}
 		if(chunksExploredFromStart==0) {
@@ -198,7 +201,18 @@ public abstract class BuildingExplorationHandler
 			 logOrPrint("Chunk"+chunkI+","+chunkK+"too far away from"+lastExploredChunkI+","+lastExploredChunkK);
 			return false;
 		}
-		
+		/*List playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
+		if(playerList!=null){
+			//System.out.println("Thread "+Thread.currentThread().getName()+"player=("+(((int)mc.thePlayer.posX)>>4)+","+(((int)mc.thePlayer.posZ)>>4)+"), chunk=("+chunkI+","+chunkK+").");
+			if( Math.abs(chunkI-((int)mc.thePlayer.posX)>>4) < MIN_CHUNK_SEPARATION_FROM_PLAYER 
+			 && Math.abs(chunkK-((int)mc.thePlayer.posZ)>>4) < MIN_CHUNK_SEPARATION_FROM_PLAYER){ //try not to bury the player alive
+				System.out.println("Terminating "+Thread.currentThread().getName()+" generation thread, too close to player.\n "+Thread.currentThread().getId()+". Player=("+(((int)mc.thePlayer.posX>>4))+","+(((int)mc.thePlayer.posZ>>4))+"), queriedChunk=("+chunkI+","+chunkK+").");
+				return false;
+			}
+		}
+		//SSP - world.chunkProvider.chunkExists calls ChunkProvider.java which returns chunkMap.containsKey(ChunkCoordIntPair.chunkXZ2Int(i, j));
+		if(world.chunkProvider.chunkExists(chunkI, chunkK)) return true;
+		*/
 		//We've now failed world.chunkProvider.chunkExists(chunkI, chunkK),
 		// so we will have to load or generate this chunk
 		
@@ -229,8 +243,15 @@ public abstract class BuildingExplorationHandler
 	
 	//****************************  FUNCTION - flushGenThreads *************************************************************************************//
 	protected void flushGenThreads(World world, int[] callChunk){	
+		//TODO Check server compatibility
 		//announce there is about to be lag because we are about to flush generation threads
-			
+		List playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
+		if(!isAboutToFlushGenThreads && !isCreatingDefaultChunks && playerList!=null && chunksExploredFromStart > 2*CHUNKS_AT_WORLD_START-15){
+			String flushAnnouncement=(2*CHUNKS_AT_WORLD_START)+" chunks explored this wave, pausing to process.";
+			FMLClientHandler.instance().getClient().ingameGUI.getChatGUI().printChatMessage(flushAnnouncement);
+			logOrPrint(flushAnnouncement);
+			isAboutToFlushGenThreads=true;
+		}	
 		//Must make sure that a)There is only one call to flushGenThreads on the stack at a time
 		//                    b)flushGenThreads is only called from the main Minecraft thread.
 		//This check is not at the beginning of function because we want to announce we are about to flush no matter what.
@@ -314,7 +335,11 @@ public abstract class BuildingExplorationHandler
 				break;
 			}
 		}
-		
+		/*if(line.startsWith("CHEST_")){ TODO:to implement
+			Building.CHEST_LABELS.add(line);
+			triesIdx++;
+		}*/
+				
 		if(triesIdx!=-1){
 			chestTries[triesIdx]=readIntParam(lw,1,":",br.readLine());
 			ArrayList<String> lines=new ArrayList<String>();
@@ -493,5 +518,57 @@ public abstract class BuildingExplorationHandler
         }
             
         return FMLCommonHandler.instance().getMinecraftServerInstance().getFile("");
+    }
+	protected boolean checkNewWorld(World world)
+    {
+		if (currentWorld == null)
+        {
+        	currentWorld = world;
+            return true;
+        }
+		else if (currentWorld == world)
+        {
+            return false;
+        }
+        else
+        {
+            //check the filename in case we changed of dimension
+            File olddir = getWorldSaveDir(currentWorld);
+            File newdir = getWorldSaveDir(world);
+            if (olddir.compareTo(newdir) != 0)
+            {
+                // new world has definitely been created.
+                currentWorld = world;
+                return true;
+            }
+            return false;
+        }
+    }
+	public static File getWorldSaveDir(World world)
+    {
+        ISaveHandler worldsaver = world.getSaveHandler();       
+        if (worldsaver.getChunkLoader(world.provider) instanceof AnvilChunkLoader)
+        {
+            AnvilChunkLoader loader = (AnvilChunkLoader) worldsaver.getChunkLoader(world.provider);
+            
+            for (Field f : loader.getClass().getDeclaredFields())
+            {
+                if (f.getType().equals(File.class))
+                {
+                    try
+                    {
+                        f.setAccessible(true);
+                        File saveLoc = (File) f.get(loader);
+                        return saveLoc;
+                    }
+                    catch (Exception e)
+                    {
+                        System.err.println("Failed trying to find World Save dir:");
+                        e.printStackTrace();
+                    }
+                }
+            }
+        } 
+        return null;
     }
 }

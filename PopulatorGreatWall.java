@@ -107,9 +107,8 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 
 	//****************************  FUNCTION - updateWorldExplored *************************************************************************************//
 	public synchronized void updateWorldExplored(World world_) {
-		long var1=Building.getWorldCode(world_);
-	if(var1!=explrWorldCode && var1!=-1){
-			setNewWorld(world_,"Starting to survey a world for wall generation...");
+		if (checkNewWorld(world_))
+		{setNewWorld(world_,"Starting to survey a world for wall generation...");
 			
 			if(this==master){
 				//kill zombies
