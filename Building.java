@@ -33,10 +33,14 @@ package generator.mods;
  *               (dir=2)
 */
                
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockOre;
+import net.minecraft.block.BlockStairs;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.tileentity.TileEntityMobSpawner;
@@ -97,8 +101,7 @@ public class Building
     //******************** ORIENTATION FUNCTIONS *************************************************************************************************************//
        
         public void setPrimaryAx(int dir_){
-                bDir=dir_;
-               
+                bDir=dir_;         
                 //changes of basis
                 switch(bDir){
                         case DIR_NORTH: xI=bHand;       yI=0;
@@ -115,8 +118,7 @@ public class Building
                         break;
                 }
         }
-   
-       
+      
     public final static int rotDir(int dir,int rotation){
         return (dir+rotation+4) % 4;
     }
@@ -212,7 +214,7 @@ public class Building
         if(blockID>=SPECIAL_BLOCKID_START) { setSpecialBlockLocal(x,z,y,blockID,0); return; }
        
         int[] pt=getIJKPt(x,z,y);
-        if(blockID==AIR_ID && world.getBlockId(pt[0], pt[1], pt[2])==AIR_ID) return;
+        if(blockID==0 && world.getBlockId(pt[0], pt[1], pt[2])==0) return;
         emptyIfChest(pt);
 
         if(randLightingHash[(x & 0x7) | (y & 0x38) | (z & 0x1c0)])
@@ -224,7 +226,7 @@ public class Building
         if(blockID>=SPECIAL_BLOCKID_START) { setSpecialBlockLocal(x,z,y,blockID,metadata); return; }
        
         int[] pt=getIJKPt(x,z,y);
-        if(blockID==AIR_ID && world.getBlockId(pt[0], pt[1], pt[2])==AIR_ID) return;
+        if(blockID==0 && world.getBlockId(pt[0], pt[1], pt[2])==0) return;
         if(blockID!=CHEST_ID) emptyIfChest(pt);//wrong ID check ?
         if(IS_DELAY_BLOCK[blockID]) delayedBuildQueue.offer(new int[]{pt[0],pt[1],pt[2],blockID,rotateMetadata(blockID,metadata)});
         else{
@@ -238,7 +240,7 @@ public class Building
         if(block[0]>=SPECIAL_BLOCKID_START) { setSpecialBlockLocal(x,z,y,block[0],block[1]); return; }
        
         int[] pt=getIJKPt(x,z,y);
-        if(block[0]==AIR_ID && world.getBlockId(pt[0], pt[1], pt[2])==AIR_ID) return;
+        if(block[0]==0 && world.getBlockId(pt[0], pt[1], pt[2])==0) return;
         if(block[0]!=CHEST_ID) emptyIfChest(pt);//wrong ID check ?
         if(IS_DELAY_BLOCK[block[0]]) delayedBuildQueue.offer(new int[]{pt[0],pt[1],pt[2],block[0],rotateMetadata(block[0],block[1])});
         else{
@@ -253,7 +255,7 @@ public class Building
         if(idAndMeta[0]>=SPECIAL_BLOCKID_START) { setSpecialBlockLocal(x,z,y,idAndMeta[0],idAndMeta[1]); return; }      
        
         int[] pt=getIJKPt(x,z,y);
-        if(idAndMeta[0]==AIR_ID && world.getBlockId(pt[0], pt[1], pt[2])==AIR_ID) return;
+        if(idAndMeta[0]==0 && world.getBlockId(pt[0], pt[1], pt[2])==0) return;
         if(idAndMeta[0]!=CHEST_ID) emptyIfChest(pt);//wrong ID check ?
         if(IS_DELAY_BLOCK[idAndMeta[0]]) delayedBuildQueue.offer(new int[]{pt[0],pt[1],pt[2],idAndMeta[0],rotateMetadata(idAndMeta[0],idAndMeta[1])});
         else{
@@ -345,11 +347,11 @@ public class Building
        
         if(blockID==HOLE_ID){
                 int presentBlock=world.getBlockId(pt[0], pt[1], pt[2]);
-                if(presentBlock!=AIR_ID && !IS_WATER_BLOCK[presentBlock]){
+                if(presentBlock!=0 && !IS_WATER_BLOCK[presentBlock]){
                         if( !(IS_WATER_BLOCK[world.getBlockId(pt[0]-1,pt[1],pt[2])] || IS_WATER_BLOCK[world.getBlockId(pt[0],pt[1],pt[2]-1)]
                            || IS_WATER_BLOCK[world.getBlockId(pt[0]+1,pt[1],pt[2])] || IS_WATER_BLOCK[world.getBlockId(pt[0],pt[1],pt[2]+1)]
                            || IS_WATER_BLOCK[world.getBlockId(pt[0],pt[1]+1,pt[2])])) {//don't adjacent to a water block
-                                world.setBlock(pt[0], pt[1], pt[2], AIR_ID);
+                                world.setBlock(pt[0], pt[1], pt[2], 0);
                         }
                 }
         }
@@ -473,7 +475,8 @@ public class Building
        
         //&&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setSignOrPost &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
         public void setSignOrPost(int x2,int z2,int y2,boolean post,int sDir,String[] lines){
-              /*  int[] pt=getIJKPt(x2,z2,y2);
+        	wgt.master.logOrPrint("trying to set a sign");
+        	/*  int[] pt=getIJKPt(x2,z2,y2);
                 world.setBlockAndMetadata(pt[0],pt[1],pt[2],post ? SIGN_POST_ID : WALL_SIGN_ID,sDir);
                
                 TileEntitySign tileentitysign=(TileEntitySign)world.getBlockTileEntity(pt[0],pt[1],pt[2]);
@@ -487,7 +490,8 @@ public class Building
        
         //&&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setPainting &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
        //TODO: Make this work
-       public void setPainting(int[] pt, int metadata){wgt.master.logOrPrint("trying to set a painting");
+       public void setPainting(int[] pt, int metadata){
+    	   		wgt.master.logOrPrint("trying to set a painting");
                 //painting uses same orientation meta as ladders.
                 //Have to adjust ijk since unlike ladders the entity exists at the block it is hung on.
                 /*int dir=orientDirToBDir(LADDER_META_TO_DIR[metadata]);
@@ -497,9 +501,9 @@ public class Building
                
                        
                 EntityPainting entitypainting = new EntityPainting(world,pt[0],pt[1],pt[2],PAINTING_DIR_TO_FACEDIR[dir]);
-        if(entitypainting.onValidSurface())
-            world.spawnEntityInWorld(entitypainting);
-       */
+        if(!world.isRemote && entitypainting.onValidSurface() )
+            world.spawnEntityInWorld(entitypainting);*/
+       
         }
        
         /*
@@ -534,7 +538,7 @@ public class Building
    
     protected final boolean isStairBlock(int x, int z, int y){
                 int blkId=getBlockIdLocal(x,z,y);
-        return (blkId==STEP_ID || blkId==COBBLESTONE_STAIRS_ID || blkId==WOOD_STAIRS_ID);
+        return (blkId==STEP_ID || IS_STAIRS_BLOCK[blkId]);
     }
    
     protected final boolean isNextToDoorway(int x, int z, int y){
@@ -711,13 +715,6 @@ public class Building
         return (int)Math.sqrt((double)((pt1[0]-pt2[0])*(pt1[0]-pt2[0]) + (pt1[1]-pt2[1])*(pt1[1]-pt2[1]) + (pt1[2]-pt2[2])*(pt1[2]-pt2[2])));
     }
    
-        public static long getWorldCode(World world)
-        {  int code=world.provider.dimensionId;
-        if (code==0||code==-1) //TODO: could allow more dimensions here
-        	return world.getSeed() + code;
-        else return -1;
-        }
-   
         //****************************************  CONSTRUCTOR - findSurfaceJ *************************************************************************************//
         //Finds a surface block.
         //Depending on the value of waterIsSurface and wallIsSurface will treat liquid and wall blocks as either solid or air.
@@ -774,7 +771,7 @@ public class Building
        
     private int rotateMetadata( int blockID, int metadata) {
                 int tempdata = 0;
-                if(IS_STAIRS_BLOCK[blockID ])
+                if(IS_STAIRS_BLOCK[blockID])
                         return STAIRS_DIR_TO_META[orientDirToBDir(STAIRS_META_TO_DIR[metadata])];
                
                 switch( blockID ) {
@@ -784,7 +781,7 @@ public class Building
                         else if (metadata>0 && metadata < 5)
                                 return BUTTON_DIR_TO_META[orientDirToBDir(BUTTON_META_TO_DIR[metadata])] + tempdata;
                         else return 1; //torches do NOT have to have correct metadata
-                case LEVER_ID: case STONE_BUTTON_ID:
+                case LEVER_ID: case STONE_BUTTON_ID:case WOOD_BUTTON_ID:
                         // check to see if is flagged as thrown
                         if( metadata - 8 > 0 ) {
                                 tempdata += 8;
@@ -911,7 +908,7 @@ public class Building
                 case BED_BLOCK_ID: case FENCE_GATE_ID:
                         if(blockID==BED_BLOCK_ID){
                                 if( metadata - 8 >= 0 ) {
-                                        // this is the foot of the bed block.
+                                        // this is the head of the bed block.
                                         tempdata += 8;
                                         metadata -= 8;
                                 }
@@ -1018,7 +1015,7 @@ public class Building
         }
    
     public final static String META_VALUE_OK=null;
-    public static String metaValueCheck(int blockID, int metadata){
+    public static String metaValueCheck(int blockID, int metadata){//TODO:Check metadata for every block
         if(metadata<0 || metadata >=16) return "All Minecraft meta values should be between 0 and 15";
        
         //note, cases where full 0-16 range is valid have been removed
@@ -1039,6 +1036,8 @@ public class Building
                
                        
                 //orientation metas
+        				//case BED_BLOCK_ID:
+        					
                         case RAILS_ID:
                                 return metadata < 10 ? META_VALUE_OK : "Rail meta values should be between 0 and 9";
                         //torches do NOT have to have correct metadata  
@@ -1046,32 +1045,48 @@ public class Building
                         //      return metadata > 0 &&  metadata <6 ? META_VALUE_OK : "Torch meta values should be between 1 and 5";
                         case LEVER_ID: case STONE_BUTTON_ID:
                                 if(metadata > 8) metadata-=8;
-                                return metadata>0 && metadata < 7 ? META_VALUE_OK : "Lever/button meta values should be between 1 and 6 or 9 and 14";
+                                return metadata>0 && metadata < 7 ? META_VALUE_OK : Block.blocksList[blockID].getBlockName()+"meta values should be between 1 and 6 or 9 and 14";
                         case WOOD_STAIRS_ID: case COBBLESTONE_STAIRS_ID: case BRICK_STAIRS_ID: case STONE_BRICK_STAIRS_ID: case SAND_STAIRS_ID:
-                                return metadata < 4 ? META_VALUE_OK : (blockID +"meta values should be between 0 and 3");
+                                return metadata < 8 ? META_VALUE_OK : (Block.blocksList[blockID].getBlockName() +"meta values should be between 0 and 7");
                                
                         case LADDER_ID: case DISPENSER_ID: case FURNACE_ID: case BURNING_FURNACE_ID: case WALL_SIGN_ID: case PAINTING_SPECIAL_ID:
                         case PISTON_ID: case PISTON_EXTENSION_ID:
                                 if(metadata >= 8) metadata-=8;
-                                return metadata < 6 ? META_VALUE_OK : (blockID +"meta values should be between 0 and 5 or 8 and 13");
+                                return metadata < 6 ? META_VALUE_OK : (Block.blocksList[blockID].getBlockName() +"meta values should be between 0 and 5 or 8 and 13");
                                
                         case PUMPKIN_ID: case JACK_O_LANTERN_ID:
                                 return metadata < 4 ? META_VALUE_OK : "Pumpkin meta values should be between 0 and 3";
                         case FENCE_GATE_ID:
-                                return metadata < 8 ? META_VALUE_OK : "fence gate meta values should be between 0 and 7";
+                                return metadata < 8 ? META_VALUE_OK : "Fence gate meta values should be between 0 and 7";
                                
                         //vines do NOT have to have correct metadata
                         //case VINES_ID:
                         //      return metadata==0 || metadata==1 || metadata==2 || metadata==4 || metadata==8
                         //              ? META_VALUE_OK : "Vines meta values should be one of 0,1,2,4,8";
                         case TRAP_DOOR_ID:
-                                return metadata < 8 ? META_VALUE_OK : "Trap door meta values should be between 0 and 7";
+                                return metadata < 11 ? META_VALUE_OK : "Trap door meta values should be between 0 and 10";
         }
        
         return META_VALUE_OK;
     }
-   // should use real blockID instead
-    public final static int AIR_ID=0, STONE_ID=1, GRASS_ID=2,DIRT_ID=3,COBBLESTONE_ID=4;
+    /*public static String[] BLOCK_NAMES=new String[4096];
+    static{
+    	BLOCK_NAMES[0]="air";
+    	for(int id=1;id<Block.blocksList.length;id++){
+    	if(Block.blocksList[id]!=null)
+    		BLOCK_NAMES[id]=Block.blocksList[id].getBlockName();
+    	}
+    }
+   
+    public final static int getBlockID(String name)
+    {
+    	for(int id=0;id<Block.blocksList.length;id++){
+        	if(BLOCK_NAMES[id]!=null && BLOCK_NAMES[id]==name)
+        		return id;
+        	}
+    	return 0;
+    }*///TODO should use real blockID instead
+    public final static int STONE_ID=1, GRASS_ID=2,DIRT_ID=3,COBBLESTONE_ID=4;
     public final static int WOOD_ID=5,SAPLING_ID=6,BEDROCK_ID=7,WATER_ID=8,STATIONARY_WATER_ID=9;
     public final static int LAVA_ID=10,STATIONARY_LAVA_ID=11,SAND_ID=12,GRAVEL_ID=13;
     public final static int GOLD_ORE_ID=14,IRON_ORE_ID=15,COAL_ORE_ID=16,LOG_ID=17;
@@ -1193,24 +1208,24 @@ public class Building
     public final static int WAIT_DISC_ID=2267;
    
         //maps block metadata to a dir
-        public final static int[]       BED_META_TO_DIR=new int[]       {               DIR_SOUTH,DIR_WEST,DIR_NORTH,DIR_EAST},
-                                                        BUTTON_META_TO_DIR=new int[]    {0,             DIR_EAST,DIR_WEST,DIR_SOUTH,DIR_NORTH},
-                                                        STAIRS_META_TO_DIR=new int[]    {               DIR_EAST,DIR_WEST,DIR_SOUTH,DIR_NORTH},
-                                                        LADDER_META_TO_DIR=new int[]    {0,0,   DIR_NORTH,DIR_SOUTH,DIR_WEST,DIR_EAST},
-                                                        TRAPDOOR_META_TO_DIR=new int[]  {               DIR_SOUTH,DIR_NORTH,DIR_EAST,DIR_WEST},
-                                                        VINES_META_TO_DIR=new int[]             {0,             DIR_SOUTH,DIR_WEST,0,DIR_NORTH,0,0,0,DIR_EAST},
-                                                        DOOR_META_TO_DIR=new int[]              {               DIR_EAST,DIR_SOUTH,DIR_WEST,DIR_NORTH};
+        public final static int[]       BED_META_TO_DIR=new int[]       {       DIR_SOUTH,DIR_WEST,DIR_NORTH,DIR_EAST},
+                                        BUTTON_META_TO_DIR=new int[]    {0,     DIR_EAST,DIR_WEST,DIR_SOUTH,DIR_NORTH},
+                                        STAIRS_META_TO_DIR=new int[]    {       DIR_EAST,DIR_WEST,DIR_SOUTH,DIR_NORTH},
+                                        LADDER_META_TO_DIR=new int[]    {0,0,   DIR_NORTH,DIR_SOUTH,DIR_WEST,DIR_EAST},
+                                        TRAPDOOR_META_TO_DIR=new int[]  {       DIR_SOUTH,DIR_NORTH,DIR_EAST,DIR_WEST},
+                                        VINES_META_TO_DIR=new int[]     {0,     DIR_SOUTH,DIR_WEST,0,DIR_NORTH,0,0,0,DIR_EAST},
+                                        DOOR_META_TO_DIR=new int[]      {       DIR_EAST,DIR_SOUTH,DIR_WEST,DIR_NORTH};
        
         //inverse map should be {North_inv,East_inv,dummy,West_inv,South_inv}
     //inverse map should be {North_inv,East_inv,South_inv, West_inv}
-        public final static int[]       BED_DIR_TO_META         =new int[]{2,3,0,1},
-                                                        BUTTON_DIR_TO_META              =new int[]{4,1,3,2},
-                                                        STAIRS_DIR_TO_META              =new int[]{3,0,2,1},
-                                                        LADDER_DIR_TO_META              =new int[]{2,5,3,4},
-                                                        TRAPDOOR_DIR_TO_META    =new int[]{1,2,0,3},
-                                                        VINES_DIR_TO_META               =new int[]{4,8,1,2},
-                                                        DOOR_DIR_TO_META                =new int[]{3,0,1,2},
-                                                        PAINTING_DIR_TO_FACEDIR =new int[]{0,3,2,1};
+        public final static int[]       BED_DIR_TO_META         		=new int[]{2,3,0,1},
+                                        BUTTON_DIR_TO_META              =new int[]{4,1,3,2},
+                                        STAIRS_DIR_TO_META              =new int[]{3,0,2,1},
+                                        LADDER_DIR_TO_META              =new int[]{2,5,3,4},
+                                        TRAPDOOR_DIR_TO_META    		=new int[]{1,2,0,3},
+                                        VINES_DIR_TO_META               =new int[]{4,8,1,2},
+                                        DOOR_DIR_TO_META                =new int[]{3,0,1,2},
+                                        PAINTING_DIR_TO_FACEDIR 		=new int[]{0,3,2,1};
        
         public final static int[] DIR_TO_I=new int[]{ 0,1,0,-1},
                                                           DIR_TO_K=new int[]{-1,0,1, 0};
@@ -1220,54 +1235,51 @@ public class Building
                                                           DIR_TO_Y=new int[]{1,0,-1,0};
        
          //some prebuilt directional blocks
-    public final static int[] WEST_FACE_TORCH_BLOCK=new int[]{TORCH_ID,BUTTON_DIR_TO_META[DIR_WEST]},
-                              EAST_FACE_TORCH_BLOCK=new int[]{TORCH_ID,BUTTON_DIR_TO_META[DIR_EAST]},
-                              NORTH_FACE_TORCH_BLOCK=new int[]{TORCH_ID,BUTTON_DIR_TO_META[DIR_NORTH]},
-                              SOUTH_FACE_TORCH_BLOCK=new int[]{TORCH_ID,BUTTON_DIR_TO_META[DIR_SOUTH]},
-                              EAST_FACE_LADDER_BLOCK=new int[]{LADDER_ID,LADDER_DIR_TO_META[DIR_EAST]},
+    public final static int[] WEST_FACE_TORCH_BLOCK=new int[]{TORCH_ID,2},//BUTTON_DIR_TO_META[DIR_WEST]},
+                              EAST_FACE_TORCH_BLOCK=new int[]{TORCH_ID,1},//BUTTON_DIR_TO_META[DIR_EAST]},
+                              NORTH_FACE_TORCH_BLOCK=new int[]{TORCH_ID,4},//BUTTON_DIR_TO_META[DIR_NORTH]},
+                              SOUTH_FACE_TORCH_BLOCK=new int[]{TORCH_ID,3},//BUTTON_DIR_TO_META[DIR_SOUTH]},
+                              EAST_FACE_LADDER_BLOCK=new int[]{LADDER_ID,5},//LADDER_DIR_TO_META[DIR_EAST]},
                               AIR_BLOCK=new int[]{0,0},
-                              HOLE_BLOCK_LIGHTING=new int[]{Building.HOLE_ID,0},
-                              HOLE_BLOCK_NO_LIGHTING=new int[]{Building.HOLE_ID,1},
-                              PRESERVE_BLOCK=new int[]{Building.PRESERVE_ID,0},
-                              HARD_SPAWNER_BLOCK=new int[]{Building.HARD_SPAWNER_ID,0},
-                              PIG_ZOMBIE_SPAWNER_BLOCK=new int[]{Building.PIG_ZOMBIE_SPAWNER_ID,0},
-                              ENDERMAN_SPAWNER_BLOCK=new int[]{Building.ENDERMAN_SPAWNER_ID,0},
-                              TOWER_CHEST_BLOCK=new int[]{Building.TOWER_CHEST_ID,0},
-                              HARD_CHEST_BLOCK=new int[]{Building.HARD_CHEST_ID,0},
-                              STONE_BLOCK=new int[]{Building.STONE_ID,0},
-                              PORTAL_BLOCK=new int[]{Building.PORTAL_ID,0};
+                              HOLE_BLOCK_LIGHTING=new int[]{HOLE_ID,0},
+                              HOLE_BLOCK_NO_LIGHTING=new int[]{HOLE_ID,1},
+                              PRESERVE_BLOCK=new int[]{PRESERVE_ID,0},
+                              HARD_SPAWNER_BLOCK=new int[]{HARD_SPAWNER_ID,0},
+                              PIG_ZOMBIE_SPAWNER_BLOCK=new int[]{PIG_ZOMBIE_SPAWNER_ID,0},
+                              ENDERMAN_SPAWNER_BLOCK=new int[]{ENDERMAN_SPAWNER_ID,0},
+                              TOWER_CHEST_BLOCK=new int[]{TOWER_CHEST_ID,0},
+                              HARD_CHEST_BLOCK=new int[]{HARD_CHEST_ID,0},
+                              STONE_BLOCK=new int[]{STONE_ID,0},
+                              PORTAL_BLOCK=new int[]{PORTAL_ID,0};
            
    
     public final static boolean[] IS_ARTIFICAL_BLOCK=new boolean[SPECIAL_BLOCKID_END+1],
-    	IS_WALLABLE=new boolean[SPECIAL_BLOCKID_END+1],
-    	IS_DELAY_BLOCK=new boolean[SPECIAL_BLOCKID_END+1],
-    	IS_LOAD_TRASMITER_BLOCK=new boolean[SPECIAL_BLOCKID_END+1],
-    	IS_WATER_BLOCK=new boolean[SPECIAL_BLOCKID_END+1],
-    	IS_FLOWING_BLOCK=new boolean[SPECIAL_BLOCKID_END+1],
-    	IS_ORE_BLOCK=new boolean[SPECIAL_BLOCKID_END+1],
-    	IS_STAIRS_BLOCK=new boolean[SPECIAL_BLOCKID_END+1];
+    							IS_WALLABLE=new boolean[SPECIAL_BLOCKID_END+1],
+    							IS_DELAY_BLOCK=new boolean[SPECIAL_BLOCKID_END+1],
+    							IS_LOAD_TRASMITER_BLOCK=new boolean[SPECIAL_BLOCKID_END+1],
+    							IS_WATER_BLOCK=new boolean[SPECIAL_BLOCKID_END+1],
+    							IS_FLOWING_BLOCK=new boolean[SPECIAL_BLOCKID_END+1],
+    							IS_ORE_BLOCK=new boolean[SPECIAL_BLOCKID_END+1],
+    							IS_STAIRS_BLOCK=new boolean[SPECIAL_BLOCKID_END+1];
 
-   
-   
     static{
         for(int blockID=0;blockID<IS_ARTIFICAL_BLOCK.length;blockID++){
-                IS_STAIRS_BLOCK[blockID]=blockID==COBBLESTONE_STAIRS_ID || blockID==WOOD_STAIRS_ID || blockID==BRICK_STAIRS_ID || blockID==STONE_BRICK_STAIRS_ID
-                  || blockID==NETHER_BRICK_STAIRS_ID || blockID==SAND_STAIRS_ID || blockID==SPRUCE_STAIRS_ID || blockID==BIRCH_STAIRS_ID || blockID==JUNGLE_STAIRS_ID;
-               
+        	if(Block.blocksList[blockID]!=null)
+        		{IS_STAIRS_BLOCK[blockID]= Block.blocksList[blockID] instanceof BlockStairs;
+                     
                 //note lava is considered to NOT be a liquid, and is therefore not wallable. This is so we can build cities on the lava surface.
                 IS_WATER_BLOCK[blockID]= blockID==WATER_ID || blockID==STATIONARY_WATER_ID || blockID==ICE_ID;
                
                 IS_FLOWING_BLOCK[blockID]=IS_WATER_BLOCK[blockID] || blockID==STATIONARY_LAVA_ID || blockID==LAVA_ID || blockID==SAND_ID || blockID==GRAVEL_ID;
                
                 IS_WALLABLE[blockID]= IS_WATER_BLOCK[blockID]
-                   || blockID==AIR_ID || blockID==SAPLING_ID || blockID==LOG_ID || blockID==LEAVES_ID || blockID==WEB_ID || blockID==LONG_GRASS_ID
+                   || blockID==0 || blockID==SAPLING_ID || blockID==LOG_ID || blockID==LEAVES_ID || blockID==WEB_ID || blockID==LONG_GRASS_ID
                    || blockID==DEAD_BUSH_ID || blockID==YELLOW_FLOWER_ID || blockID==RED_ROSE_ID || blockID==BROWN_MUSHROOM_ID || blockID==RED_MUSHROOM_ID
                    || blockID==SNOW_ID || blockID==CACTUS_ID || blockID==SUGAR_CANE_BLOCK_ID || blockID==PUMPKIN_ID || blockID==HUGE_BROWN_MUSHROOM_ID
                    || blockID==HUGE_RED_MUSHROOM_ID || blockID==MELON_ID || blockID==PUMPKIN_STEM_ID || blockID==MELON_STEM_ID || blockID==VINES_ID
                    || blockID==LILY_PAD_ID || blockID==NETHER_WART_ID || blockID==CARROT_ID || blockID==POTATO_ID;
-
-                IS_ORE_BLOCK[blockID]=blockID==COAL_ORE_ID || blockID==IRON_ORE_ID || blockID==GOLD_ORE_ID || blockID==LAPIS_ORE_ID || blockID==REDSTONE_ORE_ID
-                   || blockID==DIAMOND_ORE_ID || blockID==CLAY_ID || blockID==EMERALD_ORE_ID ;
+             
+                IS_ORE_BLOCK[blockID]= blockID==REDSTONE_ORE_ID|| blockID==CLAY_ID ||Block.blocksList[blockID].getClass().isAssignableFrom(BlockOre.class);
                
                 //Define by what it is not. Not IS_WALLABLE and not a naturally occurring solid block (obsidian/bedrock are exceptions)
                 IS_ARTIFICAL_BLOCK[blockID]= !( IS_WALLABLE[blockID] || IS_ORE_BLOCK[blockID]
@@ -1281,8 +1293,8 @@ public class Building
                
                 //Define by what it is not.
                 IS_LOAD_TRASMITER_BLOCK[blockID]= !(IS_WALLABLE[blockID]  || IS_FLOWING_BLOCK[blockID]
-                   ||  blockID==HOLE_ID || blockID==PRESERVE_ID || blockID==AIR_ID || blockID==TORCH_ID || blockID==LADDER_ID);
-                               
+                   ||  blockID==HOLE_ID || blockID==PRESERVE_ID || blockID==0 || blockID==TORCH_ID || blockID==LADDER_ID);
+        		}                
         }
     }
    
@@ -1330,7 +1342,7 @@ public class Building
     }
    
     public final static boolean isValidRuleBlock(int blockID,BuildingExplorationHandler beh){    
-        return Block.blocksList[blockID]!=null || blockID==AIR_ID;
+        return Block.blocksList[blockID]!=null || blockID==0;
     }
    
         public final static void circleShape(int diam){
@@ -1418,39 +1430,9 @@ public class Building
               BIOME_NAMES[i+1]=BiomeGenBase.biomeList[i].biomeName;   	  
             }
         }
-              //TODO:Remove for better biome implement 	
-        //public final static int NATURAL_BIOMES_START=1;
-        public final static int BIOME_UNDERGROUND=0;
-        /*, BIOME_OCEAN=1, BIOME_PLAINS=2, BIOME_DESERT=3, BIOME_EXTREME_HILLS=4, BIOME_FOREST=5,BIOME_TAIGA=6,
-                                                        BIOME_SWAMPLAND=7, BIOME_RIVER=8, BIOME_HELL=9, BIOME_SKY=10, BIOME_ICE_PLAINS=11, BIOME_ICE_MOUNTAINS=12,
-                                                        BIOME_MUSHROOM_ISLAND=13, BIOME_BEACH=14, BIOME_JUNGLE=15;
-       
-       
-        public static int getBiomeNum( BiomeGenBase biomeCheck ) {
-        if(   biomeCheck == BiomeGenBase.ocean
-           || biomeCheck == BiomeGenBase.frozenOcean)                           return BIOME_OCEAN;
-        else if( biomeCheck == BiomeGenBase.plains)                                     return BIOME_PLAINS;
-        else if( biomeCheck == BiomeGenBase.desert )           return BIOME_DESERT;
-        else if( biomeCheck == BiomeGenBase.extremeHills )            return BIOME_EXTREME_HILLS;
-        else if( biomeCheck == BiomeGenBase.forest
-                        || biomeCheck == BiomeGenBase.forest )          return BIOME_FOREST;
-        else if( biomeCheck == BiomeGenBase.taiga )           return BIOME_TAIGA;
-        else if( biomeCheck == BiomeGenBase.swampland)                          return BIOME_SWAMPLAND;
-        else if( biomeCheck == BiomeGenBase.river
-                        || biomeCheck == BiomeGenBase.frozenRiver)                      return BIOME_RIVER;
-        else if( biomeCheck == BiomeGenBase.hell )                                      return BIOME_HELL;
-        else if( biomeCheck == BiomeGenBase.sky )                                       return BIOME_SKY;
-        else if( biomeCheck == BiomeGenBase.mushroomIsland
-                        || biomeCheck == BiomeGenBase.mushroomIslandShore ) return BIOME_MUSHROOM_ISLAND;
-        else if( biomeCheck == BiomeGenBase.icePlains)                          return BIOME_ICE_PLAINS;
-        else if( biomeCheck == BiomeGenBase.iceMountains)                       return BIOME_ICE_MOUNTAINS;
-        else if( biomeCheck == BiomeGenBase.beach )             return BIOME_BEACH;
-        else if( biomeCheck == BiomeGenBase.jungle)             return BIOME_JUNGLE;
-   
-                return BIOME_FOREST;
-        }*/
-        //TODO:To implement
-        public static int getBiomeIDFromName(String name)
+        
+        //TODO:To use
+        /*public static int getBiomeIDFromName(String name)
         {
             for (int i = 0; i < BiomeGenBase.biomeList.length; i++)
             {
@@ -1461,9 +1443,10 @@ public class Building
             }
 
             return -1;
-        }
-        //TODO:Extend chest_type_labels as config option ?
-        public static String[] CHEST_TYPE_LABELS=new String[]{"EASY_CHEST_ITEMS","MEDIUM_CHEST_ITEMS","HARD_CHEST_ITEMS","TOWER_CHEST_ITEMS"};
+        }*/
+        //TODO:Extend chest_type_labels as config option
+        public static String[] CHEST_TYPE_LABELS=new String[]{"CHEST_EASY","CHEST_MEDIUM","CHEST_HARD","CHEST_TOWER"};
+        public static List<String>CHEST_LABELS=new ArrayList <String> ();// TODO:to implement
         public static int[] DEFAULT_CHEST_TRIES=new int[]{4,6,6,6};
         //chest items[n] format is array of 6 arrays
         //0array - idx
@@ -1526,8 +1509,7 @@ public class Building
                         {14,POTION_ID,37,3,1,1}, //healing II
                         {15,POTION_ID,49,2,1,1}, //regeneration II
                         {16,POTION_ID,3,2,1,1}}, //fire resistance
-                       
-                       
+                             
                 {       //Tower
                         {0,ARROW_ID,0,1,1,12},  
                         {1,RAW_FISH_ID,0,2,1,1},
