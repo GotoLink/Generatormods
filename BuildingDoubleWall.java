@@ -1,5 +1,7 @@
 package generator.mods;
 
+import cpw.mods.fml.common.FMLLog;
+
 /*
  *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
  *  Copyright (C) 2011 by formivore
@@ -42,14 +44,14 @@ public class BuildingDoubleWall extends Building
 		wall2 = new BuildingWall(bID,wgt,ws,flipDir(bDir),Building.L_HAND, ws.MaxL/2,true,getIJKPt(0,0,-1)).setTowers(wall1);
 		int a =wall1.plan(1,0,ws.MergeWalls ? ws.WWidth : BuildingWall.DEFAULT_LOOKAHEAD,!ws.MergeWalls)+1;
 		int b =wall2.plan(1,0,ws.MergeWalls ? ws.WWidth : BuildingWall.DEFAULT_LOOKAHEAD,!ws.MergeWalls)+1;
-// Too demanding ?
-	/*	if(b+a-1<ws.MinL){
+		
+		if(b+a-1<ws.MinL){// Too demanding ?
 			if(BuildingWall.DEBUG)
 				System.out.println("Abandoning wall "+wall1.IDString()+"length="+(b+a-1)+", reason 1)"+wall1.failString()+". 2)"+wall2.failString()+".");
 			return false;
-		}*/
-		
-		//if(BuildingWall.DEBUG) { wall1.printWall(); wall2.printWall(); }
+		}	
+		 wall1.printWall();
+		 wall2.printWall(); 
 
 		//copy to one array for smoothing
 		//
@@ -63,9 +65,9 @@ public class BuildingDoubleWall extends Building
 		for(int m=0;m<b;m++) { tempx[m]=wall2.xArray[b-m-1]; tempz[m]=wall2.zArray[b-m-1];}
 		for(int m=0;m<a;m++) { tempx[m+b]=wall1.xArray[m];  tempz[m+b]=wall1.zArray[m]; }
 
-		//if(BuildingWall.DEBUG) FMLLog.getLogger().info("\nSMOOTHING X");
+		if(BuildingWall.DEBUG) FMLLog.getLogger().info("\nSMOOTHING X");
 		BuildingWall.smooth(tempx,0,a+b-1,ws.LateralSmoothingScale,ws.LateralSmoothingScale,true);
-		//if(BuildingWall.DEBUG) FMLLog.getLogger().info("\nSMOOTHING Z");
+		if(BuildingWall.DEBUG) FMLLog.getLogger().info("\nSMOOTHING Z");
 		BuildingWall.smooth(tempz,0,a+b-1,ws.ConcaveDownSmoothingScale,ws.ConcaveUpSmoothingScale,true);
 		for(int m=0;m<b;m++) { wall2.xArray[b-m-1]=tempx[m]; wall2.zArray[b-m-1]=tempz[m];}
 		for(int m=0;m<a;m++) { wall1.xArray[m]=tempx[m+b]; wall1.zArray[m]=tempz[m+b]; }
