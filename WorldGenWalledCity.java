@@ -441,12 +441,12 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 					pt[1]=Building.findSurfaceJ(world,pt[0],pt[2],Building.WORLD_MAX_Y,false,Building.IGNORE_WATER);
 					int oldSurfaceBlockId=world.getBlockId(pt[0], pt[1], pt[2]);
 					if(pt[1]>jmax) {
-						while(world.getBlockId(pt[0],pt[1]+1,pt[2])!=Building.AIR_ID) pt[1]++; //go back up to grab any trees or whatnot
+						while(world.getBlockId(pt[0],pt[1]+1,pt[2])!=0) pt[1]++; //go back up to grab any trees or whatnot
 						pt[1]+=10; //just to try to catch any overhanging blocks
 						for(; pt[1]>jmax; pt[1]--)
-							if(world.getBlockId(pt[0],pt[1],pt[2])!=Building.AIR_ID)
-								Building.setBlockNoLighting(world,pt[0],pt[1],pt[2], Building.AIR_ID);
-						if(world.getBlockId(pt[0],jmax-1,pt[2])!=Building.AIR_ID) 
+							if(world.getBlockId(pt[0],pt[1],pt[2])!=0)
+								Building.setBlockNoLighting(world,pt[0],pt[1],pt[2], 0);
+						if(world.getBlockId(pt[0],jmax-1,pt[2])!=0) 
 							Building.setBlockNoLighting(world,pt[0],jmax,pt[2],oldSurfaceBlockId);
 					}
 					

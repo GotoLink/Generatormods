@@ -189,7 +189,7 @@ public class TemplateWall extends TemplateTML{
 			else if(caveSpiderProb>0.0F) SpawnerRule=new TemplateRule(new int[]{Building.CAVE_SPIDER_SPAWNER_ID,0}, (int)(caveSpiderProb*100));
 		}
 		
-		if(Biomes!=ALL_BIOMES && Biomes[Building.BIOME_UNDERGROUND]>0){
+		if(Biomes!=ALL_BIOMES && Biomes[0]>0){
 			underground=true;
 			Biomes=ALL_BIOMES;
 		}
@@ -341,7 +341,7 @@ public class TemplateWall extends TemplateTML{
 	
 	public static TemplateWall pickBiomeWeightedWallStyle(ArrayList<TemplateWall> styles,World world, int i, int k, Random random, boolean ignoreBiomes){
 		
-		int biome=/*Building.getBiomeNum*/(world.getBiomeGenForCoords(i,k).biomeID+1); //TODO: use .biomeID
+		int biome=world.getBiomeGenForCoords(i,k).biomeID+1;
 		if((biome < 0 || biome > BiomeGenBase.biomeList.length) && !ignoreBiomes) return null;
 	  	int sum=0;
 	  	for(TemplateWall ws : styles){

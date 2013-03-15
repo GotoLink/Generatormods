@@ -207,8 +207,8 @@ public class BuildingCellularAutomaton extends Building {
 	}
 		
 	public void build(boolean SmoothWithStairs,boolean makeFloors){
-		int stairsBlock=SmoothWithStairs ? blockToStairs(bRule.primaryBlock) : AIR_ID;
-		if(stairsBlock==WOOD_STAIRS_ID) stairsBlock=AIR_ID;
+		int stairsBlock=SmoothWithStairs ? blockToStairs(bRule.primaryBlock) : 0;
+		if(stairsBlock==WOOD_STAIRS_ID) stairsBlock=0;
 		TemplateRule[] stairs=new TemplateRule[]{ new TemplateRule(new int[]{stairsBlock,STAIRS_DIR_TO_META[DIR_NORTH]},bRule.chance),
 												  new TemplateRule(new int[]{stairsBlock,STAIRS_DIR_TO_META[DIR_EAST]},bRule.chance),
 												  new TemplateRule(new int[]{stairsBlock,STAIRS_DIR_TO_META[DIR_SOUTH]}, bRule.chance),
@@ -249,7 +249,7 @@ public class BuildingCellularAutomaton extends Building {
 					}
 					
 					//try smoothing with stairs here
-					else if(stairsBlock!=AIR_ID && (z==bHeight-1 || layers[z+1][x][y]!=ALIVE)){
+					else if(stairsBlock!=0 && (z==bHeight-1 || layers[z+1][x][y]!=ALIVE)){
 						if(y+1<bLength && layers[z][x][y+1]==ALIVE && (	y-1<0 || //y+1 present and (we are at the edge or...	
 							(			  layers[z][x][y-1]!=ALIVE //y-1 empty and..
 								&& (x+1==bWidth || !(layers[z][x+1][y]!=ALIVE && layers[z][x+1][y-1]==ALIVE)) //not obstructing gaps to the sides

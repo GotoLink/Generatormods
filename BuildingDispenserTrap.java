@@ -100,7 +100,7 @@ public class BuildingDispenserTrap extends Building{
 	private static int[][] CODE_TO_BLOCK= new int[][]{
 		{PRESERVE_ID,0},
 		{},
-		{AIR_ID,0},
+		{0,0},
 		{REDSTONE_WIRE_ID,0},
 		{REDSTONE_TORCH_ON_ID,BUTTON_DIR_TO_META[DIR_NORTH]},
 		{REDSTONE_TORCH_OFF_ID,BUTTON_DIR_TO_META[DIR_SOUTH]},

@@ -58,7 +58,7 @@ public class BuildingUndergroundEntranceway extends Building{
 						if(IS_FLOWING_BLOCK[getBlockIdLocal(x,z+z1,z)])
 							setBlockLocal(x,z+z1,z,STONE_ID);
 					}
-					else setBlockLocal(x,z+z1,z,AIR_ID);
+					else setBlockLocal(x,z+z1,z,0);
 			}}
 			for(int x=0; x<PASSAGE_WIDTH; x++){
 				setBlockLocal(x, z, z, random.nextInt(100) < bRule.chance ? stairsID : 0,STAIRS_DIR_TO_META[DIR_NORTH]);

@@ -78,7 +78,7 @@ public class BuildingTML extends Building
 		//clear overhead
 		for(int z=bHeight; z<tmlt.cutIn+tmlt.embed; z++)
 			for(int y=0;y<bLength;y++) for(int x=0;x<bWidth;x++)
-				setBlockLocal(x,z,y,AIR_ID);
+				setBlockLocal(x,z,y,0);
 
 
 		//build

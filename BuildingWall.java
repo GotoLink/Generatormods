@@ -417,7 +417,7 @@ public class BuildingWall extends Building
 								: HOLE_BLOCK_NO_LIGHTING;
 
 					//starting from top, preserve old wall block until we run into a non-wall block
-					if(keepWallFromAbove && wallBlockPresent && (idAndMeta[0]==AIR_ID || idAndMeta[0]==HOLE_ID)){
+					if(keepWallFromAbove && wallBlockPresent && (idAndMeta[0]==0 || idAndMeta[0]==HOLE_ID)){
 						continue;
 					} else keepWallFromAbove=false;
 										
@@ -477,7 +477,7 @@ public class BuildingWall extends Building
 		for(int x1=0; x1<bWidth;x1++)
 			for(int z1=bHeight+OVERHEAD_CLEARENCE; z1<bHeight+OVERHEAD_TREE_CLEARENCE; z1++)
 				if(getBlockIdLocal(x1, z1, 0)==LOG_ID || getBlockIdLocal(x1, z1, 0)==LEAVES_ID || getBlockIdLocal(x1, z1, 0)==SNOW_ID )
-					setBlockLocal(x1, z1, 0, AIR_ID); //kill trees aggressively
+					setBlockLocal(x1, z1, 0, 0); //kill trees aggressively
 	}
 
 	//****************************************  FUNCTION - mergeWallLayer *************************************************************************************//
@@ -700,7 +700,7 @@ public class BuildingWall extends Building
 						for(int x1=0;x1<bWidth;x1++)
 							for(int z1=0;z1<gateHeight;z1++)
 								if(!((y1==0 || y1==1-gateWidth) && z1==gateHeight-1))
-									setBlockLocal(x1,z1,y1,AIR_ID);
+									setBlockLocal(x1,z1,y1,0);
 						//fence gate
 						for(int z1=gateHeight-2; z1<gateHeight; z1++)
 							if(random.nextInt(100) < bRule.chance) 
@@ -800,31 +800,34 @@ public class BuildingWall extends Building
 
 	//****************************************  FUNCTION  - printWall  *************************************************************************************//
 	//For precise debugging
-	/*public void printWall(){
-		printWall(0);
+	public void printWall(){
+		if(DEBUG) printWall(0);
 	}
 
 
 	public void printWall(int start){
-		if(DEBUG) System.out.println("Printing "+IDString()+" wall from n="+start+" to n="+(bLength-1));
+		if(DEBUG){
+			System.out.println("Printing "+IDString()+" wall from n="+start+" to n="+(bLength-1));
+		
 		for(int m=start; m<bLength; m++) {
 			if(m %10==0) System.out.print("|");
 			if(m %100==0) System.out.print("||");
-			if(DEBUG) System.out.print(xArray[m]+",");
+			 System.out.print(xArray[m]+",");
 			if(m>0 && Math.abs(xArray[m]-xArray[m-1])>1 )
-				if(DEBUG) System.out.print("(ERROR: X-slope>1 at n="+m+")");
+				 System.out.print("(ERROR: X-slope>1 at n="+m+")");
 
 		}
-		if(DEBUG) System.out.print("\n");
+		 System.out.print("\n");
 		for(int m=start; m<bLength; m++) {
 			if(m %10==0) System.out.print("|");
 			if(m %100==0) System.out.print("||");
-			if(DEBUG) System.out.print(zArray[m]+",");
+			 System.out.print(zArray[m]+",");
 			if(m>0 && Math.abs(zArray[m]-zArray[m-1])>1 )
-				if(DEBUG) System.out.print("(ERROR: Z-slope>1 at n="+m+")");
+				 System.out.print("(ERROR: Z-slope>1 at n="+m+")");
 		}
-		if(DEBUG) System.out.println("\n");
-	}*/
+		System.out.println("\n");
+		}
+	}
 
 	//****************************************  FUNCTION - smooth  *************************************************************************************//
 	public void smooth(int convexWindow, int concaveWindow,  boolean flattenEnds){
