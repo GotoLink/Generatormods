@@ -1,4 +1,4 @@
-package generator.mods;
+package mods.generator;
 /*
  *  Source code for the Walled City Generator and CARuins Mods for the game Minecraft
  *  Copyright (C) 2011 by formivore
@@ -62,7 +62,7 @@ public class BuildingSpiralStaircase  extends Building {
 	   if(yP==1 && yP==2) yP=0;
 	   int jB0=getSurfaceIJKPt(0,yP,j0+bHeight+2,true,0)[1]+1;
 	   int jB2=getSurfaceIJKPt(2,yP,j0+bHeight+2,true,0)[1]+1;
-	   int pYInc=Building.signum(yP);
+	   int pYInc=Integer.signum(yP);
 	   
 	   for(int n=0; n<=extraTopStairs; n++)
 		   buildStairwaySegment(0,n,-n,3,stairsBlockId,sDir);

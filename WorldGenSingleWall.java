@@ -1,4 +1,4 @@
-package generator.mods;
+package mods.generator;
 
 import java.util.Random;
 

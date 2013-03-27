@@ -1,4 +1,4 @@
-package generator.mods;
+package mods.generator;
 /*
  *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
  *  Copyright (C) 2011 by formivore
@@ -24,19 +24,16 @@ import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.ListIterator;
 import java.util.Random;
 import java.util.logging.Logger;
 
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.chunk.storage.AnvilChunkLoader;
 import net.minecraft.world.gen.ChunkProviderEnd;
 import net.minecraft.world.gen.ChunkProviderFlat;
-import net.minecraft.world.gen.ChunkProviderGenerate;
 import net.minecraft.world.gen.ChunkProviderHell;
 import net.minecraft.world.storage.ISaveHandler;
 import net.minecraftforge.event.ForgeSubscribe;
@@ -51,11 +48,10 @@ import cpw.mods.fml.relauncher.Side;
 
 public abstract class BuildingExplorationHandler
 {
-	protected final static int MAX_TRIES_PER_CHUNK=100;
-	protected final static int CHUNKS_AT_WORLD_START=256;
+	protected final static int MAX_TRIES_PER_CHUNK=100,CHUNKS_AT_WORLD_START=256;
 	public final static int MAX_CHUNKS_PER_TICK=100;
 	public final static int[] NO_CALL_CHUNK=null;
-	//private final static int MIN_CHUNK_SEPARATION_FROM_PLAYER=6;UNUSED
+	private final static int MIN_CHUNK_SEPARATION_FROM_PLAYER=0;
 	
 	protected final static File BASE_DIRECTORY=getMinecraftBaseDir();
 	protected final static File CONFIG_DIRECTORY=new File(Loader.instance().getConfigDir(),"generatormods");
@@ -99,23 +95,15 @@ public abstract class BuildingExplorationHandler
 	//**************************** FORGE EVENTS ********************************************************************************************//
 	@ForgeSubscribe
 	public void onWorldUnloaded(Unload event){
-		//kill zombies should free some memory
-		if(this==master)
-		{
-		for(WorldGeneratorThread wgt: exploreThreads)
-			{
-			killZombie(wgt);
-			}	
-		}
 		chunksExploredThisTick=0;
 		chunksExploredFromStart=0;
 	}
 	@ForgeSubscribe
 	public void onPopulatingChunk(PopulateChunkEvent event){
-		if(chunksExploredFromStart==0 && exploreThreads.size()==0 && lastExploredChunkI!=event.chunkX && lastExploredChunkK!=event.chunkZ) {
+		if(chunksExploredFromStart==0 && exploreThreads.size()<10 && lastExploredChunkI!=event.chunkX && lastExploredChunkK!=event.chunkZ) 
+		{
 		lastExploredChunkI=event.chunkX;
 		lastExploredChunkK=event.chunkZ;
-		//logOrPrint("event called and startchunk changed");
 		}
 		
 	}
@@ -130,11 +118,10 @@ public abstract class BuildingExplorationHandler
 	        {	//can generate in Nether
 	            generateNether(world, random, chunkX*16, chunkZ*16);
 	        }
-	        else if ((chunkGenerator instanceof ChunkProviderGenerate||chunkGenerator instanceof ChunkProviderFlat))
-	        {	//can generate in normal world or flat world
+	        else if (chunkGenerator instanceof ChunkProviderFlat || !(chunkGenerator instanceof ChunkProviderEnd))
+	        {	//can generate in flat world but not in The End
 	            generateSurface(world, random, chunkX*16, chunkZ*16);
 	        }
-	        //shouldn't generate anywhere else
 	    }
 	    }
 	}
@@ -147,13 +134,13 @@ public abstract class BuildingExplorationHandler
 		
 		//Put flushGenThreads before the exploreThreads enqueues and include the callChunk argument.
 		//This is to avoid putting mineral deposits in cities etc.
-		if(this==master /*&& isCreatingDefaultChunks*/ && !isFlushingGenThreads)
+		if(this==master && isCreatingDefaultChunks && !isFlushingGenThreads)
 			flushGenThreads(world, new int[]{i,k});
 		
 		generate(world,random,i,k);
 	}
 	public void generateNether( World world, Random random, int chunkI, int chunkK ) {
-		generateSurface(world,random,chunkI,chunkK);
+		generateSurface(world,random,chunkI,chunkK);//TODO:Change this
 	}
 	//****************************  FUNCTION - killZombie *************************************************************************************//
 	public void killZombie(WorldGeneratorThread wgt){
@@ -175,8 +162,9 @@ public abstract class BuildingExplorationHandler
 		
 		chunksExploredThisTick=0;
 		chunksExploredFromStart=0;
-		if(world.getTotalWorldTime()==0) 
-		{ isCreatingDefaultChunks=true;
+		if(world.getTotalWorldTime()<10) 
+		{ 
+			isCreatingDefaultChunks=true;
 		}
 		logOrPrint(newWorldStr);
 	}
@@ -201,26 +189,25 @@ public abstract class BuildingExplorationHandler
 			 logOrPrint("Chunk"+chunkI+","+chunkK+"too far away from"+lastExploredChunkI+","+lastExploredChunkK);
 			return false;
 		}
-		/*List playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
+		/*List<EntityPlayerMP> playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
 		if(playerList!=null){
-			//System.out.println("Thread "+Thread.currentThread().getName()+"player=("+(((int)mc.thePlayer.posX)>>4)+","+(((int)mc.thePlayer.posZ)>>4)+"), chunk=("+chunkI+","+chunkK+").");
-			if( Math.abs(chunkI-((int)mc.thePlayer.posX)>>4) < MIN_CHUNK_SEPARATION_FROM_PLAYER 
-			 && Math.abs(chunkK-((int)mc.thePlayer.posZ)>>4) < MIN_CHUNK_SEPARATION_FROM_PLAYER){ //try not to bury the player alive
-				System.out.println("Terminating "+Thread.currentThread().getName()+" generation thread, too close to player.\n "+Thread.currentThread().getId()+". Player=("+(((int)mc.thePlayer.posX>>4))+","+(((int)mc.thePlayer.posZ>>4))+"), queriedChunk=("+chunkI+","+chunkK+").");
+		for (EntityPlayerMP player:playerList)
+			if( Math.abs(chunkI-((int)player.posX)>>4) < MIN_CHUNK_SEPARATION_FROM_PLAYER 
+			 && Math.abs(chunkK-((int)player.posZ)>>4) < MIN_CHUNK_SEPARATION_FROM_PLAYER){ //try not to bury the player alive
+				logOrPrint("Terminating "+this.toString()+" generation thread, too close to player.\n "+Thread.currentThread().getId()+". at "+(((int)player.posX>>4))+","+(((int)player.posZ>>4))+"), while querying chunk "+chunkI+","+chunkK+").");
 				return false;
-			}
-		}
-		//SSP - world.chunkProvider.chunkExists calls ChunkProvider.java which returns chunkMap.containsKey(ChunkCoordIntPair.chunkXZ2Int(i, j));
-		if(world.chunkProvider.chunkExists(chunkI, chunkK)) return true;
-		*/
+			}//FIXME
+		}*/
+		
 		//We've now failed world.chunkProvider.chunkExists(chunkI, chunkK),
 		// so we will have to load or generate this chunk
 		
-		if(chunksExploredThisTick > (isFlushingGenThreads ? CHUNKS_AT_WORLD_START : MAX_CHUNKS_PER_TICK)){
-			//suspend the thread if we've exceeded our quota of chunks to load for this tick
-			{wgt.suspendGen();
-			 logOrPrint("Too much chunks loaded this time");
-			return false;}
+		if(chunksExploredThisTick > (isFlushingGenThreads ? CHUNKS_AT_WORLD_START : MAX_CHUNKS_PER_TICK))
+		{
+		//suspend the thread if we've exceeded our quota of chunks to load for this tick
+			wgt.suspendGen();
+			logOrPrint("Too much chunks loaded this time");
+			return false;
 		}
 		chunksExploredThisTick++;
 
@@ -243,15 +230,15 @@ public abstract class BuildingExplorationHandler
 	
 	//****************************  FUNCTION - flushGenThreads *************************************************************************************//
 	protected void flushGenThreads(World world, int[] callChunk){	
-		//TODO Check server compatibility
+		//FIXME
 		//announce there is about to be lag because we are about to flush generation threads
-		List playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
+		/*List playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
 		if(!isAboutToFlushGenThreads && !isCreatingDefaultChunks && playerList!=null && chunksExploredFromStart > 2*CHUNKS_AT_WORLD_START-15){
-			String flushAnnouncement=(2*CHUNKS_AT_WORLD_START)+" chunks explored this wave, pausing to process.";
+			String flushAnnouncement=(2*CHUNKS_AT_WORLD_START)+" chunks explored this wave, lag may occur.";
 			FMLClientHandler.instance().getClient().ingameGUI.getChatGUI().printChatMessage(flushAnnouncement);
 			logOrPrint(flushAnnouncement);
 			isAboutToFlushGenThreads=true;
-		}	
+		}*/
 		//Must make sure that a)There is only one call to flushGenThreads on the stack at a time
 		//                    b)flushGenThreads is only called from the main Minecraft thread.
 		//This check is not at the beginning of function because we want to announce we are about to flush no matter what.
@@ -262,8 +249,10 @@ public abstract class BuildingExplorationHandler
 		{
 			isFlushingGenThreads=true;
 			flushCallChunk=callChunk;
-			while(exploreThreads.size() > 0) {
-				doOnTick(world);}			
+			while(exploreThreads.size() > 0) 
+			{
+				doOnTick(world);
+			}			
 			isFlushingGenThreads=false;
 			isCreatingDefaultChunks=false;
 			isAboutToFlushGenThreads=false;
@@ -426,7 +415,15 @@ public abstract class BuildingExplorationHandler
 		}
 		return defaultVal;
 	}
-
+	public static boolean readBooleanParam(PrintWriter lw,boolean defaultVal,String splitString, String read){
+		try{
+			defaultVal=Boolean.parseBoolean(read.split(splitString)[1].trim());
+		} catch(Exception e) { 
+			lw.println("Error parsing boolean: "+e.toString());
+			lw.println("Using default "+defaultVal+". Line:"+read); 
+		}
+		return defaultVal;
+	}
 	public static float readFloatParam(PrintWriter lw,float defaultVal,String splitString, String read){
 		try{
 			defaultVal=Float.parseFloat(read.split(splitString)[1].trim());
@@ -445,7 +442,7 @@ public abstract class BuildingExplorationHandler
 			int ruleId=Integer.parseInt(postSplit);
 			return rules[ruleId];
 		} catch(NumberFormatException e) { 
-			TemplateRule r=new TemplateRule(postSplit,this,false);
+			TemplateRule r=new TemplateRule(postSplit,false);
 			return r;
 		}catch(Exception e) { 
 			throw new Exception("Error reading block rule for variable: "+e.toString()+". Line:"+read);
@@ -510,7 +507,7 @@ public abstract class BuildingExplorationHandler
 		if(rules.size()==0) return null;
 		return rules;
 	}
-	public static File getMinecraftBaseDir()
+	private static File getMinecraftBaseDir()
     {
         if (FMLCommonHandler.instance().getSide() == Side.CLIENT)
         {
@@ -544,21 +541,21 @@ public abstract class BuildingExplorationHandler
             return false;
         }
     }
-	public static File getWorldSaveDir(World world)
+	private static File getWorldSaveDir(World world)
     {
-        ISaveHandler worldsaver = world.getSaveHandler();       
-        if (worldsaver.getChunkLoader(world.provider) instanceof AnvilChunkLoader)
+        ISaveHandler worldSaver = world.getSaveHandler();       
+        if (worldSaver.getChunkLoader(world.provider) instanceof AnvilChunkLoader)
         {
-            AnvilChunkLoader loader = (AnvilChunkLoader) worldsaver.getChunkLoader(world.provider);
+            AnvilChunkLoader loader = (AnvilChunkLoader) worldSaver.getChunkLoader(world.provider);
             
-            for (Field f : loader.getClass().getDeclaredFields())
+            for (Field field : loader.getClass().getDeclaredFields())
             {
-                if (f.getType().equals(File.class))
+                if (field.getType().equals(File.class))
                 {
                     try
                     {
-                        f.setAccessible(true);
-                        File saveLoc = (File) f.get(loader);
+                        field.setAccessible(true);
+                        File saveLoc = (File) field.get(loader);
                         return saveLoc;
                     }
                     catch (Exception e)

@@ -1,4 +1,4 @@
-package generator.mods;
+package mods.generator;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -164,8 +164,8 @@ public class BuildingCellularAutomaton extends Building {
 		}
 		
 		//now resize building dimensions and shift down
-		int minX=BB[0][minIdx(BB[0])], maxX=BB[1][maxIdx(BB[1])],
-			minY=BB[2][minIdx(BB[2])], maxY=BB[3][maxIdx(BB[3])];
+		int minX=minOrMax(BB[0],true), maxX=minOrMax(BB[1],false),
+			minY=minOrMax(BB[2],true), maxY=minOrMax(BB[3],false);
 		bWidth=maxX-minX+1;
 		bLength=maxY-minY+1;
 		if(!shiftBuidlingJDown(15)) //do a height check to see we are not at the edge of a cliff etc.
@@ -502,8 +502,8 @@ public class BuildingCellularAutomaton extends Building {
 							    findSurfaceJ(world, getI(bWidth-1,bLength-1), getK(bWidth-1,bLength-1),j0+10,false,IGNORE_WATER),
 							    findSurfaceJ(world, getI(bWidth/2,bLength/2), getK(bWidth/2,bLength/2),j0+10,false,IGNORE_WATER)};
 		
-		int minHeight=heights[minIdx(heights)];
-		if(heights[maxIdx(heights)] - minHeight > maxShift) return false;
+		int minHeight=minOrMax(heights,true);
+		if(minOrMax(heights,false)- minHeight > maxShift) return false;
 		else j0=minHeight;
 		return true;
 	}

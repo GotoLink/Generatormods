@@ -1,4 +1,4 @@
-package generator.mods;
+package mods.generator;
 /*
  *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
  *  Copyright (C) 2011 by formivore
@@ -33,7 +33,7 @@ public class TemplateRule {
     public int[] primaryBlock=null;
     private int[] fixedRuleChosen=null;
 
-    public TemplateRule (String rule, BuildingExplorationHandler explorationHandler, boolean checkMetaValue ) throws Exception {
+    public TemplateRule (String rule, boolean checkMetaValue ) throws Exception {
         String[] items = rule.split( "," );
         int numblocks = items.length - 2;
         if( numblocks < 1 ) { throw new Exception( "Error reading rule: No blockIDs specified for rule!" ); }
@@ -46,7 +46,7 @@ public class TemplateRule {
         for( int i = 0; i < numblocks; i++ ) {
         	data = items[i + 2].trim().split( "-" );
         	blockIDs[i]=Integer.parseInt( data[0] );
-        	if(!Building.isValidRuleBlock(blockIDs[i],explorationHandler)){
+        	if(!Building.isValidRuleBlock(blockIDs[i])){
         		throw new Exception(BLOCK_NOT_REGISTERED_ERROR_PREFIX+blockIDs[i]+" not registered!");
         	}
         	blockMDs[i]= data.length>1 ? Integer.parseInt( data[1]) : 0;
@@ -57,27 +57,25 @@ public class TemplateRule {
         	}
         }
         
-        setPrimaryBlock();
+        primaryBlock=getPrimaryBlock();
     } 
 
     public TemplateRule(int[] block){
     	blockIDs=new int[]{block[0]};
     	blockMDs=new int[]{block[1]};
-    	setPrimaryBlock();
+    	primaryBlock=getPrimaryBlock();
     }
     
     public TemplateRule(int[] block, int chance_){
-    	blockIDs=new int[]{block[0]};
-    	blockMDs=new int[]{block[1]};
+    	this(block);
     	chance=chance_;
-    	setPrimaryBlock();
     }
     
     public TemplateRule(int[] blockIDs_, int[] blockMDs_, int chance_){
     	blockIDs=blockIDs_;
     	blockMDs=blockMDs_;
     	chance=chance_;
-    	setPrimaryBlock();
+    	primaryBlock=getPrimaryBlock();
     }
     
     public void setFixedRule(Random random){
@@ -141,7 +139,7 @@ public class TemplateRule {
 
     
     //returns the most frequent block in rule
-    private void setPrimaryBlock(){
+    private int[] getPrimaryBlock(){
     	int[] hist=new int[blockIDs.length];
     	for(int l=0;l<hist.length;l++)
     		for(int m=0;m<hist.length;m++)
@@ -151,9 +149,10 @@ public class TemplateRule {
     	for(int l=0;l<hist.length;l++){
     		if(hist[l]>maxFreq){
     			maxFreq=hist[l];
-    			primaryBlock=new int[]{blockIDs[l],blockMDs[l]};
+    			return new int[]{blockIDs[l],blockMDs[l]};
     		}
     	}
+    	return null;
     }
     
 

@@ -1,4 +1,4 @@
-package generator.mods;
+package mods.generator;
 /*
  *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
  *  Copyright (C) 2011 by formivore
@@ -26,14 +26,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Random;
 
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
-import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.Init;
 import cpw.mods.fml.common.Mod.Instance;
@@ -44,10 +41,8 @@ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.registry.GameRegistry;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
-@Mod(modid = "WalledCityMod", name = "Walled City Generator", version = "0.0.5",dependencies= "after:ExtraBiomes,BiomesOPlenty")
+@Mod(modid = "WalledCityMod", name = "Walled City Generator", version = "0.0.6",dependencies= "after:ExtraBiomes,BiomesOPlenty")
 @NetworkMod(clientSideRequired = false, serverSideRequired = false)
 public class PopulatorWalledCity extends BuildingExplorationHandler{
 	@Instance("WalledCityMod")
@@ -88,6 +83,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	@Init
 	public void load(FMLInitializationEvent event) {
 		GameRegistry.registerWorldGenerator(new WorldGenerator());
+		//TickRegistry.registerTickHandler(new GeneratorTickHandler(this), Side.SERVER);
 		MinecraftForge.TERRAIN_GEN_BUS.register(this);
 		MinecraftForge.EVENT_BUS.register(this);
 		loadDataFiles();
@@ -197,28 +193,29 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	//****************************  FUNCTION - chatCityBuilt *************************************************************************************//
 	
 	public void chatBuildingCity(String chatString, String logString){
-		if(logString!=null) logOrPrint(logString);
+		/*if(logString!=null) logOrPrint(logString);
 		if(!CityBuiltMessage) return;
 		List playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
 		if(playerList!=null ){			
-			FMLClientHandler.instance().getClient().ingameGUI.getChatGUI().printChatMessage(chatString);
-			/*for (int index = 0; index < playerList.size(); ++index)
+			//FMLClientHandler.instance().getClient().ingameGUI.getChatGUI().printChatMessage(chatString);
+			for (int index = 0; index < playerList.size(); ++index)
 	        {
 	            EntityPlayerMP player = (EntityPlayerMP)playerList.get(index);
-	            player.addChatMessage(chatString);
-	        }*/
-		}
+	            player.playerNetServerHandler.sendPacketToPlayer(new Packet3Chat(chatString));
+	            //player.addChatMessage(chatString);
+	        }//FIXME ?
+		}*/
 	}
 	
 	public void chatCityBuilt(int[] args){
-		if(!CityBuiltMessage) return;
+		/*if(!CityBuiltMessage) return;
 		List playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
 		if(playerList==null){
-			//citiesBuiltMessages.add(args);
+			citiesBuiltMessages.add(args);
 		}else{
 			for (int index = 0; index < playerList.size(); ++index)
 	        {
-	            EntityPlayerMP player = (EntityPlayerMP)playerList.get(index);            
+	        EntityPlayerMP player = (EntityPlayerMP)playerList.get(index);            
 			String dirStr="";
 			int dI=args[0] - (int)player.posX;
 			int dK=args[2] - (int)player.posZ;
@@ -232,9 +229,9 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 							? (dK>0 ? "southeast" : "northeast") 
 							: (dK>0 ? "southwest" : "northwest");
 
-			player.addChatMessage("** Built city "+dirStr+" ("+args[0]+","+args[1]+","+args[2]+")! **");	
+			player.playerNetServerHandler.sendPacketToPlayer(new Packet3Chat("** Built city "+dirStr+" ("+args[0]+","+args[1]+","+args[2]+")! **"));	
 	        }		
-		}
+		}*/
 	}
 	//****************************  FUNCTION - generate *************************************************************************************//
 	
@@ -278,9 +275,9 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 					//if(read.startsWith( "ConcaveSmoothingScale" )) ConcaveSmoothingScale = readIntParam(lw,ConcaveSmoothingScale,":",read);
 					//if(read.startsWith( "ConvexSmoothingScale" )) ConvexSmoothingScale = readIntParam(lw,ConvexSmoothingScale,":",read);
 					if(read.startsWith( "BacktrackLength" )) BacktrackLength = readIntParam(lw,BacktrackLength,":",read);
-					if(read.startsWith( "CityBuiltMessage" )) CityBuiltMessage = readIntParam(lw,1,":",read)==1;
-					if(read.startsWith( "LogActivated" )) logActivated = readIntParam(lw,1,":",read)==1;
-					if(read.startsWith( "RejectOnPreexistingArtifacts" )) RejectOnPreexistingArtifacts = readIntParam(lw,1,":",read)==1;
+					if(read.startsWith( "CityBuiltMessage" )) CityBuiltMessage = readBooleanParam(lw,CityBuiltMessage,":",read);
+					if(read.startsWith( "LogActivated" )) logActivated = readBooleanParam(lw,logActivated,":",read);
+					if(read.startsWith( "RejectOnPreexistingArtifacts" )) RejectOnPreexistingArtifacts = readBooleanParam(lw,RejectOnPreexistingArtifacts,":",read);
 					readChestItemsList(lw,read,br);
 		
 				}
@@ -304,12 +301,13 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 				pw.println();
 				pw.println("<-Wall Pathfinding->");
 				pw.println("<-BacktrackLength - length of backtracking for wall planning if a dead end is hit->");
-				pw.println("<-CityBuiltMessage controls whether the player receives message when a city is building. Set to 1 to receive message, 0 for no messages.->");
-				pw.println("<-RejectOnPreexistingArtifacts determines whether the planner rejects city sites that contain preexiting man-made blocks. Set to 1 to do this check.->");
+				pw.println("<-CityBuiltMessage controls whether players receive message when a city is building. Set to true to receive message.->");
+				pw.println("<-LogActivated controls information stored into forge logs. Set to true if you want to report an issue with complete forge logs.->");
+				pw.println("<-RejectOnPreexistingArtifacts determines whether the planner rejects city sites that contain preexiting man-made blocks. Set to true to do this check.->");
 				pw.println("BacktrackLength:"+BacktrackLength);
-				pw.println("CityBuiltMessage:"+(CityBuiltMessage ? 1:0));
-				pw.println("LogActivated:"+(logActivated ? 1:0));
-				pw.println("RejectOnPreexistingArtifacts:"+(RejectOnPreexistingArtifacts ? 1:0));
+				pw.println("CityBuiltMessage:"+CityBuiltMessage);
+				pw.println("LogActivated:"+logActivated);
+				pw.println("RejectOnPreexistingArtifacts:"+RejectOnPreexistingArtifacts);
 				pw.println();
 				printDefaultChestItems(pw);
 				//printDefaultBiomes(pw);

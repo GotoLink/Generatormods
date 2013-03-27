@@ -1,4 +1,4 @@
-package generator.mods;
+package mods.generator;
 /*
  *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
  *  Copyright (C) 2011 by formivore
@@ -315,8 +315,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 			if(!master.isFlushingGenThreads) suspendGen();
 			street.buildTowers(true,true,sws.MakeGatehouseTowers,cityIsDense, false);
 		}
-		
-		
+			
 		wc.chatCityBuilt(new int[]{i0,j0,k0,cityType,Lmean/2+40});
 		
 		//printLayout(new File("layout.txt"));
@@ -445,9 +444,9 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 						pt[1]+=10; //just to try to catch any overhanging blocks
 						for(; pt[1]>jmax; pt[1]--)
 							if(world.getBlockId(pt[0],pt[1],pt[2])!=0)
-								Building.setBlockNoLighting(world,pt[0],pt[1],pt[2], 0);
+								Building.setBlockAndMetaNoLighting(world,pt[0],pt[1],pt[2],0,0);
 						if(world.getBlockId(pt[0],jmax-1,pt[2])!=0) 
-							Building.setBlockNoLighting(world,pt[0],jmax,pt[2],oldSurfaceBlockId);
+							Building.setBlockAndMetaNoLighting(world,pt[0],jmax,pt[2],oldSurfaceBlockId,0);
 					}
 					
 					if(pt[1]<jmin) Building.fillDown(pt, jmin, world);

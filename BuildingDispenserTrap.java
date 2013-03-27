@@ -1,5 +1,6 @@
-package generator.mods;
+package mods.generator;
 
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntityDispenser;
 /*
@@ -78,15 +79,14 @@ public class BuildingDispenserTrap extends Building{
 		
 		flushDelayed();
 		
-		ItemStack itemstack= missileType==ARROW_MISSILE ? new ItemStack(ARROW_ID, 30+random.nextInt(10),0)
-		                                                 :new ItemStack(POTION_ID,30+random.nextInt(10),12 | 0x4000);
+		ItemStack itemstack= missileType==ARROW_MISSILE ? new ItemStack(Item.arrow.itemID, 30+random.nextInt(10),0)
+		                                                 :new ItemStack(Item.potion.itemID,30+random.nextInt(10),12 | 0x4000);
 		setItemDispenser(1,1,bLength+1,LADDER_DIR_TO_META[DIR_SOUTH],itemstack);
 	}
 	
 	private void setItemDispenser(int x, int z, int y, int metaDir, ItemStack itemstack){
 		int[] pt=getIJKPt(x,z,y);
-		world.setBlock(pt[0], pt[1], pt[2], DISPENSER_ID);
-		world.setBlockMetadataWithNotify(pt[0], pt[1], pt[2], LADDER_DIR_TO_META[orientDirToBDir(LADDER_META_TO_DIR[metaDir])]);
+		world.setBlockMetadataWithNotify(pt[0], pt[1], pt[2], DISPENSER_ID, LADDER_DIR_TO_META[orientDirToBDir(LADDER_META_TO_DIR[metaDir])]);
 		try{	
 		    TileEntityDispenser tileentitychest=(TileEntityDispenser)world.getBlockTileEntity(pt[0],pt[1],pt[2]);
 		    if(itemstack != null && tileentitychest!=null)

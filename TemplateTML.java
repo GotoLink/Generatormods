@@ -1,4 +1,4 @@
-package generator.mods;
+package mods.generator;
 /*
  *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
  *  Copyright (C) 2011 by formivore
@@ -122,7 +122,7 @@ public class TemplateTML
 
 			} else if( line.startsWith( "rule" ) ) {
 				String[] parts = line.split( "=" );
-				rulesArrayList.add( new TemplateRule(parts[1],explorationHandler,true) );
+				rulesArrayList.add( new TemplateRule(parts[1],true) );
 			}
 			else if(line.startsWith( "dimensions" )){
 				int[] dim=BuildingExplorationHandler.readIntList(lw,null,"=",line);

@@ -1,4 +1,4 @@
-package generator.mods;
+package mods.generator;
 /*
  *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
  *  Copyright (C) 2011 by formivore
@@ -28,7 +28,6 @@ import net.minecraft.world.biome.BiomeGenBase;
 
 public class TemplateWall extends TemplateTML{
 	public final static String BUILDING_DIRECTORY_NAME="buildings";
-	public final static String ALL_TEMPLATES="ALL", NO_TEMPLATES="NONE";
 	private final static int DEFAULT_WATER_HEIGHT=666;
 	public final static int[] ALL_BIOMES=null;
 	
@@ -208,8 +207,8 @@ public class TemplateWall extends TemplateTML{
 
 		for(String name : names){
 			name=name.trim();
-			if(name.toUpperCase().equals(NO_TEMPLATES)) return new ArrayList<TemplateTML>();
-			if(name.toUpperCase().equals(ALL_TEMPLATES)){
+			if(name.toUpperCase().equals("NONE")) return new ArrayList<TemplateTML>();
+			if(name.toUpperCase().equals("ALL")){
 				childTemplates.addAll(childTemplateMap.values());
 				break;
 			}
@@ -226,8 +225,8 @@ public class TemplateWall extends TemplateTML{
 		
 		for(String name : names){
 			name=name.trim();
-			if(name.toUpperCase().equals(NO_TEMPLATES)) return new ArrayList<TemplateWall>();
-			if(name.toUpperCase().equals(ALL_TEMPLATES)){
+			if(name.toUpperCase().equals("NONE")) return new ArrayList<TemplateWall>();
+			if(name.toUpperCase().equals("ALL")){
 				childTemplates.addAll(childTemplateMap.values());
 				break;
 			}

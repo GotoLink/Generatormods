@@ -1,4 +1,4 @@
-package generator.mods;
+package mods.generator;
 
 
 import java.util.Random;
@@ -13,7 +13,7 @@ public class BlockSurveyorsRod extends Block
         PopulatorGreatWall gw;
        
   public BlockSurveyorsRod (int i, int j, PopulatorGreatWall gw_){
-      super(i, j, Material.rock);
+      super(i, Material.rock);
       gw=gw_;
   }
 

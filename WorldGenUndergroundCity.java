@@ -1,4 +1,4 @@
-package generator.mods;
+package mods.generator;
 /*
  *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
  *  Copyright (C) 2011 by formivore
@@ -99,7 +99,7 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 			int offset=(diam-top_diam)/2;
 			for(int y1=0; y1<top_diam;y1++){ for(int x1=0; x1<top_diam;x1++){
 				if(Building.CIRCLE_SHAPE[top_diam][x1][y1]>=0){
-					Building.setBlockNoLighting(world,i+offset+x1, j+z1, k+offset+y1, 0);
+					Building.setBlockAndMetaNoLighting(world,i+offset+x1, j+z1, k+offset+y1,0,0);
 			}}}
 			for(int y1=0; y1<top_diam;y1++){ for(int x1=0; x1<top_diam;x1++){
 				if(Building.CIRCLE_SHAPE[top_diam][x1][y1]>=0){
@@ -115,7 +115,7 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 			if(z1>0){
 				for(int y1=0; y1<bottom_diam;y1++){ for(int x1=0; x1<bottom_diam;x1++){
 					if(Building.CIRCLE_SHAPE[bottom_diam][x1][y1]>=0){
-						Building.setBlockNoLighting(world,i+offset+x1, j-z1, k+offset+y1, 0);
+						Building.setBlockAndMetaNoLighting(world,i+offset+x1, j-z1, k+offset+y1,0,0);
 				}}}
 				for(int y1=0; y1<bottom_diam;y1++){ for(int x1=0; x1<bottom_diam;x1++){
 					if(Building.CIRCLE_SHAPE[bottom_diam][x1][y1]>=0){

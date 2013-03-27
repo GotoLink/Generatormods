@@ -1,4 +1,4 @@
-package generator.mods;
+package mods.generator;
 
 /*
  *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
@@ -18,7 +18,7 @@ package generator.mods;
  */
 public class BuildingWall extends Building
 {
-	public final static boolean DEBUG=false;
+	public final static boolean DEBUG=true;
 	public final static boolean DEBUG_SIGNS=false;
 	
 	public final static int BUILDDOWN=12;
@@ -215,12 +215,12 @@ public class BuildingWall extends Building
 			for(int x1=-1; x1<=bWidth;x1++){
 				for(int z1=-SEARCHDOWN; z1<=searchUp; z1++){
 					int blockId=getBlockIdLocal(x1, z1, 0);
-					if(!IS_WALLABLE[blockId]){//some ArrayIndexOutofBound here ?
+					if(!IS_WALLABLE[blockId]){
 						gradz++;
-						gradx+=signum(2*x1-bWidth+1); 
+						gradx+=Integer.signum(2*x1-bWidth+1); 
 					}
 					else if(IS_WATER_BLOCK[blockId])
-						gradx-=signum(2*x1-bWidth+1);
+						gradx-=Integer.signum(2*x1-bWidth+1);
 
 					//hit another wall, want to ignore sandstone that appears naturally in deserts
 					if((stopAtWall || z1 < -2) && isArtificialWallBlock(x1,z1,0))
@@ -242,7 +242,7 @@ public class BuildingWall extends Building
 			if(minJ!=NO_MIN_J && zArray[bLength-1]+gradz+j1 < minJ) gradz=0; //don't go below minJ
 			if(gradz==0){
 				int HorizForceThreshold=bWidth/2;
-				int bias= target ? signum(xArray[bLength-1]-x_targ)*(2*HorizForceThreshold) : 0;
+				int bias= target ? Integer.signum(xArray[bLength-1]-x_targ)*(2*HorizForceThreshold) : 0;
 				gradx= (gradx > HorizForceThreshold + bias ? 1 : (gradx < -HorizForceThreshold + bias ? -1 : 0));
 			} else gradx=0;
 			
@@ -421,7 +421,7 @@ public class BuildingWall extends Building
 						continue;
 					} else keepWallFromAbove=false;
 										
-					if(idAndMeta[0]==WALL_STAIR_ID){
+					/*if(idAndMeta[0]==WALL_STAIR_ID){FIXME:UNUSED
 						if(!wallBlockPresent && !IS_WATER_BLOCK[getBlockIdLocal(x1,z1,0)]){
 							if(n0>0 && zArray[n0-1]>zArray[n0]){  //stairs, going down
 								if((n0==1 || zArray[n0-2]==zArray[n0-1]) && (n0==bLength-1 || zArray[n0]==zArray[n0+1]))
@@ -435,7 +435,7 @@ public class BuildingWall extends Building
 							}
 							else setBlockLocal(x1,z1,0,HOLE_ID);
 						}
-					}else{ //not a stair
+					}else*/{ //not a stair
 						// if merging walls, don't clutter with crenelations etc.
 						if(z1>=WalkHeight && ( x1==0 &&        (wallBlockPresent || isWallBlock(-1,WalkHeight-1,0) || isWallBlock(-1,WalkHeight-2,0)) 
 						                 ||    x1==bWidth-1 && (wallBlockPresent || isFloor(bWidth,WalkHeight-1,0) || isWallBlock(bWidth,WalkHeight-2,0))) ){  

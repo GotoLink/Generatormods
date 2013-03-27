@@ -1,4 +1,4 @@
-package generator.mods;
+package mods.generator;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -12,7 +12,6 @@ import java.util.LinkedList;
 import java.util.Random;
 
 import net.minecraft.world.World;
-import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.MinecraftForge;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.Init;
@@ -39,7 +38,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-@Mod(modid = "CARuins", name = "Cellular Automata Generator", version = "0.0.5",dependencies= "after:ExtraBiomes,BiomesOPlenty")
+@Mod(modid = "CARuins", name = "Cellular Automata Generator", version = "0.0.6",dependencies= "after:ExtraBiomes,BiomesOPlenty")
 @NetworkMod(clientSideRequired = false, serverSideRequired = false)
 public class PopulatorCARuins extends BuildingExplorationHandler{
 	@Instance("CARuins")
@@ -51,27 +50,26 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 	static{
 		DEFAULT_BLOCK_RULES[0]=DEFAULT_TEMPLATE;			//Underground, unused
 		DEFAULT_BLOCK_RULES[1]=DEFAULT_TEMPLATE;			//Ocean
-		DEFAULT_BLOCK_RULES[2]=new TemplateRule(new int[]{1,98,98},new int[]{0,1,2},100);    		//Plains                
-		DEFAULT_BLOCK_RULES[3]=new TemplateRule(new int[]{24},new int[]{0},100);          			//Desert            
-		DEFAULT_BLOCK_RULES[4]=new TemplateRule(new int[]{1,98,98},new int[]{0,0,2},100);          //Hills             
+		DEFAULT_BLOCK_RULES[2]=new TemplateRule(new int[]{1,98,98},new int[]{0,1,2},100);   //Plains                
+		DEFAULT_BLOCK_RULES[3]=new TemplateRule(new int[]{24},new int[]{0},100);          	//Desert            
+		DEFAULT_BLOCK_RULES[4]=new TemplateRule(new int[]{1,98,98},new int[]{0,0,2},100);   //Hills             
 		DEFAULT_BLOCK_RULES[5]=DEFAULT_TEMPLATE;          //Forest            
 		DEFAULT_BLOCK_RULES[6]=DEFAULT_TEMPLATE;          //Taiga             
 		DEFAULT_BLOCK_RULES[7]=DEFAULT_TEMPLATE;          //Swampland         
 		DEFAULT_BLOCK_RULES[8]=DEFAULT_TEMPLATE;          //River             
-		DEFAULT_BLOCK_RULES[9]=new TemplateRule(new int[]{112},new int[]{0},100);          		//Nether            
-		DEFAULT_BLOCK_RULES[10]=DEFAULT_TEMPLATE;          //Sky                     
-		DEFAULT_BLOCK_RULES[11]=DEFAULT_TEMPLATE;			//FrozenOcean
-		DEFAULT_BLOCK_RULES[12]=DEFAULT_TEMPLATE;			//FrozenRiver
-		DEFAULT_BLOCK_RULES[13]=new TemplateRule(new int[]{98,98,98},new int[]{0,2,2},100);         //IcePlains         
-		DEFAULT_BLOCK_RULES[14]=new TemplateRule(new int[]{98,98,98},new int[]{0,2,2},100);         //IceMountains      
+		DEFAULT_BLOCK_RULES[9]=new TemplateRule(new int[]{112},new int[]{0},100);//Nether            
+		DEFAULT_BLOCK_RULES[10]=new TemplateRule(new int[]{121},new int[]{0},100);          //Sky                     
+		DEFAULT_BLOCK_RULES[11]=new TemplateRule(new int[]{79,80,98},new int[]{0,0,2},100);	//FrozenOcean
+		DEFAULT_BLOCK_RULES[12]=new TemplateRule(new int[]{79,80,98},new int[]{0,0,2},100);	//FrozenRiver
+		DEFAULT_BLOCK_RULES[13]=new TemplateRule(new int[]{80,98,98},new int[]{0,2,2},100); //IcePlains         
+		DEFAULT_BLOCK_RULES[14]=new TemplateRule(new int[]{80,98,98},new int[]{0,2,2},100); //IceMountains      
 		DEFAULT_BLOCK_RULES[15]=DEFAULT_TEMPLATE;        	//MushroomIsland    
 		DEFAULT_BLOCK_RULES[16]=DEFAULT_TEMPLATE;			//Shore
 		DEFAULT_BLOCK_RULES[17]=DEFAULT_TEMPLATE;     	    //Beach
-		DEFAULT_BLOCK_RULES[18]=new TemplateRule(new int[]{24},new int[]{0},100);					//DesertHills
+		DEFAULT_BLOCK_RULES[18]=new TemplateRule(new int[]{24},new int[]{0},100);		//DesertHills
 		DEFAULT_BLOCK_RULES[19]=DEFAULT_TEMPLATE;			//ForestHills
 		DEFAULT_BLOCK_RULES[20]=DEFAULT_TEMPLATE;			//TaigaHills
-		DEFAULT_BLOCK_RULES[21]=new TemplateRule(new int[]{1,98,98},new int[]{0,0,2},100);			//ExtremeHillsEdge
-		//DEFAULT_BLOCK_RULES[22]=DEFAULT_TEMPLATE;     	    //Jungle
+		DEFAULT_BLOCK_RULES[21]=new TemplateRule(new int[]{1,98,98},new int[]{0,0,2},100);//ExtremeHillsEdge
 		for (int i = 22; i < Building.BIOME_NAMES.length; i++)
         {
     	  if (Building.BIOME_NAMES[i]!=null)  	  
@@ -119,7 +117,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 	public final static String[] SEED_TYPE_STRINGS=new String[]{"SymmetricSeedWeight","LinearSeedWeight","CircularSeedWeight","CruciformSeedWeight"};
 	public int[] seedTypeWeights=new int[]{8,2,2,1};
 	
-	public float GlobalFrequency=0.01F,SymmetricSeedDensity=0.5F;
+	public float GlobalFrequency=0.1F,SymmetricSeedDensity=0.5F;
 	public int TriesPerChunk=1, MinHeight=20,MaxHeight=70;
 	public int ContainerWidth=40, ContainerLength=40;
 	public int MinHeightBeforeOscillation=12;
@@ -147,6 +145,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 	@Init
 	public void load(FMLInitializationEvent event) {		
 		GameRegistry.registerWorldGenerator(new WorldGenerator());
+		//TickRegistry.registerTickHandler(new GeneratorTickHandler(this), Side.SERVER);
 		MinecraftForge.TERRAIN_GEN_BUS.register(this);
 		MinecraftForge.EVENT_BUS.register(this);
 		loadDataFiles();
@@ -209,9 +208,9 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 					if(read.startsWith( "MinHeight" )) MinHeight = readIntParam(lw,MinHeight,":",read);
 					if(read.startsWith( "MaxHeight" )) MaxHeight = readIntParam(lw,MaxHeight,":",read);
 					if(read.startsWith( "MinHeightBeforeOscillation" )) MinHeightBeforeOscillation = readIntParam(lw,MinHeightBeforeOscillation,":",read);
-					if(read.startsWith( "SmoothWithStairs" )) SmoothWithStairs = readIntParam(lw,1,":",read)==1;
-					if(read.startsWith( "MakeFloors" )) MakeFloors = readIntParam(lw,1,":",read)==1;
-					if(read.startsWith( "LogActivated" )) logActivated = readIntParam(lw,1,":",read)==1;					
+					if(read.startsWith( "SmoothWithStairs" )) SmoothWithStairs = readBooleanParam(lw,SmoothWithStairs,":",read);
+					if(read.startsWith( "MakeFloors" )) MakeFloors = readBooleanParam(lw,MakeFloors,":",read);
+					if(read.startsWith( "LogActivated" )) logActivated = readBooleanParam(lw,logActivated,":",read);					
 					if(read.startsWith( "ContainerWidth" )) ContainerWidth = readIntParam(lw,ContainerWidth,":",read);
 					if(read.startsWith( "ContainerLength" )) ContainerLength = readIntParam(lw,ContainerLength,":",read);
 					readChestItemsList(lw,read,br);
@@ -271,16 +270,17 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 				pw.println();
 				pw.println("<-MinHeight and MaxHeight are the minimum and maximum allowed height of the structures->");
 				pw.println("<-MinHeightBeforeOscillation - Any structures that form oscillators before MaxOscillatorCullStep will be culled.->");
-				pw.println("<-Smooth with stairs - If set to 1, will smooth out ruins by placing extra stair blocks.->");
+				pw.println("<-Smooth with stairs - If set to true, will smooth out ruins by placing extra stair blocks.->");
 				pw.println("<-ContainerWidth and ContainerLength are the dimensions of the bounding rectangle.->");
 				pw.println("MinHeight:"+MinHeight);
 				pw.println("MaxHeight:"+MaxHeight);
 				pw.println("MinHeightBeforeOscillation:"+MinHeightBeforeOscillation);
-				pw.println("SmoothWithStairs:"+(SmoothWithStairs? 1:0));
-				pw.println("MakeFloors:"+(MakeFloors? 1:0));
-				pw.println("LogActivated:"+(logActivated ? 1:0));				
+				pw.println("SmoothWithStairs:"+SmoothWithStairs);
+				pw.println("MakeFloors:"+MakeFloors);								
 				pw.println("ContainerWidth:"+ContainerWidth);
 				pw.println("ContainerLength:"+ContainerLength);
+				pw.println("<-LogActivated controls information stored into forge logs. Set to true if you want to report an issue with complete forge logs.->");
+				pw.println("LogActivated:"+logActivated);
 				pw.println();
 				printDefaultChestItems(pw);
 				//printDefaultBiomes(lw);
@@ -301,7 +301,9 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 				pw.println();
 				pw.println("<-BlockRule is the template rule that controls what blocks the structure will be made out of.->");
 				pw.println("<-Default is BiomeNameBlockRule:"+DEFAULT_TEMPLATE.toString()+"->");
-				for(int m=0/*Building.NATURAL_BIOMES_START*/; m<DEFAULT_BLOCK_RULES.length; m++){
+				pw.println("<-Which translates into: (special condition) then,(100%=complete)ruin in either normal(1 out of 3 chance) or mossy cobblestone(2 out of 3) in said biome->");
+				pw.println("<-Metadatas are supported, use blockid-blockmetadata syntax->");
+				for(int m=0; m<DEFAULT_BLOCK_RULES.length; m++){
 					if (BLOCK_RULE_NAMES[m]!=null)
 					pw.println(BLOCK_RULE_NAMES[m]+":"+DEFAULT_BLOCK_RULES[m].toString());
 				}
@@ -359,7 +361,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 	public void logOrPrint(String str) {
 		if (logActivated)logger.info(str);	
 	}
-	//TODO: Use this
+	//TODO: Use this ?
 		 /**
 		  * print all biomes available with default template
 		  * @param pw the printwriter needed for operation

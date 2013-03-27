@@ -1,4 +1,4 @@
-package generator.mods;
+package mods.generator;
 
 /*
  *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft

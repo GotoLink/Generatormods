@@ -1,4 +1,4 @@
-package generator.mods;
+package mods.generator;
 /*
  *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
  *  Copyright (C) 2011 by formivore
@@ -41,7 +41,7 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.registry.GameRegistry;
 
-@Mod(modid = "GreatWallMod", name = "Great Wall Mod", version = "0.0.5",dependencies= "after:ExtraBiomes,BiomesOPlenty")
+@Mod(modid = "GreatWallMod", name = "Great Wall Mod", version = "0.0.6",dependencies= "after:ExtraBiomes,BiomesOPlenty")
 @NetworkMod(clientSideRequired = false, serverSideRequired = false)
 public class PopulatorGreatWall extends BuildingExplorationHandler{
 	@Instance("GreatWallMod")
@@ -77,6 +77,7 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 	    	
 		//ModLoader.AddRecipe(new ItemStack(surveyorsRod,8), new Object[]{ "##", "##", Character.valueOf('#'), Block.dirt});
 		GameRegistry.registerWorldGenerator(new WorldGenerator());
+		//TickRegistry.registerTickHandler(new GeneratorTickHandler(this), Side.SERVER);
 		MinecraftForge.TERRAIN_GEN_BUS.register(this);
 		MinecraftForge.EVENT_BUS.register(this);
 		loadDataFiles();
@@ -143,7 +144,7 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 					if(read.startsWith( "CurveBias" )) CurveBias = readFloatParam(lw,CurveBias,":",read);
 					if(read.startsWith( "LengthBiasNorm" )) LengthBiasNorm = readIntParam(lw,LengthBiasNorm,":",read);
 					if(read.startsWith( "BacktrackLength" )) BacktrackLength = readIntParam(lw,BacktrackLength,":",read);
-					if(read.startsWith( "LogActivated" )) logActivated = readIntParam(lw,1,":",read)==1;
+					if(read.startsWith( "LogActivated" )) logActivated = readBooleanParam(lw,logActivated,":",read);
 					
 					readChestItemsList(lw,read,br);
 					
@@ -172,9 +173,10 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 				pw.println("<-CurveBias - strength of the bias towards curvier walls. Value should be between 0.0 and 1.0.->");
 				pw.println("<-LengthBiasNorm - wall length at which there is no penalty for generation>");
 				pw.println("BacktrackLength:"+BacktrackLength);
-				pw.println("LogActivated:"+(logActivated ? 1:0));			
 				pw.println("CurveBias:"+CurveBias);
 				pw.println("LengthBiasNorm:"+LengthBiasNorm);
+				pw.println("<-LogActivated controls information stored into forge logs. Set to true if you want to report an issue with complete forge logs.->");
+				pw.println("LogActivated:"+logActivated);							
 				pw.println();
 				printDefaultChestItems(pw);
 				//printDefaultBiomes(pw);		
@@ -188,10 +190,10 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 	}
 	@Override
 	public String toString(){
-		return "GreatWallMod";
+		return "Great WallMod";
 	}
 	
-//TODO: Make this work ?
+//FIXME ?
 	@PostInit
 	public void modsLoaded(FMLPostInitializationEvent event)
 	{		
