@@ -28,6 +28,7 @@ import java.util.ListIterator;
 import java.util.Random;
 import java.util.logging.Logger;
 
+import net.minecraft.network.packet.Packet3Chat;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.chunk.IChunkProvider;
@@ -199,7 +200,7 @@ public abstract class BuildingExplorationHandler
 		for (EntityPlayerMP player:playerList)
 			if( Math.abs(chunkI-((int)player.posX)>>4) < MIN_CHUNK_SEPARATION_FROM_PLAYER 
 			 && Math.abs(chunkK-((int)player.posZ)>>4) < MIN_CHUNK_SEPARATION_FROM_PLAYER){ //try not to bury the player alive
-				logOrPrint("Terminating "+this.toString()+" generation thread, too close to player.\n "+Thread.currentThread().getId()+". at "+(((int)player.posX>>4))+","+(((int)player.posZ>>4))+"), while querying chunk "+chunkI+","+chunkK+").");
+				player.playerNetServerHandler.sendPacketToPlayer(new Packet3Chat("Terminating "+this.toString()+" generation thread, too close to player.\n "+Thread.currentThread().getId()+". at "+(((int)player.posX>>4))+","+(((int)player.posZ>>4))+"), while querying chunk "+chunkI+","+chunkK+")."));
 				return false;
 			}//FIXME
 		}*/
@@ -239,8 +240,8 @@ public abstract class BuildingExplorationHandler
 		//announce there is about to be lag because we are about to flush generation threads
 		/*List playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
 		if(!isAboutToFlushGenThreads && !isCreatingDefaultChunks && playerList!=null && chunksExploredFromStart > 2*CHUNKS_AT_WORLD_START-15){
-			String flushAnnouncement=(2*CHUNKS_AT_WORLD_START)+" chunks explored this wave, lag may occur.";
-			FMLClientHandler.instance().getClient().ingameGUI.getChatGUI().printChatMessage(flushAnnouncement);
+			String flushAnnouncement=(2*CHUNKS_AT_WORLD_START)+" chunks explored this wave, lag may occur while we finish the job.";
+			player.playerNetServerHandler.sendPacketToPlayer(new Packet3Chat(flushAnnouncement));
 			logOrPrint(flushAnnouncement);
 			isAboutToFlushGenThreads=true;
 		}*/

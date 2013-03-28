@@ -767,12 +767,12 @@ public class Building
                             tempdata+=4;
                             metadata -= 4;
                     }
-                	return DOOR_DIR_TO_META[orientDirToBDir(DOOR_META_TO_DIR[metadata])];
+                	return DOOR_DIR_TO_META[orientDirToBDir(DOOR_META_TO_DIR[metadata])] + tempdata;
                 }
                 switch( blockID ) {
               
                 case LEVER_ID: case STONE_BUTTON_ID: case WOOD_BUTTON_ID:
-                	// check to see if this is is flagged as thrown
+                	// check to see if this is flagged as thrown
                         if( metadata - 8 > 0 ) {
                                 tempdata += 8;
                                 metadata -= 8;
