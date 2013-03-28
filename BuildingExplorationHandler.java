@@ -34,6 +34,7 @@ import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.chunk.storage.AnvilChunkLoader;
 import net.minecraft.world.gen.ChunkProviderEnd;
 import net.minecraft.world.gen.ChunkProviderFlat;
+import net.minecraft.world.gen.ChunkProviderGenerate;
 import net.minecraft.world.gen.ChunkProviderHell;
 import net.minecraft.world.storage.ISaveHandler;
 import net.minecraftforge.event.ForgeSubscribe;
@@ -95,15 +96,17 @@ public abstract class BuildingExplorationHandler
 	//**************************** FORGE EVENTS ********************************************************************************************//
 	@ForgeSubscribe
 	public void onWorldUnloaded(Unload event){
+		//for(WorldGeneratorThread wgt: exploreThreads) killZombie(wgt);
 		chunksExploredThisTick=0;
 		chunksExploredFromStart=0;
 	}
 	@ForgeSubscribe
 	public void onPopulatingChunk(PopulateChunkEvent event){
-		if(chunksExploredFromStart==0 && exploreThreads.size()<10 && lastExploredChunkI!=event.chunkX && lastExploredChunkK!=event.chunkZ) 
+		if(chunksExploredFromStart==0 && exploreThreads.size()<3 && lastExploredChunkI!=event.chunkX && lastExploredChunkK!=event.chunkZ) 
 		{
 		lastExploredChunkI=event.chunkX;
 		lastExploredChunkK=event.chunkZ;
+		logOrPrint("Event called and last chunk changed");
 		}
 		
 	}
@@ -114,11 +117,11 @@ public abstract class BuildingExplorationHandler
 	    public void generate(Random random, int chunkX, int chunkZ, World world, IChunkProvider chunkGenerator, IChunkProvider chunkProvider)
 	    {  	if (world.getWorldInfo().isMapFeaturesEnabled())
 	    { //if structures are enabled
-	        if (world.getBiomeGenForCoords(chunkX, chunkZ) == BiomeGenBase.hell && chunkGenerator instanceof ChunkProviderHell)
+	        if (chunkGenerator instanceof ChunkProviderHell)
 	        {	//can generate in Nether
 	            generateNether(world, random, chunkX*16, chunkZ*16);
 	        }
-	        else if (chunkGenerator instanceof ChunkProviderFlat || !(chunkGenerator instanceof ChunkProviderEnd))
+	        else if ((chunkGenerator instanceof ChunkProviderGenerate || chunkGenerator instanceof ChunkProviderFlat) && !(chunkGenerator instanceof ChunkProviderEnd))
 	        {	//can generate in flat world but not in The End
 	            generateSurface(world, random, chunkX*16, chunkZ*16);
 	        }
@@ -134,7 +137,7 @@ public abstract class BuildingExplorationHandler
 		
 		//Put flushGenThreads before the exploreThreads enqueues and include the callChunk argument.
 		//This is to avoid putting mineral deposits in cities etc.
-		if(this==master && isCreatingDefaultChunks && !isFlushingGenThreads)
+		if(this==master && !isFlushingGenThreads)
 			flushGenThreads(world, new int[]{i,k});
 		
 		generate(world,random,i,k);
@@ -162,7 +165,7 @@ public abstract class BuildingExplorationHandler
 		
 		chunksExploredThisTick=0;
 		chunksExploredFromStart=0;
-		if(world.getTotalWorldTime()<10) 
+		if(world.getTotalWorldTime()<100) 
 		{ 
 			isCreatingDefaultChunks=true;
 		}
@@ -177,6 +180,8 @@ public abstract class BuildingExplorationHandler
 		//If we call this after, no building is spawned !!
 		if(world.getChunkProvider().chunkExists(chunkI, chunkK)){ 
 			logOrPrint("Chunk already exist at"+chunkI+","+chunkK);
+			lastExploredChunkI=chunkI;
+			lastExploredChunkK=chunkK;
 			return true;
 		}
 		if(chunksExploredFromStart==0) {
@@ -222,7 +227,7 @@ public abstract class BuildingExplorationHandler
 		//SMP - world.chunkProvider.loadChunk calls ChunkProviderServer.java which looks up id2ChunkMap.getValueByKey(l), 
 		//       returns this if it exists else calls serverChunkGenerator.provideChunk(i, j);
 		world.getChunkProvider().loadChunk(chunkI, chunkK);
-		logOrPrint("force loaded chunk at"+chunkI+","+chunkK);
+		logOrPrint("Force loaded chunk at"+chunkI+","+chunkK);
     	lastExploredChunkI=chunkI;
 		lastExploredChunkK=chunkK;
 		return true;

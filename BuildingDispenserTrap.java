@@ -86,13 +86,14 @@ public class BuildingDispenserTrap extends Building{
 	
 	private void setItemDispenser(int x, int z, int y, int metaDir, ItemStack itemstack){
 		int[] pt=getIJKPt(x,z,y);
-		world.setBlockMetadataWithNotify(pt[0], pt[1], pt[2], DISPENSER_ID, LADDER_DIR_TO_META[orientDirToBDir(LADDER_META_TO_DIR[metaDir])]);
+		world.setBlock(pt[0], pt[1], pt[2], DISPENSER_ID);
+		world.setBlockMetadataWithNotify(pt[0], pt[1], pt[2], LADDER_DIR_TO_META[orientDirToBDir(LADDER_META_TO_DIR[metaDir])],3);
 		try{	
 		    TileEntityDispenser tileentitychest=(TileEntityDispenser)world.getBlockTileEntity(pt[0],pt[1],pt[2]);
 		    if(itemstack != null && tileentitychest!=null)
 		    	tileentitychest.setInventorySlotContents(random.nextInt(tileentitychest.getSizeInventory()), itemstack);
 	    }catch(Exception e) { 
-        	System.err.println("Error filling dispensert: "+e.toString());
+        	System.err.println("Error filling dispenser: "+e.toString());
         	e.printStackTrace();
         }
 	}

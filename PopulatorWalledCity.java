@@ -83,7 +83,6 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	@Init
 	public void load(FMLInitializationEvent event) {
 		GameRegistry.registerWorldGenerator(new WorldGenerator());
-		//TickRegistry.registerTickHandler(new GeneratorTickHandler(this), Side.SERVER);
 		MinecraftForge.TERRAIN_GEN_BUS.register(this);
 		MinecraftForge.EVENT_BUS.register(this);
 		loadDataFiles();
@@ -152,7 +151,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	}
 
 	//****************************  FUNCTION - updateWorldExplored *************************************************************************************//
-	public synchronized void updateWorldExplored(World world_) {//should test synchronized or not
+	public /*synchronized*/ void updateWorldExplored(World world_) {//should test synchronized or not
 		if (checkNewWorld(world_))
 		{setNewWorld(world_,"Starting to survey a world for city generation...");
 			
