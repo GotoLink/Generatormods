@@ -421,7 +421,7 @@ public class BuildingWall extends Building
 						continue;
 					} else keepWallFromAbove=false;
 										
-					/*if(idAndMeta[0]==WALL_STAIR_ID){FIXME:UNUSED
+					if(idAndMeta[0]==WALL_STAIR_ID){
 						if(!wallBlockPresent && !IS_WATER_BLOCK[getBlockIdLocal(x1,z1,0)]){
 							if(n0>0 && zArray[n0-1]>zArray[n0]){  //stairs, going down
 								if((n0==1 || zArray[n0-2]==zArray[n0-1]) && (n0==bLength-1 || zArray[n0]==zArray[n0+1]))
@@ -435,7 +435,7 @@ public class BuildingWall extends Building
 							}
 							else setBlockLocal(x1,z1,0,HOLE_ID);
 						}
-					}else*/{ //not a stair
+					}else{ //not a stair
 						// if merging walls, don't clutter with crenelations etc.
 						if(z1>=WalkHeight && ( x1==0 &&        (wallBlockPresent || isWallBlock(-1,WalkHeight-1,0) || isWallBlock(-1,WalkHeight-2,0)) 
 						                 ||    x1==bWidth-1 && (wallBlockPresent || isFloor(bWidth,WalkHeight-1,0) || isWallBlock(bWidth,WalkHeight-2,0))) ){  

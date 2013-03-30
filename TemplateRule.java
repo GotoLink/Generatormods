@@ -18,14 +18,16 @@ package mods.generator;
 
 import java.util.Random;
 
+import net.minecraft.block.Block;
+
 public class TemplateRule {
     public final static int FIXED_FOR_BUILDING=5;
     public final static TemplateRule RULE_NOT_PROVIDED=null;
     
     public final static String BLOCK_NOT_REGISTERED_ERROR_PREFIX="Error reading rule: BlockID ";  //so we can treat this error differently
     
-    public final static TemplateRule AIR_RULE=new TemplateRule(Building.AIR_BLOCK);
-    public final static TemplateRule STONE_RULE=new TemplateRule(Building.STONE_BLOCK);
+    public final static TemplateRule AIR_RULE=new TemplateRule(new int[]{0,0});
+    public final static TemplateRule STONE_RULE=new TemplateRule(new int[]{1,0});
     public final static TemplateRule NETHER_BRICK_RULE=new TemplateRule(new int[]{Building.NETHER_BRICK_ID,0});
     
     private int[] blockIDs, blockMDs;
@@ -46,7 +48,7 @@ public class TemplateRule {
         for( int i = 0; i < numblocks; i++ ) {
         	data = items[i + 2].trim().split( "-" );
         	blockIDs[i]=Integer.parseInt( data[0] );
-        	if(!Building.isValidRuleBlock(blockIDs[i])){
+        	if(!isValidRuleBlock(blockIDs[i])){
         		throw new Exception(BLOCK_NOT_REGISTERED_ERROR_PREFIX+blockIDs[i]+" not registered!");
         	}
         	blockMDs[i]= data.length>1 ? Integer.parseInt( data[1]) : 0;
@@ -99,7 +101,7 @@ public class TemplateRule {
     		int m=random.nextInt(blockIDs.length);
     		return new int[]{blockIDs[m],blockMDs[m]};
     	}
-    	return Building.AIR_BLOCK;
+    	return new int[]{0,0};
     }
     
     public int[] getBlockOrHole(Random random){
@@ -111,7 +113,9 @@ public class TemplateRule {
     	}
     	return Building.HOLE_BLOCK_LIGHTING;
     }
-    
+    private boolean isValidRuleBlock(int blockID){    
+        return Block.blocksList[blockID]!=null || blockID==0;
+    }
     public boolean isPreserveRule(){
     	for(int blockID : blockIDs)
     		if(blockID!=Building.PRESERVE_ID ) return false;

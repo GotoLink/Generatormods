@@ -122,8 +122,8 @@ public abstract class BuildingExplorationHandler
 	        {	//can generate in Nether
 	            generateNether(world, random, chunkX*16, chunkZ*16);
 	        }
-	        else if ((chunkGenerator instanceof ChunkProviderGenerate || chunkGenerator instanceof ChunkProviderFlat) && !(chunkGenerator instanceof ChunkProviderEnd))
-	        {	//can generate in flat world but not in The End
+	        else if ( !(chunkGenerator instanceof ChunkProviderEnd))
+	        {	//can generate in any world except in The End
 	            generateSurface(world, random, chunkX*16, chunkZ*16);
 	        }
 	    }
@@ -379,7 +379,7 @@ public abstract class BuildingExplorationHandler
 		}}}
 	}
 	
-	public void printDefaultChestItems(PrintWriter pw){
+	protected void printDefaultChestItems(PrintWriter pw){
 		pw.println();
 		pw.println("<-Chest contents->");
 		pw.println("<-Tries is the number of selections that will be made for this chest type.->");

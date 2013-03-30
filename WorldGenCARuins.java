@@ -54,8 +54,7 @@ private TemplateRule[] blockRules, blockRule;
 					  : seedCode==2 ? BuildingCellularAutomaton.makeCircularSeed(Math.min(ContainerWidth,ContainerLength),random)
 					  : 			  BuildingCellularAutomaton.makeCruciformSeed(Math.min(ContainerWidth,ContainerLength),random);
 		
-					// TODO: use biomeID
-		TemplateRule blockRule=blockRules[/*Building.getBiomeNum*/(world.getBiomeGenForCoords(i0,k0).biomeID+1)];
+		TemplateRule blockRule=blockRules[world.getBiomeGenForCoords(i0,k0).biomeID+1];
 		//can use this to test out new Building classes
 		/*
 		BuildingSpiralStaircase bss=new BuildingSpiralStaircase(this,blockRule,random.nextInt(4),2*random.nextInt(2)-1,false,-(random.nextInt(10)+1),new int[]{i0,j0,k0});

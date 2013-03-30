@@ -205,7 +205,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	            EntityPlayerMP player = (EntityPlayerMP)playerList.get(index);
 	            player.playerNetServerHandler.sendPacketToPlayer(new Packet3Chat(chatString));
 	            //player.addChatMessage(chatString);
-	        }//FIXME ?
+	        }
 		}
 	}
 	

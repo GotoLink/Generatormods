@@ -182,7 +182,7 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 			BuildingUndergroundEntranceway entranceway=new BuildingUndergroundEntranceway(attempts,this,pws,axDir,pt);
 			if(separated && entranceway.build()){
 				entranceways.add(entranceway);
-				wc.logOrPrint("Built an underground entranceway at ("+ hollow[0]+","+ hollow[1]+","+ hollow[2]+").");
+				wc.chatBuildingCity("Built an underground entranceway at ("+ hollow[0]+","+ hollow[1]+","+ hollow[2]+").",null);
 			}
 			pole[0]=center[0]+(center[2]-hollow[2])/2; //new pole is midpoint of old center and hollow, rotated by 90 degrees.
 			pole[2]=center[2]+(hollow[0]-center[0])/2;
