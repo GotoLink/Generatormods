@@ -24,18 +24,18 @@ import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Random;
 import java.util.logging.Logger;
 
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.packet.Packet3Chat;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.chunk.storage.AnvilChunkLoader;
 import net.minecraft.world.gen.ChunkProviderEnd;
-import net.minecraft.world.gen.ChunkProviderFlat;
-import net.minecraft.world.gen.ChunkProviderGenerate;
 import net.minecraft.world.gen.ChunkProviderHell;
 import net.minecraft.world.storage.ISaveHandler;
 import net.minecraftforge.event.ForgeSubscribe;
@@ -48,7 +48,7 @@ import cpw.mods.fml.common.IWorldGenerator;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.relauncher.Side;
 
-public abstract class BuildingExplorationHandler
+public abstract class BuildingExplorationHandler implements IWorldGenerator
 {
 	protected final static int MAX_TRIES_PER_CHUNK=100,CHUNKS_AT_WORLD_START=256;
 	public final static int MAX_CHUNKS_PER_TICK=100;
@@ -96,12 +96,6 @@ public abstract class BuildingExplorationHandler
 	}
 	//**************************** FORGE EVENTS ********************************************************************************************//
 	@ForgeSubscribe
-	public void onWorldUnloaded(Unload event){
-		//for(WorldGeneratorThread wgt: exploreThreads) killZombie(wgt);
-		chunksExploredThisTick=0;
-		chunksExploredFromStart=0;
-	}
-	@ForgeSubscribe
 	public void onPopulatingChunk(PopulateChunkEvent event){
 		if(chunksExploredFromStart==0 && exploreThreads.size()<3 && lastExploredChunkI!=event.chunkX && lastExploredChunkK!=event.chunkZ) 
 		{
@@ -112,11 +106,10 @@ public abstract class BuildingExplorationHandler
 		
 	}
 	//**************************** FORGE WORLD GENERATING HOOK ****************************************************************************//
-	public class WorldGenerator implements IWorldGenerator
-	{
-	    @Override
-	    public void generate(Random random, int chunkX, int chunkZ, World world, IChunkProvider chunkGenerator, IChunkProvider chunkProvider)
-	    {  	if (world.getWorldInfo().isMapFeaturesEnabled())
+	
+	@Override
+	public void generate(Random random, int chunkX, int chunkZ, World world, IChunkProvider chunkGenerator, IChunkProvider chunkProvider)
+    {  	if (world.getWorldInfo().isMapFeaturesEnabled())
 	    { //if structures are enabled
 	        if (chunkGenerator instanceof ChunkProviderHell)
 	        {	//can generate in Nether
@@ -127,8 +120,7 @@ public abstract class BuildingExplorationHandler
 	            generateSurface(world, random, chunkX*16, chunkZ*16);
 	        }
 	    }
-	    }
-	}
+    }
 	
 	//****************************  FUNCTION - GenerateSurface  *************************************************************************************//
 	public void generateSurface( World world, Random random, int i, int k ) {
@@ -195,7 +187,7 @@ public abstract class BuildingExplorationHandler
 			 logOrPrint("Chunk"+chunkI+","+chunkK+"too far away from"+lastExploredChunkI+","+lastExploredChunkK);
 			return false;
 		}
-		/*List<EntityPlayerMP> playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
+		List<EntityPlayerMP> playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
 		if(playerList!=null){
 		for (EntityPlayerMP player:playerList)
 			if( Math.abs(chunkI-((int)player.posX)>>4) < MIN_CHUNK_SEPARATION_FROM_PLAYER 
@@ -203,7 +195,7 @@ public abstract class BuildingExplorationHandler
 				player.playerNetServerHandler.sendPacketToPlayer(new Packet3Chat("Terminating "+this.toString()+" generation thread, too close to player.\n "+Thread.currentThread().getId()+". at "+(((int)player.posX>>4))+","+(((int)player.posZ>>4))+"), while querying chunk "+chunkI+","+chunkK+")."));
 				return false;
 			}//FIXME
-		}*/
+		}
 		
 		//We've now failed world.chunkProvider.chunkExists(chunkI, chunkK),
 		// so we will have to load or generate this chunk
@@ -238,13 +230,14 @@ public abstract class BuildingExplorationHandler
 	protected void flushGenThreads(World world, int[] callChunk){	
 		//FIXME
 		//announce there is about to be lag because we are about to flush generation threads
-		/*List playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
+		List<EntityPlayerMP> playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
 		if(!isAboutToFlushGenThreads && !isCreatingDefaultChunks && playerList!=null && chunksExploredFromStart > 2*CHUNKS_AT_WORLD_START-15){
-			String flushAnnouncement=(2*CHUNKS_AT_WORLD_START)+" chunks explored this wave, lag may occur while we finish the job.";
-			player.playerNetServerHandler.sendPacketToPlayer(new Packet3Chat(flushAnnouncement));
+			String flushAnnouncement=chunksExploredFromStart+" chunks explored this wave, lag may occur while we finish the job.";
+			for (EntityPlayerMP player:playerList)
+				player.playerNetServerHandler.sendPacketToPlayer(new Packet3Chat(flushAnnouncement));
 			logOrPrint(flushAnnouncement);
 			isAboutToFlushGenThreads=true;
-		}*/
+		}
 		//Must make sure that a)There is only one call to flushGenThreads on the stack at a time
 		//                    b)flushGenThreads is only called from the main Minecraft thread.
 		//This check is not at the beginning of function because we want to announce we are about to flush no matter what.

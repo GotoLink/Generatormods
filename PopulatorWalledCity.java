@@ -85,10 +85,10 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	}
 	@Init
 	public void load(FMLInitializationEvent event) {
-		GameRegistry.registerWorldGenerator(new WorldGenerator());
+		GameRegistry.registerWorldGenerator(this);
 		MinecraftForge.TERRAIN_GEN_BUS.register(this);
 		MinecraftForge.EVENT_BUS.register(this);
-		loadDataFiles();
+		//loadDataFiles();
 	}
 	//****************************  FUNCTION - loadDataFiles *************************************************************************************//
 	public void loadDataFiles(){
@@ -325,7 +325,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	@PostInit
 	public void modsLoaded(FMLPostInitializationEvent event)
 	{
-	master=this;
+		master=this;
 		if(!dataFilesLoaded)
 		loadDataFiles();		
 	}

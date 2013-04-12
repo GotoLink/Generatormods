@@ -41,12 +41,10 @@ import java.util.Random;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockButton;
 import net.minecraft.block.BlockDoor;
-import net.minecraft.block.BlockFlower;
 import net.minecraft.block.BlockFlowing;
 import net.minecraft.block.BlockMushroomCap;
 import net.minecraft.block.BlockOre;
 import net.minecraft.block.BlockStairs;
-import net.minecraft.block.BlockStem;
 import net.minecraft.block.BlockTorch;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -54,18 +52,17 @@ import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.tileentity.TileEntityMobSpawner;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraftforge.common.IPlantable;
+import net.minecraftforge.common.IShearable;
 
 public class Building
 {
                 public final static int HIT_WATER=-666; //, HIT_SWAMP=-667;
                 public final static int EASY_CHEST=0, MEDIUM_CHEST=1, HARD_CHEST=2, TOWER_CHEST=3;
                 public final static int DIR_NORTH=0, DIR_EAST=1, DIR_SOUTH=2, DIR_WEST=3;
-                public final static int DIR_WEST_EAST=1, DIR_SOUTH_NORTH=0;
-                public final static int ROT_R=1,ROT_L=-1,ROT_180=2;
-                public final static int R_HAND=1,L_HAND=-1;
+                public final static int ROT_R=1,R_HAND=1,L_HAND=-1;
                 public final static int SEA_LEVEL=63;
-                public final static int WORLD_MAX_Y=255;
-                public final static int WORLD_HEIGHT=256;
+                public final static int WORLD_MAX_Y=255,WORLD_HEIGHT=256;
                
                 //**** WORKING VARIABLES ****
                 protected World world;
@@ -293,7 +290,7 @@ public class Building
                
                 //if stairs are running into ground. replace them with a solid block
                 if(IS_STAIRS_BLOCK[block[3]]){
-                        int adjId=world.getBlockId(block[0]-DIR_TO_I[STAIRS_META_TO_DIR[block[4]]],block[1],block[2]-DIR_TO_K[STAIRS_META_TO_DIR[block[4]]]);
+                        int adjId=world.getBlockId(block[0]-DIR_TO_I[STAIRS_META_TO_DIR[block[4]<4?block[4]:block[4]-4]],block[1],block[2]-DIR_TO_K[STAIRS_META_TO_DIR[block[4]<4?block[4]:block[4]-4]]);
                         int aboveID=world.getBlockId(block[0],block[1]+1,block[2]);
                         if(IS_ARTIFICAL_BLOCK[adjId] || IS_ARTIFICAL_BLOCK[aboveID]){
                                 block[3]=stairToSolidBlock(block[3]);
@@ -1034,9 +1031,9 @@ public class Building
     }
     //TODO should use real blockID instead
     public final static int STONE_ID=1, GRASS_ID=2,DIRT_ID=3,COBBLESTONE_ID=4,WOOD_ID=5,
-    		SAPLING_ID=6,WATER_ID=8,STATIONARY_WATER_ID=9,LAVA_ID=10,
+    		WATER_ID=8,STATIONARY_WATER_ID=9,LAVA_ID=10,
     		STATIONARY_LAVA_ID=11,SAND_ID=12,GRAVEL_ID=13,
-    		COAL_ORE_ID=16,LOG_ID=17,LEAVES_ID=18,GLASS_ID=20,
+    		COAL_ORE_ID=16,LOG_ID=17,GLASS_ID=20,
     		DISPENSER_ID=23,SANDSTONE_ID=24,
     		BED_BLOCK_ID=26,POWERED_RAIL_ID=27,DETECTOR_RAIL_ID=28,STICKY_PISTON_ID=29,
     		WEB_ID=30,LONG_GRASS_ID=31,DEAD_BUSH_ID=32,PISTON_ID=33,PISTON_EXTENSION_ID=34,
@@ -1045,7 +1042,7 @@ public class Building
     		OBSIDIAN_ID=49,TORCH_ID=50,FIRE_ID=51,MOB_SPAWNER_ID=52,WOOD_STAIRS_ID=53,
     		CHEST_ID=54,REDSTONE_WIRE_ID=55,FURNACE_ID=61,BURNING_FURNACE_ID=62,
     		SIGN_POST_ID=63,WOODEN_DOOR_ID=64,LADDER_ID=65,RAILS_ID=66,COBBLESTONE_STAIRS_ID=67,
-    		WALL_SIGN_ID=68,LEVER_ID=69,STONE_PLATE_ID=70,IRON_DOOR_BLOCK_ID=71,WOOD_PLATE_ID=72,
+    		WALL_SIGN_ID=68,LEVER_ID=69,STONE_PLATE_ID=70,WOOD_PLATE_ID=72,
     		REDSTONE_ORE_ID=73,GLOWING_REDSTONE_ORE_ID=74,REDSTONE_TORCH_OFF_ID=75,
     		REDSTONE_TORCH_ON_ID=76,STONE_BUTTON_ID=77,SNOW_ID=78,ICE_ID=79,SNOW_BLOCK_ID=80,
     		CACTUS_ID=81,CLAY_ID=82,SUGAR_CANE_BLOCK_ID=83,FENCE_ID=85,
@@ -1063,7 +1060,7 @@ public class Building
     		WOOD_SLAB_ID=126,SAND_STAIRS_ID=128,
     		ENDER_CHEST_ID=130,TRIPWIRE_SOURCE_ID=131,TRIPWIRE_ID=132;
     public final static int SPRUCE_STAIRS_ID=134,BIRCH_STAIRS_ID=135,JUNGLE_STAIRS_ID=136,
-    		CARROT_ID=141,POTATO_ID=142,WOOD_BUTTON_ID=143,CHEST_TRAP_ID=146,COMPARATOR_ID=149,
+    		WOOD_BUTTON_ID=143,CHEST_TRAP_ID=146,COMPARATOR_ID=149,
     		LIGHT_DETECTOR_ID=151,HOPPER_ID=154,QUARTZ_ID=155,QUARTZ_STAIRS_ID=156,
     		ACTIVATORRAIL_ID=157,DROPPER_ID=158;
    
@@ -1146,12 +1143,11 @@ public class Building
                 IS_FLOWING_BLOCK[blockID]=Block.blocksList[blockID] instanceof BlockFlowing || IS_WATER_BLOCK[blockID] || blockID==STATIONARY_LAVA_ID || blockID==LAVA_ID || blockID==SAND_ID || blockID==GRAVEL_ID;
                
                 IS_WALLABLE[blockID]= IS_WATER_BLOCK[blockID]
-                   || blockID==SAPLING_ID || blockID==LOG_ID || blockID==LEAVES_ID || blockID==WEB_ID || blockID==LONG_GRASS_ID
-                   || blockID==DEAD_BUSH_ID || Block.blocksList[blockID] instanceof BlockFlower
-                   || blockID==SNOW_ID || blockID==CACTUS_ID || blockID==SUGAR_CANE_BLOCK_ID || blockID==PUMPKIN_ID
-                   || Block.blocksList[blockID] instanceof BlockMushroomCap || blockID==MELON_ID
-                   || Block.blocksList[blockID] instanceof BlockStem || blockID==VINES_ID
-                   || blockID==LILY_PAD_ID || blockID==NETHER_WART_ID || blockID==CARROT_ID || blockID==POTATO_ID;
+                   || blockID==LOG_ID || blockID==WEB_ID                
+                   || blockID==SNOW_ID || blockID==PUMPKIN_ID || blockID==MELON_ID
+                   || Block.blocksList[blockID] instanceof IShearable
+                   || Block.blocksList[blockID] instanceof BlockMushroomCap 
+                   || Block.blocksList[blockID] instanceof IPlantable;
              
                 IS_ORE_BLOCK[blockID]= blockID==REDSTONE_ORE_ID|| blockID==CLAY_ID ||Block.blocksList[blockID] instanceof BlockOre;
                
@@ -1354,11 +1350,11 @@ public class Building
         public static int[][][] DEFAULT_CHEST_ITEMS=new int[][][]{
                 {        //Easy
                         {0,Item.arrow.itemID,0,2,1,12},  
-                        {1,Item.swordSteel.itemID,0,2,1,1},
+                        {1,Item.swordIron.itemID,0,2,1,1},
                         {2,Item.legsLeather.itemID,0,1,1,1},
-                        {3,Item.shovelSteel.itemID,0,1,1,1},
+                        {3,Item.shovelIron.itemID,0,1,1,1},
                         {4,Item.silk.itemID,0,1,1,1},
-                        {5,Item.pickaxeSteel.itemID,0,2,1,1},
+                        {5,Item.pickaxeIron.itemID,0,2,1,1},
                         {6,Item.bootsLeather.itemID,0,1,1,1},
                         {7,Item.bucketEmpty.itemID,0,1,1,1},
                         {8,Item.helmetLeather.itemID,0,1,1,1},
@@ -1374,7 +1370,7 @@ public class Building
                         {3,Item.shovelGold.itemID,0,1,1,1},
                         {4,Item.hoeGold.itemID,0,1,0,1},
                         {5,Item.pocketSundial.itemID,0,1,1,1},
-                        {6,Item.axeSteel.itemID,0,3,1,1},
+                        {6,Item.axeIron.itemID,0,3,1,1},
                         {7,Item.map.itemID,0,1,1,1},
                         {8,Item.appleRed.itemID,0,2,2,3},
                         {9,Item.compass.itemID,0,1,1,1},
@@ -1413,7 +1409,7 @@ public class Building
                         {3,WEB_ID,0,1,1,12},
                         {4,Item.ingotIron.itemID,0,1,2,3},
                         {5,Item.swordStone.itemID,0,1,1,1},
-                        {6,Item.axeSteel.itemID,0,1,1,1},
+                        {6,Item.axeIron.itemID,0,1,1,1},
                         {7,Item.egg.itemID,0,2,8,16},
                         {8,Item.saddle.itemID,0,1,1,1},
                         {9,Item.wheat.itemID,0,2,3,6},

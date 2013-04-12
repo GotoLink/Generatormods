@@ -1,5 +1,9 @@
 package mods.generator;
 
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockLog;
+import net.minecraftforge.common.IShearable;
+
 /*
  *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
  *  Copyright (C) 2011 by formivore
@@ -21,8 +25,7 @@ public class BuildingWall extends Building
 	public final static boolean DEBUG=true;
 	public final static boolean DEBUG_SIGNS=false;
 	
-	public final static int BUILDDOWN=12;
-	public final static int SEARCHDOWN=2, MIN_SEARCHUP=2, MAX_SEARCHUP=5;
+	public final static int SEARCHDOWN=2, MIN_SEARCHUP=2;
 	public final static int DEFAULT_LOOKAHEAD=5, MIN_BRANCH_IMPROVEMENT=15;
 	public final static int MAX_BACKTRACK_DEPTH=2;
 	public final static int OVERHEAD_CLEARENCE=4, OVERHEAD_TREE_CLEARENCE=8;
@@ -476,7 +479,7 @@ public class BuildingWall extends Building
 	private void clearTrees(){
 		for(int x1=0; x1<bWidth;x1++)
 			for(int z1=bHeight+OVERHEAD_CLEARENCE; z1<bHeight+OVERHEAD_TREE_CLEARENCE; z1++)
-				if(getBlockIdLocal(x1, z1, 0)==LOG_ID || getBlockIdLocal(x1, z1, 0)==LEAVES_ID || getBlockIdLocal(x1, z1, 0)==SNOW_ID )
+				if(Block.blocksList[getBlockIdLocal(x1, z1, 0)] instanceof BlockLog || Block.blocksList[getBlockIdLocal(x1, z1, 0)] instanceof IShearable || getBlockIdLocal(x1, z1, 0)==SNOW_ID )
 					setBlockLocal(x1, z1, 0, 0); //kill trees aggressively
 	}
 

@@ -21,9 +21,7 @@ package mods.generator;
 public class BuildingTower extends Building
 {
 	public final static int FLOOR_HAUNTED_CHANCE=50, HAUNTED_CHEST_CHANCE=60;
-	public final static int TOWER_UNIV_MIN_WIDTH=5;
-	public final static int TOWER_LEVELING=12;
-	public final static int FORCE_BUILDDOWN=3;
+	public final static int TOWER_UNIV_MIN_WIDTH=5,TOWER_LEVELING=12;
 	public final static String[] ROOFSTYLE_NAMES={"Crenel","Steep","Steep Trim","Shallow","Dome","Cone","Two Sided"};
 	public final static int[] ROOF_STYLE_IDS=new int[ROOFSTYLE_NAMES.length];
 	public final static int SURFACE_PORTAL_ODDS=20, NETHER_PORTAL_ODDS=10; 

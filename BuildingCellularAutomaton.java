@@ -26,10 +26,8 @@ import net.minecraft.world.EnumSkyBlock;
  */
 public class BuildingCellularAutomaton extends Building {
 	private final static byte DEAD=0,ALIVE=1;
-	public final static byte DIE=-1,NOCHANGE=0,LIVE=1;
 	private final float MEAN_SIDE_LENGTH_PER_POPULATE=15.0f;
-	private final static int HOLE_FLOOR_BUFFER=2;
-	private final static int UNREACHED=-1;
+	private final static int HOLE_FLOOR_BUFFER=2,UNREACHED=-1;
 	private final static int SYMMETRIC_SEED_MIN_WIDTH=4,CIRCULAR_SEED_MIN_WIDTH=4;
 	public final static TemplateRule 	DEFAULT_MEDIUM_LIGHT_NARROW_SPAWNER_RULE =  new TemplateRule(new int[]{BLAZE_SPAWNER_ID,BLAZE_SPAWNER_ID,BLAZE_SPAWNER_ID,SILVERFISH_SPAWNER_ID,SILVERFISH_SPAWNER_ID,LAVA_SLIME_SPAWNER_ID}),
 										DEFAULT_MEDIUM_LIGHT_WIDE_SPAWNER_RULE=		new TemplateRule(new int[]{BLAZE_SPAWNER_ID,SILVERFISH_SPAWNER_ID,SILVERFISH_SPAWNER_ID,CAVE_SPIDER_SPAWNER_ID,CAVE_SPIDER_SPAWNER_ID,SPIDER_SPAWNER_ID}),

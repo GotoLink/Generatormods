@@ -76,11 +76,11 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 		//GameRegistry.registerBlock(surveyorsRod,"SurveyorsRod");
 	    	
 		//ModLoader.AddRecipe(new ItemStack(surveyorsRod,8), new Object[]{ "##", "##", Character.valueOf('#'), Block.dirt});
-		GameRegistry.registerWorldGenerator(new WorldGenerator());
+		GameRegistry.registerWorldGenerator(this);
 		//TickRegistry.registerTickHandler(new GeneratorTickHandler(this), Side.SERVER);
 		MinecraftForge.TERRAIN_GEN_BUS.register(this);
 		MinecraftForge.EVENT_BUS.register(this);
-		loadDataFiles();
+		//loadDataFiles();
 	}
 	
 	//****************************  FUNCTION - loadDataFiles *************************************************************************************//
@@ -193,12 +193,12 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 		return "Great WallMod";
 	}
 	
-//FIXME ?
+
 	@PostInit
 	public void modsLoaded(FMLPostInitializationEvent event)
 	{		
 //see if the walled city mod is loaded. If it is, make it load its templates (if not already loaded) and then combine explorers.
-		/*if (Loader.isModLoaded("WalledCityMod")){
+		/*if (Loader.isModLoaded("WalledCityMod")){//FIXME ?
 		BuildingExplorationHandler wcm= PopulatorWalledCity.instance;
 		if(!wcm.dataFilesLoaded)  wcm.loadDataFiles();
 		if(!wcm.errFlag){

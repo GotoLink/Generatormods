@@ -24,9 +24,7 @@ public class BuildingDoubleWall extends Building
 {
 	public BuildingWall wall1, wall2;
 	public TemplateWall ws;
-	public boolean isAvenue=false;
 	
-	public final static int LATERAL_SMOOTHING_SCALE=10, CONCAVE_UP_SMOOTHING_SCALE=10, CONCAVE_DOWN_SMOOTHING_SCALE=20;  
 	
 	//****************************  CONSTRUCTOR - BuildingDoubleWall *************************************************************************************//
 	public BuildingDoubleWall(int ID_, WorldGeneratorThread wgt_,TemplateWall ws_,int dir_,int axXHand_,int[] sourcePt){
@@ -45,7 +43,7 @@ public class BuildingDoubleWall extends Building
 		int a =wall1.plan(1,0,ws.MergeWalls ? ws.WWidth : BuildingWall.DEFAULT_LOOKAHEAD,!ws.MergeWalls)+1;
 		int b =wall2.plan(1,0,ws.MergeWalls ? ws.WWidth : BuildingWall.DEFAULT_LOOKAHEAD,!ws.MergeWalls)+1;
 		
-		if(b+a-1<ws.MinL){// Too demanding ?
+		if(b+a-1<ws.MinL){
 			if(BuildingWall.DEBUG)
 				System.out.println("Abandoning wall "+wall1.IDString()+"length="+(b+a-1)+", reason 1)"+wall1.failString()+". 2)"+wall2.failString()+".");
 			return false;

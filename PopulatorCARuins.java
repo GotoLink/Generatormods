@@ -144,11 +144,11 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 	}
 	@Init
 	public void load(FMLInitializationEvent event) {		
-		GameRegistry.registerWorldGenerator(new WorldGenerator());
+		GameRegistry.registerWorldGenerator(this);
 		//TickRegistry.registerTickHandler(new GeneratorTickHandler(this), Side.SERVER);
 		MinecraftForge.TERRAIN_GEN_BUS.register(this);
 		MinecraftForge.EVENT_BUS.register(this);
-		loadDataFiles();
+		//loadDataFiles();
 	}
 	@ServerStarting
 	public void serverStarting(FMLServerStartingEvent event){
@@ -229,7 +229,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 					}}}
 
 					
-					for(int m=0/*Building.NATURAL_BIOMES_START*/; m<DEFAULT_BLOCK_RULES.length; m++){
+					for(int m=0; m<DEFAULT_BLOCK_RULES.length; m++){
 						if(Building.BIOME_NAMES[m]!=null && read.startsWith(BLOCK_RULE_NAMES[m])) {
 							try{ 
 								blockRules[m]=readRuleIdOrRule(":",read,null); 
@@ -341,12 +341,12 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 		return "CARuins";
 	}
 	
-	//TODO: Make this work ?
+	
 	@PostInit
 	public void modsLoaded(FMLPostInitializationEvent event)
 	{		
 		//see if the walled city mod is loaded. If it is, make it load its templates (if not already loaded) and then combine explorers.
-		/*if (Loader.isModLoaded("WalledCityMod")){
+		/*if (Loader.isModLoaded("WalledCityMod")){//FIXME ?
 			BuildingExplorationHandler wcm= PopulatorWalledCity.instance;
 			if(!wcm.dataFilesLoaded)  wcm.loadDataFiles();
 			if(!wcm.errFlag){
