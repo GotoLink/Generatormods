@@ -144,9 +144,9 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 					if(read.startsWith( "LengthBiasNorm" )) LengthBiasNorm = readIntParam(lw,LengthBiasNorm,":",read);
 					if(read.startsWith( "BacktrackLength" )) BacktrackLength = readIntParam(lw,BacktrackLength,":",read);
 					if(read.startsWith( "LogActivated" )) logActivated = readBooleanParam(lw,logActivated,":",read);
+					if(read.startsWith( "ChatMessage" )) chatMessage = readBooleanParam(lw,chatMessage,":",read);
 					
-					readChestItemsList(lw,read,br);
-					
+					readChestItemsList(lw,read,br);					
 				}
 				
 				if(TriesPerChunk > MAX_TRIES_PER_CHUNK) TriesPerChunk = MAX_TRIES_PER_CHUNK;
@@ -173,8 +173,10 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 				pw.println("BacktrackLength:"+BacktrackLength);
 				pw.println("CurveBias:"+CurveBias);
 				pw.println("LengthBiasNorm:"+LengthBiasNorm);
-				pw.println("<-LogActivated controls lag warnings and information stored into forge logs. Set to true if you want to report an issue with complete forge logs.->");
+				pw.println("<-LogActivated controls information stored into forge logs. Set to true if you want to report an issue with complete forge logs.->");
 				pw.println("LogActivated:"+logActivated);							
+				pw.println("<-ChatMessage controls lag warnings.->");
+				pw.println("ChatMessage:"+chatMessage);
 				pw.println();
 				printDefaultChestItems(pw);
 				//printDefaultBiomes(pw);		

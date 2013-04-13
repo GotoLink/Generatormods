@@ -278,6 +278,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 					//if(read.startsWith( "ConvexSmoothingScale" )) ConvexSmoothingScale = readIntParam(lw,ConvexSmoothingScale,":",read);
 					if(read.startsWith( "BacktrackLength" )) BacktrackLength = readIntParam(lw,BacktrackLength,":",read);
 					if(read.startsWith( "CityBuiltMessage" )) CityBuiltMessage = readBooleanParam(lw,CityBuiltMessage,":",read);
+					if(read.startsWith( "ChatMessage" )) chatMessage = readBooleanParam(lw,chatMessage,":",read);
 					if(read.startsWith( "LogActivated" )) logActivated = readBooleanParam(lw,logActivated,":",read);
 					if(read.startsWith( "RejectOnPreexistingArtifacts" )) RejectOnPreexistingArtifacts = readBooleanParam(lw,RejectOnPreexistingArtifacts,":",read);
 					readChestItemsList(lw,read,br);
@@ -303,10 +304,12 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 				pw.println();
 				pw.println("<-BacktrackLength - length of backtracking for wall planning if a dead end is hit->");
 				pw.println("<-CityBuiltMessage controls whether players receive message when a city is building. Set to true to receive message.->");
-				pw.println("<-LogActivated controls lag warnings and information stored into forge logs. Set to true if you want to report an issue with complete forge logs.->");
+				pw.println("<-ChatMessage controls lag warnings.->");
+				pw.println("<-LogActivated controls information stored into forge logs. Set to true if you want to report an issue with complete forge logs.->");
 				pw.println("<-RejectOnPreexistingArtifacts determines whether the planner rejects city sites that contain preexiting man-made blocks. Set to true to do this check.->");
 				pw.println("BacktrackLength:"+BacktrackLength);
 				pw.println("CityBuiltMessage:"+CityBuiltMessage);
+				pw.println("ChatMessage:"+chatMessage);
 				pw.println("LogActivated:"+logActivated);
 				pw.println("RejectOnPreexistingArtifacts:"+RejectOnPreexistingArtifacts);
 				pw.println();

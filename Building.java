@@ -701,22 +701,22 @@ public class Building
       
     public static int findSurfaceJ(World world, int i, int k, int jinit, boolean wallIsSurface, int waterSurfaceBuffer){
         int blockId;
-                if(world.provider.isHellWorld) {
+                if(world.provider.isHellWorld) {//the Nether
                         if( (i%2==1) ^ (k%2==1) ) {
-                                for(int j=WORLD_MAX_Y; j>-1; j--) {
+                                for(int j=(int) (WORLD_MAX_Y*0.5); j>-1; j--) {
                                         if(world.getBlockId(i,j,k)==0)
                                                 for(; j>-1; j--)
                                                         if(!IS_WALLABLE[world.getBlockId(i,j,k)])
                                                                 return j;
                                 }
                         }else {
-                                for(int j=0; j<=WORLD_MAX_Y; j++)
+                                for(int j=0; j<=(int)(WORLD_MAX_Y*0.5); j++)
                                         if(world.getBlockId(i,j,k)==0 )
                                                                 return j;
                         }
                         return -1;
                 }
-                else{ //normal world
+                else{ //other dimensions
                         int minecraftHeight=world.getChunkFromBlockCoords(i,k).getHeightValue(i & 0xf,k & 0xf);
                         if(minecraftHeight < jinit) jinit=minecraftHeight;
                         for(int j=jinit; j>=0; j--){
@@ -1313,10 +1313,10 @@ public class Building
                         randLightingHash[m]=rand.nextInt(LIGHTING_INVERSE_DENSITY)==0;
         }
           
-        public static String[] BIOME_NAMES=new String[257];
+        public static String[] BIOME_NAMES=new String[BiomeGenBase.biomeList.length+1];
         static{
         	BIOME_NAMES[0]="Underground";      	
-          for (int i = 0; i < BiomeGenBase.biomeList.length; i++)
+          for (int i = 0; i < BIOME_NAMES.length-1; i++)
             {
         	  if (BiomeGenBase.biomeList[i]!=null)  	  
               BIOME_NAMES[i+1]=BiomeGenBase.biomeList[i].biomeName;   	  

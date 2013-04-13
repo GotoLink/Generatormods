@@ -137,9 +137,10 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 	public PopulatorCARuins(){
 		max_exploration_distance=MAX_EXPLORATION_DISTANCE;
 		
-		for(int m=0; m<DEFAULT_BLOCK_RULES .length; m++)
-		{blockRules[m]=DEFAULT_BLOCK_RULES[m];
-		}
+		/*for(int m=0; m<DEFAULT_BLOCK_RULES .length; m++)
+		{
+			blockRules[m]=DEFAULT_BLOCK_RULES[m];
+		}*/
 		master=this;		
 	}
 	@Init
@@ -211,6 +212,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 					if(read.startsWith( "SmoothWithStairs" )) SmoothWithStairs = readBooleanParam(lw,SmoothWithStairs,":",read);
 					if(read.startsWith( "MakeFloors" )) MakeFloors = readBooleanParam(lw,MakeFloors,":",read);
 					if(read.startsWith( "LogActivated" )) logActivated = readBooleanParam(lw,logActivated,":",read);					
+					if(read.startsWith( "ChatMessage" )) chatMessage = readBooleanParam(lw,chatMessage,":",read);
 					if(read.startsWith( "ContainerWidth" )) ContainerWidth = readIntParam(lw,ContainerWidth,":",read);
 					if(read.startsWith( "ContainerLength" )) ContainerLength = readIntParam(lw,ContainerLength,":",read);
 					readChestItemsList(lw,read,br);
@@ -279,8 +281,10 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 				pw.println("MakeFloors:"+MakeFloors);								
 				pw.println("ContainerWidth:"+ContainerWidth);
 				pw.println("ContainerLength:"+ContainerLength);
-				pw.println("<-LogActivated controls lag warnings and information stored into forge logs. Set to true if you want to report an issue with complete forge logs.->");
+				pw.println("<-LogActivated controls information stored into forge logs. Set to true if you want to report an issue with complete forge logs.->");
 				pw.println("LogActivated:"+logActivated);
+				pw.println("<-ChatMessage controls lag warnings.->");
+				pw.println("ChatMessage:"+chatMessage);
 				pw.println();
 				printDefaultChestItems(pw);
 				//printDefaultBiomes(lw);

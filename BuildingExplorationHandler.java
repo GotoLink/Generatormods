@@ -61,7 +61,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 	public BuildingExplorationHandler master=null;
 	protected boolean isCreatingDefaultChunks=false, isFlushingGenThreads=false, isAboutToFlushGenThreads=false;
 	protected boolean errFlag=false, dataFilesLoaded=false;
-	protected boolean logActivated=false;
+	protected boolean logActivated=false,chatMessage=false;
 	//protected LinkedList<int[]> lightingList=new LinkedList<int[]>();UNUSED
 	protected int max_exploration_distance;
 	protected int chunksExploredThisTick=0, chunksExploredFromStart=0;
@@ -193,7 +193,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 		for (EntityPlayerMP player:playerList)
 			if( Math.abs(chunkI-((int)player.posX)>>4) < MIN_CHUNK_SEPARATION_FROM_PLAYER 
 			 && Math.abs(chunkK-((int)player.posZ)>>4) < MIN_CHUNK_SEPARATION_FROM_PLAYER){ //try not to bury the player alive
-				if (this.logActivated)
+				if (this.chatMessage)
 					player.playerNetServerHandler.sendPacketToPlayer(new Packet3Chat("Terminating "+this.toString()+" generation thread, too close to player.\n "+Thread.currentThread().getId()+". at "+(((int)player.posX>>4))+","+(((int)player.posZ>>4))+"), while querying chunk "+chunkI+","+chunkK+")."));
 				flag=true;				
 			}
@@ -237,7 +237,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 			String flushAnnouncement=chunksExploredFromStart+" chunks explored this wave, lag may occur from "+this.toString();
 			for (EntityPlayerMP player:playerList)
 			{
-				if (this.logActivated)
+				if (this.chatMessage)
 					player.playerNetServerHandler.sendPacketToPlayer(new Packet3Chat(flushAnnouncement));
 			}
 			logOrPrint(flushAnnouncement);
