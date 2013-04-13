@@ -61,6 +61,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 	public BuildingExplorationHandler master=null;
 	protected boolean isCreatingDefaultChunks=false, isFlushingGenThreads=false, isAboutToFlushGenThreads=false;
 	protected boolean errFlag=false, dataFilesLoaded=false;
+	protected boolean logActivated=false;
 	//protected LinkedList<int[]> lightingList=new LinkedList<int[]>();UNUSED
 	protected int max_exploration_distance;
 	protected int chunksExploredThisTick=0, chunksExploredFromStart=0;
@@ -77,7 +78,6 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 	abstract public void updateWorldExplored(World world);
 	abstract public void loadDataFiles();
 	abstract public void generate(World world, Random random, int i, int k);
-	abstract public void logOrPrint(String str);
 	
 	//****************************  FUNCTION - isGeneratorStillValid *************************************************************************************//
 	//override this with e.g. the walled city generator
@@ -187,16 +187,19 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 			 logOrPrint("Chunk"+chunkI+","+chunkK+"too far away from"+lastExploredChunkI+","+lastExploredChunkK);
 			return false;
 		}
+		boolean flag=false;
 		List<EntityPlayerMP> playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
 		if(playerList!=null){
 		for (EntityPlayerMP player:playerList)
 			if( Math.abs(chunkI-((int)player.posX)>>4) < MIN_CHUNK_SEPARATION_FROM_PLAYER 
 			 && Math.abs(chunkK-((int)player.posZ)>>4) < MIN_CHUNK_SEPARATION_FROM_PLAYER){ //try not to bury the player alive
-				player.playerNetServerHandler.sendPacketToPlayer(new Packet3Chat("Terminating "+this.toString()+" generation thread, too close to player.\n "+Thread.currentThread().getId()+". at "+(((int)player.posX>>4))+","+(((int)player.posZ>>4))+"), while querying chunk "+chunkI+","+chunkK+")."));
-				return false;
-			}//FIXME
+				if (this.logActivated)
+					player.playerNetServerHandler.sendPacketToPlayer(new Packet3Chat("Terminating "+this.toString()+" generation thread, too close to player.\n "+Thread.currentThread().getId()+". at "+(((int)player.posX>>4))+","+(((int)player.posZ>>4))+"), while querying chunk "+chunkI+","+chunkK+")."));
+				flag=true;				
+			}
 		}
-		
+		if(flag)
+			return false;
 		//We've now failed world.chunkProvider.chunkExists(chunkI, chunkK),
 		// so we will have to load or generate this chunk
 		
@@ -227,14 +230,16 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 	}
 	
 	//****************************  FUNCTION - flushGenThreads *************************************************************************************//
-	protected void flushGenThreads(World world, int[] callChunk){	
-		//FIXME
+	protected void flushGenThreads(World world, int[] callChunk){		
 		//announce there is about to be lag because we are about to flush generation threads
 		List<EntityPlayerMP> playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
 		if(!isAboutToFlushGenThreads && !isCreatingDefaultChunks && playerList!=null && chunksExploredFromStart > 2*CHUNKS_AT_WORLD_START-15){
-			String flushAnnouncement=chunksExploredFromStart+" chunks explored this wave, lag may occur while we finish the job.";
+			String flushAnnouncement=chunksExploredFromStart+" chunks explored this wave, lag may occur from "+this.toString();
 			for (EntityPlayerMP player:playerList)
-				player.playerNetServerHandler.sendPacketToPlayer(new Packet3Chat(flushAnnouncement));
+			{
+				if (this.logActivated)
+					player.playerNetServerHandler.sendPacketToPlayer(new Packet3Chat(flushAnnouncement));
+			}
 			logOrPrint(flushAnnouncement);
 			isAboutToFlushGenThreads=true;
 		}
@@ -567,4 +572,8 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
         } 
         return null;
     }
+	
+	public void logOrPrint(String str) {
+		if (this.logActivated)logger.info(str);	
+	}
 }

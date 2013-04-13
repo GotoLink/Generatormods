@@ -57,7 +57,6 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 	public float CurveBias=0.5F;
 	public int LengthBiasNorm=200;
 	public int BacktrackLength=9;
-	public boolean logActivated=false;
 
 	//DATA VARIABLES
 	public ArrayList<TemplateWall> wallStyles=null;
@@ -168,14 +167,13 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 				pw.println("GlobalFrequency:"+GlobalFrequency);
 				pw.println("TriesPerChunk:"+TriesPerChunk);
 				pw.println();
-				pw.println("<-Wall Pathfinding->");
 				pw.println("<-BacktrackLength - length of backtracking for wall planning if a dead end is hit->");
 				pw.println("<-CurveBias - strength of the bias towards curvier walls. Value should be between 0.0 and 1.0.->");
 				pw.println("<-LengthBiasNorm - wall length at which there is no penalty for generation>");
 				pw.println("BacktrackLength:"+BacktrackLength);
 				pw.println("CurveBias:"+CurveBias);
 				pw.println("LengthBiasNorm:"+LengthBiasNorm);
-				pw.println("<-LogActivated controls information stored into forge logs. Set to true if you want to report an issue with complete forge logs.->");
+				pw.println("<-LogActivated controls lag warnings and information stored into forge logs. Set to true if you want to report an issue with complete forge logs.->");
 				pw.println("LogActivated:"+logActivated);							
 				pw.println();
 				printDefaultChestItems(pw);
@@ -190,7 +188,7 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 	}
 	@Override
 	public String toString(){
-		return "Great WallMod";
+		return "Great Wall Mod";
 	}
 	
 
@@ -208,9 +206,5 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 			}
 		if(master==null) master=this;*/
 		if(!dataFilesLoaded)loadDataFiles();		
-	}
-	@Override
-	public void logOrPrint(String str) {
-		if (logActivated)logger.info(str);	
 	}
 }

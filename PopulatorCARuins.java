@@ -121,7 +121,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 	public int TriesPerChunk=1, MinHeight=20,MaxHeight=70;
 	public int ContainerWidth=40, ContainerLength=40;
 	public int MinHeightBeforeOscillation=12;
-	public boolean SmoothWithStairs=true, MakeFloors=true,logActivated=false;
+	public boolean SmoothWithStairs=true, MakeFloors=true;
 	
 	public TemplateRule[] blockRules=new TemplateRule[DEFAULT_BLOCK_RULES.length];
 	public TemplateRule[] spawnerRules=new TemplateRule[]{	BuildingCellularAutomaton.DEFAULT_MEDIUM_LIGHT_NARROW_SPAWNER_RULE, 
@@ -279,7 +279,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 				pw.println("MakeFloors:"+MakeFloors);								
 				pw.println("ContainerWidth:"+ContainerWidth);
 				pw.println("ContainerLength:"+ContainerLength);
-				pw.println("<-LogActivated controls information stored into forge logs. Set to true if you want to report an issue with complete forge logs.->");
+				pw.println("<-LogActivated controls lag warnings and information stored into forge logs. Set to true if you want to report an issue with complete forge logs.->");
 				pw.println("LogActivated:"+logActivated);
 				pw.println();
 				printDefaultChestItems(pw);
@@ -338,9 +338,8 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 	}
 	@Override
 	public String toString(){
-		return "CARuins";
+		return "Cellular Automata Ruins";
 	}
-	
 	
 	@PostInit
 	public void modsLoaded(FMLPostInitializationEvent event)
@@ -357,10 +356,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 			if(master==null) master=this;*/
 			if(!dataFilesLoaded)loadDataFiles();				
 	}
-	@Override
-	public void logOrPrint(String str) {
-		if (logActivated)logger.info(str);	
-	}
+	
 	//TODO: Use this ?
 		 /**
 		  * print all biomes available with default template

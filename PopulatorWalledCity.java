@@ -63,7 +63,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	public float GlobalFrequency=0.025F, UndergroundGlobalFrequency=0.015F;
 	public int TriesPerChunk=1;
 	public int MinCitySeparation=500, UndergroundMinCitySeparation=500;
-	public boolean CityBuiltMessage=false,logActivated=false; 
+	public boolean CityBuiltMessage=false; 
 	public int BacktrackLength=9;
 	public boolean RejectOnPreexistingArtifacts=true;
 	
@@ -301,10 +301,9 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 				pw.println("MinCitySeparation:"+MinCitySeparation);
 				pw.println("MinUndergroundCitySeparation:"+UndergroundMinCitySeparation);
 				pw.println();
-				pw.println("<-Wall Pathfinding->");
 				pw.println("<-BacktrackLength - length of backtracking for wall planning if a dead end is hit->");
 				pw.println("<-CityBuiltMessage controls whether players receive message when a city is building. Set to true to receive message.->");
-				pw.println("<-LogActivated controls information stored into forge logs. Set to true if you want to report an issue with complete forge logs.->");
+				pw.println("<-LogActivated controls lag warnings and information stored into forge logs. Set to true if you want to report an issue with complete forge logs.->");
 				pw.println("<-RejectOnPreexistingArtifacts determines whether the planner rejects city sites that contain preexiting man-made blocks. Set to true to do this check.->");
 				pw.println("BacktrackLength:"+BacktrackLength);
 				pw.println("CityBuiltMessage:"+CityBuiltMessage);
@@ -319,7 +318,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	}
 	@Override
 	public String toString(){
-		return "WalledCityMod";
+		return "Walled City Mod";
 	}
 	//Load templates after mods have loaded so we can check whether any modded blockIDs are valid
 	@PostInit
@@ -328,10 +327,6 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 		master=this;
 		if(!dataFilesLoaded)
 		loadDataFiles();		
-	}
-	@Override
-	public void logOrPrint(String str) {
-		if (logActivated)logger.info(str);	
 	}
 }
 
