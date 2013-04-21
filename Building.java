@@ -1323,19 +1323,6 @@ public class Building
             }
         }
         
-        //TODO:To use
-        /*public static int getBiomeIDFromName(String name)
-        {
-            for (int i = 0; i < BiomeGenBase.biomeList.length; i++)
-            {
-                if (BiomeGenBase.biomeList[i].biomeName.equalsIgnoreCase(name))
-                {
-                    return BiomeGenBase.biomeList[i].biomeID;
-                }
-            }
-
-            return -1;
-        }*/
         //TODO:Extend chest_type_labels as config option
         public static String[] CHEST_TYPE_LABELS=new String[]{"CHEST_EASY","CHEST_MEDIUM","CHEST_HARD","CHEST_TOWER"};
         public static List<String>CHEST_LABELS=new ArrayList <String> ();

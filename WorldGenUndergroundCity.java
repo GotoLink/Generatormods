@@ -106,7 +106,10 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 					//keep gravel and water from pouring in
 					for(int z2=z1+1; z2<=z1+3; z2++)
 						if( Building.IS_FLOWING_BLOCK[world.getBlockId(i+offset+x1, j+z2, k+offset+y1)])
+						{
 							world.setBlock(i+offset+x1, j+z1+1, k+offset+y1,Building.STONE_ID);
+							break;
+						}
 			}}}
 			
 			//bottom half, make flatter than top half
