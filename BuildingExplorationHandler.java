@@ -59,6 +59,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 	protected final static File CONFIG_DIRECTORY=new File(Loader.instance().getConfigDir(),"generatormods");
 	
 	public BuildingExplorationHandler master=null;
+	public int TriesPerChunk=1;
 	protected boolean isCreatingDefaultChunks=false, isFlushingGenThreads=false, isAboutToFlushGenThreads=false;
 	protected boolean errFlag=false, dataFilesLoaded=false;
 	protected boolean logActivated=false,chatMessage=false;
@@ -67,7 +68,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 	protected int chunksExploredThisTick=0, chunksExploredFromStart=0;
 	private int lastExploredChunkI, lastExploredChunkK;	
 	protected LinkedList<WorldGeneratorThread> exploreThreads=new LinkedList<WorldGeneratorThread>();
-	public int[] flushCallChunk=NO_CALL_CHUNK;
+	public int[] flushCallChunk=NO_CALL_CHUNK, AllowedDimensions=new int[]{-1,0};
 	public PrintWriter lw=null;
 	private World currentWorld=null;
  	int[] chestTries=new int[]{4,6,6,6};
@@ -116,8 +117,17 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 	            generateNether(world, random, chunkX*16, chunkZ*16);
 	        }
 	        else if ( !(chunkGenerator instanceof ChunkProviderEnd))
-	        {	//can generate in any world except in The End
-	            generateSurface(world, random, chunkX*16, chunkZ*16);
+	        {	//can generate in any world except in The End,
+	        	//if id is in AllowedDimensions list
+	        	for (int id :AllowedDimensions)
+	        	{
+	        		if (world.provider.dimensionId==id)
+	        		{
+	        			generateSurface(world, random, chunkX*16, chunkZ*16);
+	        			break;
+	        		}
+	        	}
+	            
 	        }
 	    }
     }
@@ -222,11 +232,19 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 		//       or loadChunk(i, j); if lookup fails. Since we already failed chunkExists(chunkI, chunkK) we could go directly to loadChunk(i,j);
 		//SMP - world.chunkProvider.loadChunk calls ChunkProviderServer.java which looks up id2ChunkMap.getValueByKey(l), 
 		//       returns this if it exists else calls serverChunkGenerator.provideChunk(i, j);
-		world.getChunkProvider().loadChunk(chunkI, chunkK);
-		logOrPrint("Force loaded chunk at"+chunkI+","+chunkK);
-    	lastExploredChunkI=chunkI;
-		lastExploredChunkK=chunkK;
-		return true;
+		try{
+			world.getChunkProvider().provideChunk(chunkI, chunkK);
+			logOrPrint("Force loaded chunk at"+chunkI+","+chunkK);
+	    	lastExploredChunkI=chunkI;
+			lastExploredChunkK=chunkK;
+			return true;
+		}catch(IllegalStateException i)
+		{
+			i.printStackTrace();
+		}finally{	
+			logOrPrint("Tried force loading a chunk at"+chunkI+","+chunkK+"but failed");		
+		}
+		return false;
 	}
 	
 	//****************************  FUNCTION - flushGenThreads *************************************************************************************//
@@ -413,7 +431,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 	public static int readIntParam(PrintWriter lw,int defaultVal,String splitString, String read){
 		try{
 			defaultVal=Integer.parseInt(read.split(splitString)[1].trim());
-		} catch(Exception e) { 
+		} catch(NumberFormatException e) { 
 			lw.println("Error parsing int: "+e.toString());
 			lw.println("Using default "+defaultVal+". Line:"+read); 
 		}
@@ -422,7 +440,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 	public static boolean readBooleanParam(PrintWriter lw,boolean defaultVal,String splitString, String read){
 		try{
 			defaultVal=Boolean.parseBoolean(read.split(splitString)[1].trim());
-		} catch(Exception e) { 
+		} catch(NullPointerException e) { 
 			lw.println("Error parsing boolean: "+e.toString());
 			lw.println("Using default "+defaultVal+". Line:"+read); 
 		}

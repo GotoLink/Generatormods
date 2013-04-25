@@ -25,6 +25,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -45,7 +46,7 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.registry.GameRegistry;
 
-@Mod(modid = "WalledCityMod", name = "Walled City Generator", version = "0.0.6",dependencies= "after:ExtraBiomes,BiomesOPlenty")
+@Mod(modid = "WalledCityMod", name = "Walled City Generator", version = "0.0.7",dependencies= "after:ExtraBiomes,BiomesOPlenty")
 @NetworkMod(clientSideRequired = false, serverSideRequired = false)
 public class PopulatorWalledCity extends BuildingExplorationHandler{
 	@Instance("WalledCityMod")
@@ -61,7 +62,6 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	
 	//USER MODIFIABLE PARAMETERS, values here are defaults
 	public float GlobalFrequency=0.025F, UndergroundGlobalFrequency=0.015F;
-	public int TriesPerChunk=1;
 	public int MinCitySeparation=500, UndergroundMinCitySeparation=500;
 	public boolean CityBuiltMessage=false; 
 	public int BacktrackLength=9;
@@ -271,6 +271,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 					if(read.startsWith( "GlobalFrequency" )) GlobalFrequency = readFloatParam(lw,GlobalFrequency,":",read);
 					if(read.startsWith( "UndergroundGlobalFrequency" )) UndergroundGlobalFrequency = readFloatParam(lw,UndergroundGlobalFrequency,":",read);
 					if(read.startsWith( "TriesPerChunk" )) TriesPerChunk = readIntParam(lw,TriesPerChunk,":",read);
+					if(read.startsWith( "AllowedDimensions" )) AllowedDimensions = readIntList(lw,AllowedDimensions,":",read);
 					if(read.startsWith( "MinCitySeparation" )) MinCitySeparation= readIntParam(lw,MinCitySeparation,":",read);
 					if(read.startsWith( "MinUndergroundCitySeparation" )) UndergroundMinCitySeparation= readIntParam(lw,UndergroundMinCitySeparation,":",read);
 		
@@ -299,6 +300,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 				pw.println("GlobalFrequency:"+GlobalFrequency);
 				pw.println("UndergroundGlobalFrequency:"+UndergroundGlobalFrequency);
 				pw.println("TriesPerChunk:"+TriesPerChunk);
+				pw.println("AllowedDimensions:"+Arrays.toString(AllowedDimensions).replace("[", "").replace("]", "").trim());
 				pw.println("MinCitySeparation:"+MinCitySeparation);
 				pw.println("MinUndergroundCitySeparation:"+UndergroundMinCitySeparation);
 				pw.println();

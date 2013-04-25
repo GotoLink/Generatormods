@@ -8,6 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Random;
 
@@ -38,7 +39,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-@Mod(modid = "CARuins", name = "Cellular Automata Generator", version = "0.0.6",dependencies= "after:ExtraBiomes,BiomesOPlenty")
+@Mod(modid = "CARuins", name = "Cellular Automata Generator", version = "0.0.7",dependencies= "after:ExtraBiomes,BiomesOPlenty")
 @NetworkMod(clientSideRequired = false, serverSideRequired = false)
 public class PopulatorCARuins extends BuildingExplorationHandler{
 	@Instance("CARuins")
@@ -118,7 +119,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 	public int[] seedTypeWeights=new int[]{8,2,2,1};
 	
 	public float GlobalFrequency=0.1F,SymmetricSeedDensity=0.5F;
-	public int TriesPerChunk=1, MinHeight=20,MaxHeight=70;
+	public int MinHeight=20,MaxHeight=70;
 	public int ContainerWidth=40, ContainerLength=40;
 	public int MinHeightBeforeOscillation=12;
 	public boolean SmoothWithStairs=true, MakeFloors=true;
@@ -206,6 +207,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 				for(String read=br.readLine(); read!=null; read=br.readLine()){
 					if(read.startsWith( "GlobalFrequency" )) GlobalFrequency = readFloatParam(lw,GlobalFrequency,":",read);
 					if(read.startsWith( "TriesPerChunk" )) TriesPerChunk = readIntParam(lw,TriesPerChunk,":",read);
+					if(read.startsWith( "AllowedDimensions" )) AllowedDimensions = readIntList(lw,AllowedDimensions,":",read);
 					if(read.startsWith( "MinHeight" )) MinHeight = readIntParam(lw,MinHeight,":",read);
 					if(read.startsWith( "MaxHeight" )) MaxHeight = readIntParam(lw,MaxHeight,":",read);
 					if(read.startsWith( "MinHeightBeforeOscillation" )) MinHeightBeforeOscillation = readIntParam(lw,MinHeightBeforeOscillation,":",read);
@@ -269,6 +271,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 				pw.println("<-TriesPerChunk allows multiple attempts per chunk. Only change from 1 if you want very dense generation!->");
 				pw.println("GlobalFrequency:"+GlobalFrequency);
 				pw.println("TriesPerChunk:"+TriesPerChunk);
+				pw.println("AllowedDimensions:"+Arrays.toString(AllowedDimensions).replace("[", "").replace("]", "").trim());
 				pw.println();
 				pw.println("<-MinHeight and MaxHeight are the minimum and maximum allowed height of the structures->");
 				pw.println("<-MinHeightBeforeOscillation - Any structures that form oscillators before MaxOscillatorCullStep will be culled.->");

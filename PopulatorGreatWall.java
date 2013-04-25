@@ -25,6 +25,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Random;
 
@@ -41,7 +42,7 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.registry.GameRegistry;
 
-@Mod(modid = "GreatWallMod", name = "Great Wall Mod", version = "0.0.6",dependencies= "after:ExtraBiomes,BiomesOPlenty")
+@Mod(modid = "GreatWallMod", name = "Great Wall Mod", version = "0.0.7",dependencies= "after:ExtraBiomes,BiomesOPlenty")
 @NetworkMod(clientSideRequired = false, serverSideRequired = false)
 public class PopulatorGreatWall extends BuildingExplorationHandler{
 	@Instance("GreatWallMod")
@@ -53,7 +54,6 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 
 	//USER MODIFIABLE PARAMETERS, values below are defaults
 	public float GlobalFrequency=0.005F;
-	public int TriesPerChunk=1;
 	public float CurveBias=0.5F;
 	public int LengthBiasNorm=200;
 	public int BacktrackLength=9;
@@ -140,6 +140,7 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 				for(String read=br.readLine(); read!=null; read=br.readLine()){
 					if(read.startsWith( "GlobalFrequency" )) GlobalFrequency = readFloatParam(lw,GlobalFrequency,":",read);
 					if(read.startsWith( "TriesPerChunk" )) TriesPerChunk = readIntParam(lw,TriesPerChunk,":",read);
+					if(read.startsWith( "AllowedDimensions" )) AllowedDimensions = readIntList(lw,AllowedDimensions,":",read);
 					if(read.startsWith( "CurveBias" )) CurveBias = readFloatParam(lw,CurveBias,":",read);
 					if(read.startsWith( "LengthBiasNorm" )) LengthBiasNorm = readIntParam(lw,LengthBiasNorm,":",read);
 					if(read.startsWith( "BacktrackLength" )) BacktrackLength = readIntParam(lw,BacktrackLength,":",read);
@@ -166,6 +167,7 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 				pw.println("<-TriesPerChunk allows multiple attempts per chunk. Only change from 1 if you want very dense walls!->");
 				pw.println("GlobalFrequency:"+GlobalFrequency);
 				pw.println("TriesPerChunk:"+TriesPerChunk);
+				pw.println("AllowedDimensions:"+Arrays.toString(AllowedDimensions).replace("[", "").replace("]", "").trim());
 				pw.println();
 				pw.println("<-BacktrackLength - length of backtracking for wall planning if a dead end is hit->");
 				pw.println("<-CurveBias - strength of the bias towards curvier walls. Value should be between 0.0 and 1.0.->");
