@@ -42,10 +42,14 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockButton;
 import net.minecraft.block.BlockDoor;
 import net.minecraft.block.BlockFlowing;
+import net.minecraft.block.BlockMelon;
 import net.minecraft.block.BlockMushroomCap;
 import net.minecraft.block.BlockOre;
+import net.minecraft.block.BlockPumpkin;
+import net.minecraft.block.BlockSnow;
 import net.minecraft.block.BlockStairs;
 import net.minecraft.block.BlockTorch;
+import net.minecraft.block.BlockWeb;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntityChest;
@@ -1044,21 +1048,20 @@ public class Building
     		SIGN_POST_ID=63,WOODEN_DOOR_ID=64,LADDER_ID=65,RAILS_ID=66,COBBLESTONE_STAIRS_ID=67,
     		WALL_SIGN_ID=68,LEVER_ID=69,STONE_PLATE_ID=70,WOOD_PLATE_ID=72,
     		REDSTONE_ORE_ID=73,GLOWING_REDSTONE_ORE_ID=74,REDSTONE_TORCH_OFF_ID=75,
-    		REDSTONE_TORCH_ON_ID=76,STONE_BUTTON_ID=77,SNOW_ID=78,ICE_ID=79,SNOW_BLOCK_ID=80,
+    		REDSTONE_TORCH_ON_ID=76,STONE_BUTTON_ID=77,SNOW_ID=78,ICE_ID=79,
     		CACTUS_ID=81,CLAY_ID=82,SUGAR_CANE_BLOCK_ID=83,FENCE_ID=85,
     		PUMPKIN_ID=86,NETHERRACK_ID=87,SOUL_SAND_ID=88,GLOWSTONE_ID=89,PORTAL_ID=90,
     		JACK_O_LANTERN_ID=91,DIODE_BLOCK_OFF_ID=93,DIODE_BLOCK_ON_ID=94;
     public final static int LOCKED_CHEST_ID=95,TRAP_DOOR_ID=96,SILVERFISH_BLOCK_ID=97,
     		STONE_BRICK_ID=98,
-    		IRON_BARS_ID=101,GLASS_PANE_ID=102,MELON_ID=103,PUMPKIN_STEM_ID=104,
+    		IRON_BARS_ID=101,GLASS_PANE_ID=102,PUMPKIN_STEM_ID=104,
     		MELON_STEM_ID=105,VINES_ID=106,FENCE_GATE_ID=107,BRICK_STAIRS_ID=108,
-    		STONE_BRICK_STAIRS_ID=109,MYCELIUM_ID=110,LILY_PAD_ID=111,NETHER_BRICK_ID=112,
+    		STONE_BRICK_STAIRS_ID=109,MYCELIUM_ID=110,NETHER_BRICK_ID=112,
     		NETHER_BRICK_FENCE_ID=113,NETHER_BRICK_STAIRS_ID=114,NETHER_WART_ID=115,
     		ENCHANTMENT_TABLE_ID=116,BREWING_STAND_BLOCK_ID=117,CAULDRON_BLOCK_ID=118,
     		END_PORTAL_ID=119,END_PORTAL_FRAME_ID=120,END_STONE_ID=121,DRAGON_EGG_ID=122,
     		REDSTONE_LAMP_OFF_ID=123,REDSTONE_LAMP_ON_ID=124,WOOD_DOUBLE_SLAB_ID=125,
-    		WOOD_SLAB_ID=126,SAND_STAIRS_ID=128,
-    		ENDER_CHEST_ID=130,TRIPWIRE_SOURCE_ID=131,TRIPWIRE_ID=132;
+    		WOOD_SLAB_ID=126,SAND_STAIRS_ID=128,TRIPWIRE_SOURCE_ID=131,TRIPWIRE_ID=132;
     public final static int SPRUCE_STAIRS_ID=134,BIRCH_STAIRS_ID=135,JUNGLE_STAIRS_ID=136,
     		WOOD_BUTTON_ID=143,CHEST_TRAP_ID=146,COMPARATOR_ID=149,
     		LIGHT_DETECTOR_ID=151,HOPPER_ID=154,QUARTZ_ID=155,QUARTZ_STAIRS_ID=156,
@@ -1105,11 +1108,11 @@ public class Building
         public final static int[] DIR_TO_X=new int[]{0,1,0,-1},DIR_TO_Y=new int[]{1,0,-1,0};
        
          //some prebuilt directional blocks
-    public final static int[] WEST_FACE_TORCH_BLOCK=new int[]{TORCH_ID,2},//BUTTON_DIR_TO_META[DIR_WEST]},
-                              EAST_FACE_TORCH_BLOCK=new int[]{TORCH_ID,1},//BUTTON_DIR_TO_META[DIR_EAST]},
-                              NORTH_FACE_TORCH_BLOCK=new int[]{TORCH_ID,4},//BUTTON_DIR_TO_META[DIR_NORTH]},
-                              SOUTH_FACE_TORCH_BLOCK=new int[]{TORCH_ID,3},//BUTTON_DIR_TO_META[DIR_SOUTH]},
-                              EAST_FACE_LADDER_BLOCK=new int[]{LADDER_ID,5},//LADDER_DIR_TO_META[DIR_EAST]},
+    public final static int[] WEST_FACE_TORCH_BLOCK=new int[]{TORCH_ID,BUTTON_DIR_TO_META[DIR_WEST]},
+                              EAST_FACE_TORCH_BLOCK=new int[]{TORCH_ID,BUTTON_DIR_TO_META[DIR_EAST]},
+                              NORTH_FACE_TORCH_BLOCK=new int[]{TORCH_ID,BUTTON_DIR_TO_META[DIR_NORTH]},
+                              SOUTH_FACE_TORCH_BLOCK=new int[]{TORCH_ID,BUTTON_DIR_TO_META[DIR_SOUTH]},
+                              EAST_FACE_LADDER_BLOCK=new int[]{LADDER_ID,LADDER_DIR_TO_META[DIR_EAST]},
                               HOLE_BLOCK_LIGHTING=new int[]{HOLE_ID,0},
                               HOLE_BLOCK_NO_LIGHTING=new int[]{HOLE_ID,1},
                               PRESERVE_BLOCK=new int[]{PRESERVE_ID,0},
@@ -1133,23 +1136,23 @@ public class Building
 
     static{
         for(int blockID=0;blockID<Block.blocksList.length;blockID++){
-        	if(Block.blocksList[blockID]!=null)
+        	Block block = Block.blocksList[blockID];
+        	if(block!=null)
         		{
-        		IS_STAIRS_BLOCK[blockID]= Block.blocksList[blockID] instanceof BlockStairs;
-        		IS_DOOR_BLOCK[blockID]= Block.blocksList[blockID] instanceof BlockDoor;   
+        		IS_STAIRS_BLOCK[blockID]= block instanceof BlockStairs;
+        		IS_DOOR_BLOCK[blockID]= block instanceof BlockDoor;   
                 //note lava is considered to NOT be a liquid, and is therefore not wallable. This is so we can build cities on the lava surface.
                 IS_WATER_BLOCK[blockID]= blockID==WATER_ID || blockID==STATIONARY_WATER_ID || blockID==ICE_ID;
                
-                IS_FLOWING_BLOCK[blockID]=Block.blocksList[blockID] instanceof BlockFlowing || IS_WATER_BLOCK[blockID] || blockID==STATIONARY_LAVA_ID || blockID==LAVA_ID || blockID==SAND_ID || blockID==GRAVEL_ID;
+                IS_FLOWING_BLOCK[blockID]=block instanceof BlockFlowing || IS_WATER_BLOCK[blockID] || blockID==STATIONARY_LAVA_ID || blockID==LAVA_ID || blockID==SAND_ID || blockID==GRAVEL_ID;
                
                 IS_WALLABLE[blockID]= IS_WATER_BLOCK[blockID]
-                   || blockID==LOG_ID || blockID==WEB_ID                
-                   || blockID==SNOW_ID || blockID==PUMPKIN_ID || blockID==MELON_ID
-                   || Block.blocksList[blockID] instanceof IShearable
-                   || Block.blocksList[blockID] instanceof BlockMushroomCap 
-                   || Block.blocksList[blockID] instanceof IPlantable;
+                   || blockID==LOG_ID || block instanceof BlockWeb                
+                   || block instanceof BlockSnow|| block instanceof BlockPumpkin 
+                   || block instanceof BlockMelon|| block instanceof IShearable
+                   || block instanceof BlockMushroomCap || block instanceof IPlantable;
              
-                IS_ORE_BLOCK[blockID]= blockID==REDSTONE_ORE_ID|| blockID==CLAY_ID ||Block.blocksList[blockID] instanceof BlockOre;
+                IS_ORE_BLOCK[blockID]= blockID==REDSTONE_ORE_ID|| blockID==CLAY_ID || block instanceof BlockOre;
                
                 //Define by what it is not. Not IS_WALLABLE and not a naturally occurring solid block (obsidian/bedrock are exceptions)
                 IS_ARTIFICAL_BLOCK[blockID]= !( IS_WALLABLE[blockID] || IS_ORE_BLOCK[blockID]
@@ -1157,8 +1160,8 @@ public class Building
                    || blockID==SOUL_SAND_ID || blockID==MYCELIUM_ID || blockID==LAVA_ID || blockID==STATIONARY_LAVA_ID);
                
                 IS_DELAY_BLOCK[blockID]=IS_STAIRS_BLOCK[blockID]
-                   || Block.blocksList[blockID] instanceof BlockTorch || blockID==LEVER_ID || blockID==SIGN_POST_ID || blockID==WALL_SIGN_ID || blockID==FIRE_ID
-                   || Block.blocksList[blockID] instanceof BlockButton || blockID==GLOWSTONE_ID || blockID==VINES_ID || blockID==REDSTONE_WIRE_ID
+                   || block instanceof BlockTorch || blockID==LEVER_ID || blockID==SIGN_POST_ID || blockID==WALL_SIGN_ID || blockID==FIRE_ID
+                   || block instanceof BlockButton || blockID==GLOWSTONE_ID || blockID==VINES_ID || blockID==REDSTONE_WIRE_ID
                    || blockID==DISPENSER_ID || blockID==FURNACE_ID;
                
                 //Define by what it is not.
@@ -1279,9 +1282,6 @@ public class Building
                         SPHERE_SHAPE[diam][y-diam/2]=(2*(diam/2-xheight[y])+(diam%2==0 ? 0:1) );
         }
        
-       
-       
-
         public final static int MAX_SPHERE_DIAM=40;
         public final static int[][] SPHERE_SHAPE=new int[MAX_SPHERE_DIAM+1][];
         public final static int[][][] CIRCLE_SHAPE=new int[MAX_SPHERE_DIAM+1][][],
