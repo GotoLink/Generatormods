@@ -42,6 +42,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockButton;
 import net.minecraft.block.BlockDoor;
 import net.minecraft.block.BlockFlowing;
+import net.minecraft.block.BlockLog;
 import net.minecraft.block.BlockMelon;
 import net.minecraft.block.BlockMushroomCap;
 import net.minecraft.block.BlockOre;
@@ -290,11 +291,11 @@ public class Building
    
     protected final void flushDelayed(){
         while(delayedBuildQueue.size()>0){
-                int[] block=(delayedBuildQueue.poll());
+                int[] block=delayedBuildQueue.poll();
                
                 //if stairs are running into ground. replace them with a solid block
                 if(IS_STAIRS_BLOCK[block[3]]){
-                        int adjId=world.getBlockId(block[0]-DIR_TO_I[STAIRS_META_TO_DIR[block[4]<4?block[4]:block[4]-4]],block[1],block[2]-DIR_TO_K[STAIRS_META_TO_DIR[block[4]<4?block[4]:block[4]-4]]);
+                        int adjId=world.getBlockId(block[0]-DIR_TO_I[STAIRS_META_TO_DIR[block[4]<4?block[4]:(block[4]-4)]],block[1],block[2]-DIR_TO_K[STAIRS_META_TO_DIR[block[4]<4?block[4]:(block[4]-4)]]);
                         int aboveID=world.getBlockId(block[0],block[1]+1,block[2]);
                         if(IS_ARTIFICAL_BLOCK[adjId] || IS_ARTIFICAL_BLOCK[aboveID]){
                                 block[3]=stairToSolidBlock(block[3]);
@@ -403,6 +404,7 @@ public class Building
                         case WITHERBOSS_SPAWNER_ID: setMobSpawner(pt,1,24); return;
                         case BAT_SPAWNER_ID: setMobSpawner(pt,1,25); return;
                         case WITCH_SPAWNER_ID: setMobSpawner(pt,1,26); return;
+                        default:world.setBlock(pt[0],pt[1],pt[2],blockID,metadata,3);return;
         }
     }
    
@@ -869,6 +871,10 @@ public class Building
                         }
                         break;
                 case TRAP_DOOR_ID:
+                	if(metadata-8>=0){
+                        tempdata += 8;
+                        metadata -= 8;
+                	}
                     if( metadata - 4 >= 0){
                             tempdata += 4;
                             metadata -= 4;
@@ -1068,7 +1074,7 @@ public class Building
     		ACTIVATORRAIL_ID=157,DROPPER_ID=158;
    
     //Special Blocks
-    public final static int SPECIAL_BLOCKID_START=299, SPECIAL_BLOCKID_END=4095,HOLE_ID=299,
+    public final static int SPECIAL_BLOCKID_START=299, HOLE_ID=299,
     		PRESERVE_ID=300,ZOMBIE_SPAWNER_ID=301, SKELETON_SPAWNER_ID=302,
     		SPIDER_SPAWNER_ID=303,CREEPER_SPAWNER_ID=304,UPRIGHT_SPAWNER_ID=305,
     		EASY_SPAWNER_ID=306,MEDIUM_SPAWNER_ID=307,HARD_SPAWNER_ID=308,EASY_CHEST_ID=309,
@@ -1147,7 +1153,7 @@ public class Building
                 IS_FLOWING_BLOCK[blockID]=block instanceof BlockFlowing || IS_WATER_BLOCK[blockID] || blockID==STATIONARY_LAVA_ID || blockID==LAVA_ID || blockID==SAND_ID || blockID==GRAVEL_ID;
                
                 IS_WALLABLE[blockID]= IS_WATER_BLOCK[blockID]
-                   || blockID==LOG_ID || block instanceof BlockWeb                
+                   || block instanceof BlockLog || block instanceof BlockWeb                
                    || block instanceof BlockSnow|| block instanceof BlockPumpkin 
                    || block instanceof BlockMelon|| block instanceof IShearable
                    || block instanceof BlockMushroomCap || block instanceof IPlantable;

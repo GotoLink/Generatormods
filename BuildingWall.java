@@ -499,11 +499,15 @@ public class BuildingWall extends Building
 
 		//clean up stairs descending into this wall
 		int[] pt=getIJKPt(-1,WalkHeight-1,0);
-		if(IS_STAIRS_BLOCK[world.getBlockId(pt[0],pt[1],pt[2])] && STAIRS_META_TO_DIR[world.getBlockMetadata(pt[0],pt[1],pt[2])]==rotDir(bDir,-bHand))
-			world.setBlock(pt[0],pt[1],pt[2], stairToSolidBlock(world.getBlockId(pt[0],pt[1],pt[2])));
+		int id=world.getBlockId(pt[0],pt[1],pt[2]);
+		int meta=world.getBlockMetadata(pt[0],pt[1],pt[2]);
+		if(IS_STAIRS_BLOCK[id] && STAIRS_META_TO_DIR[meta<4?meta:(meta-4)]==rotDir(bDir,-bHand))
+			world.setBlock(pt[0],pt[1],pt[2], stairToSolidBlock(id));
 		pt=getIJKPt(bWidth,WalkHeight-1,0);
-		if(IS_STAIRS_BLOCK[world.getBlockId(pt[0],pt[1],pt[2])] && STAIRS_META_TO_DIR[world.getBlockMetadata(pt[0],pt[1],pt[2])]==rotDir(bDir,bHand))
-			world.setBlock(pt[0],pt[1],pt[2], stairToSolidBlock(world.getBlockId(pt[0],pt[1],pt[2])));
+		id=world.getBlockId(pt[0],pt[1],pt[2]);
+		meta=world.getBlockMetadata(pt[0],pt[1],pt[2]);
+		if(IS_STAIRS_BLOCK[id] && STAIRS_META_TO_DIR[meta<4?meta:(meta-4)]==rotDir(bDir,bHand))
+			world.setBlock(pt[0],pt[1],pt[2], stairToSolidBlock(id));
 	}
 
 

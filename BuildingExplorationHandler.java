@@ -40,7 +40,6 @@ import net.minecraft.world.gen.ChunkProviderHell;
 import net.minecraft.world.storage.ISaveHandler;
 import net.minecraftforge.event.ForgeSubscribe;
 import net.minecraftforge.event.terraingen.PopulateChunkEvent;
-import net.minecraftforge.event.world.WorldEvent.Unload;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.FMLLog;
@@ -53,7 +52,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 	protected final static int MAX_TRIES_PER_CHUNK=100,CHUNKS_AT_WORLD_START=256;
 	public final static int MAX_CHUNKS_PER_TICK=100;
 	public final static int[] NO_CALL_CHUNK=null;
-	private final static int MIN_CHUNK_SEPARATION_FROM_PLAYER=0;
+	private final static int MIN_CHUNK_SEPARATION_FROM_PLAYER=1;
 	
 	protected final static File BASE_DIRECTORY=getMinecraftBaseDir();
 	protected final static File CONFIG_DIRECTORY=new File(Loader.instance().getConfigDir(),"generatormods");
@@ -65,7 +64,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 	protected boolean logActivated=false,chatMessage=false;
 	//protected LinkedList<int[]> lightingList=new LinkedList<int[]>();UNUSED
 	protected int max_exploration_distance;
-	protected int chunksExploredThisTick=0, chunksExploredFromStart=0;
+	protected static int chunksExploredThisTick=0, chunksExploredFromStart=0;
 	private int lastExploredChunkI, lastExploredChunkK;	
 	protected LinkedList<WorldGeneratorThread> exploreThreads=new LinkedList<WorldGeneratorThread>();
 	public int[] flushCallChunk=NO_CALL_CHUNK, AllowedDimensions=new int[]{-1,0};
@@ -98,37 +97,29 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 	//**************************** FORGE EVENTS ********************************************************************************************//
 	@ForgeSubscribe
 	public void onPopulatingChunk(PopulateChunkEvent event){
-		if(chunksExploredFromStart==0 && exploreThreads.size()<3 && lastExploredChunkI!=event.chunkX && lastExploredChunkK!=event.chunkZ) 
+		if(chunksExploredFromStart==0 && exploreThreads.size()==0 && lastExploredChunkI!=event.chunkX && lastExploredChunkK!=event.chunkZ) 
 		{
 		lastExploredChunkI=event.chunkX;
 		lastExploredChunkK=event.chunkZ;
 		logOrPrint("Event called and last chunk changed");
-		}
-		
+		}	
 	}
 	//**************************** FORGE WORLD GENERATING HOOK ****************************************************************************//
 	
 	@Override
 	public void generate(Random random, int chunkX, int chunkZ, World world, IChunkProvider chunkGenerator, IChunkProvider chunkProvider)
-    {  	if (world.getWorldInfo().isMapFeaturesEnabled())
-	    { //if structures are enabled
-	        if (chunkGenerator instanceof ChunkProviderHell)
-	        {	//can generate in Nether
-	            generateNether(world, random, chunkX*16, chunkZ*16);
-	        }
-	        else if ( !(chunkGenerator instanceof ChunkProviderEnd))
-	        {	//can generate in any world except in The End,
-	        	//if id is in AllowedDimensions list
-	        	for (int id :AllowedDimensions)
+    {  	if (world.getWorldInfo().isMapFeaturesEnabled() && !(chunkGenerator instanceof ChunkProviderEnd))
+    	{   //if structures are enabled
+	        //can generate in any world except in The End,
+	        //if id is in AllowedDimensions list
+	        for (int id :AllowedDimensions)
+	        {
+	        	if (world.provider.dimensionId==id)
 	        	{
-	        		if (world.provider.dimensionId==id)
-	        		{
-	        			generateSurface(world, random, chunkX*16, chunkZ*16);
-	        			break;
-	        		}
+	        		generateSurface(world, random, chunkX*16, chunkZ*16);
+	        		break;
 	        	}
-	            
-	        }
+	        }         
 	    }
     }
 	
@@ -144,9 +135,6 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 			flushGenThreads(world, new int[]{i,k});
 		
 		generate(world,random,i,k);
-	}
-	public void generateNether( World world, Random random, int chunkI, int chunkK ) {
-		generateSurface(world,random,chunkI,chunkK);//TODO:Change this
 	}
 	//****************************  FUNCTION - killZombie *************************************************************************************//
 	public void killZombie(WorldGeneratorThread wgt){
@@ -168,7 +156,8 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 		
 		chunksExploredThisTick=0;
 		chunksExploredFromStart=0;
-		if(world.getTotalWorldTime()<100) 
+		List<EntityPlayerMP> playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
+		if(playerList==null) 
 		{ 
 			isCreatingDefaultChunks=true;
 		}
@@ -222,7 +211,6 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 		}
 		chunksExploredThisTick++;
 
-		
 		if(flushCallChunk!=NO_CALL_CHUNK){
     		if(chunkI==flushCallChunk[0] && chunkK==flushCallChunk[1])
     			return false;
@@ -233,7 +221,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 		//SMP - world.chunkProvider.loadChunk calls ChunkProviderServer.java which looks up id2ChunkMap.getValueByKey(l), 
 		//       returns this if it exists else calls serverChunkGenerator.provideChunk(i, j);
 		try{
-			world.getChunkProvider().provideChunk(chunkI, chunkK);
+			world.getChunkProvider().loadChunk(chunkI, chunkK);
 			logOrPrint("Force loaded chunk at"+chunkI+","+chunkK);
 	    	lastExploredChunkI=chunkI;
 			lastExploredChunkK=chunkK;
@@ -241,8 +229,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 		}catch(IllegalStateException i)
 		{
 			i.printStackTrace();
-		}finally{	
-			logOrPrint("Tried force loading a chunk at"+chunkI+","+chunkK+"but failed");		
+			logOrPrint("Tried force loading a chunk at "+chunkI+","+chunkK+" but failed");
 		}
 		return false;
 	}
@@ -420,11 +407,15 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 		while (wgt.isAlive() && !wgt.threadSuspended){
 	        try {
 					wait();
-	        } catch (InterruptedException e){}
+	        } catch (InterruptedException e){
+	        	Thread.currentThread().interrupt();
+	        }
 		}
 		try {
 			if(wgt.hasTerminated) wgt.join();
-		}catch (InterruptedException e){}
+		}catch (InterruptedException e){
+			Thread.currentThread().interrupt();
+		}
 	}
 	
 	//****************************************  FUNCTIONS - error handling parameter readers  *************************************************************************************//
