@@ -47,7 +47,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
 public class PopulatorGreatWall extends BuildingExplorationHandler{
 	@Instance("GreatWallMod")
 	public static PopulatorGreatWall instance;
-	private final static int MAX_EXPLORATION_DISTANCE=30, HIGH_DENSITY_MAX_EXPLORATION_DISTANCE=12;
+	private final static int MAX_EXPLORATION_DISTANCE=10, HIGH_DENSITY_MAX_EXPLORATION_DISTANCE=12;
 	private final static String SETTINGS_FILE_NAME="GreatWallSettings.txt",
 								LOG_FILE_NAME="great_wall_log.txt",
 								CITY_TEMPLATES_FOLDER_NAME="greatwall";

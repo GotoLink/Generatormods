@@ -52,7 +52,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	@Instance("WalledCityMod")
 	public static PopulatorWalledCity instance;
 	public final static int MIN_CITY_LENGTH=40;
-	private final static int MAX_EXPLORATION_DISTANCE=30;
+	private final static int MAX_EXPLORATION_DISTANCE=10;
 	private final static int MAX_FOG_HEIGHT=27;
 	public final static int CITY_TYPE_SURFACE=0, CITY_TYPE_NETHER=2, CITY_TYPE_UNDERGROUND=3;
 	private final static String SETTINGS_FILE_NAME="WalledCitySettings.txt",

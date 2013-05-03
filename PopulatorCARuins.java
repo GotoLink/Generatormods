@@ -44,7 +44,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
 public class PopulatorCARuins extends BuildingExplorationHandler{
 	@Instance("CARuins")
 	public static PopulatorCARuins instance;
-	private final static int MAX_EXPLORATION_DISTANCE=30;
+	private final static int MAX_EXPLORATION_DISTANCE=10;
 	private final static String AUTOMATA_RULES_STRING="AUTOMATA RULES",LINEAR_STR="linear",SYMMETRIC_STR="symmetric", BOTH_STR="both";
 	private final static TemplateRule DEFAULT_TEMPLATE=new TemplateRule(new int[]{4,48,48},new int[]{0,0,0},100);
 	private final static TemplateRule[] DEFAULT_BLOCK_RULES = new TemplateRule[257];

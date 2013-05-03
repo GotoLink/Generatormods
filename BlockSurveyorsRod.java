@@ -17,7 +17,7 @@ public class BlockSurveyorsRod extends Block
       gw=gw_;
   }
 
-        public void onBlockRemoval(World world, int i, int j, int k){
+  public void onBlockRemoval(World world, int i, int j, int k){
                 if(gw.placedCoords!=null && gw.placedCoords[0]==i && gw.placedCoords[1]==j && gw.placedCoords[2]==k)
                         gw.placedCoords=null;
   }

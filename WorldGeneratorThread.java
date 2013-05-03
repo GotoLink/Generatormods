@@ -93,7 +93,9 @@ public abstract class WorldGeneratorThread extends Thread
 				}
 				tries++;
 			}while(!success && tries<TriesPerChunk && j0!=Building.HIT_WATER);
-		} catch(InterruptedException e){ }
+		} catch(InterruptedException e){
+			Thread.currentThread().interrupt();
+		}
 		
 		synchronized(master){
 			hasTerminated=true;
@@ -114,7 +116,8 @@ public abstract class WorldGeneratorThread extends Thread
 		int incI=Building.signum(pt2[0]-pt1[0],0), incK=Building.signum(pt2[2]-pt1[2],0);
 		for(int chunkI=pt1[0]>>4; ((pt2[0]>>4)-chunkI)*incI > 0; chunkI+=incI)
 			for(int chunkK=pt1[2]>>4; ((pt2[2]>>4)-chunkK)*incK > 0; chunkK+=incK)				
-				if(!master.queryExplorationHandlerForChunk(world, chunkI, chunkK, this) && !ignoreTerminate) return false;
+				if(!master.queryExplorationHandlerForChunk(world, chunkI, chunkK, this) && !ignoreTerminate)
+					return false;
 		return true;
 	}
 	
