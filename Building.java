@@ -40,16 +40,31 @@ import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockButton;
+import net.minecraft.block.BlockDirt;
+import net.minecraft.block.BlockDispenser;
 import net.minecraft.block.BlockDoor;
+import net.minecraft.block.BlockFire;
 import net.minecraft.block.BlockFlowing;
+import net.minecraft.block.BlockFurnace;
+import net.minecraft.block.BlockGlowStone;
+import net.minecraft.block.BlockGrass;
+import net.minecraft.block.BlockGravel;
+import net.minecraft.block.BlockLever;
 import net.minecraft.block.BlockLog;
 import net.minecraft.block.BlockMelon;
 import net.minecraft.block.BlockMushroomCap;
+import net.minecraft.block.BlockMycelium;
+import net.minecraft.block.BlockNetherrack;
 import net.minecraft.block.BlockOre;
 import net.minecraft.block.BlockPumpkin;
+import net.minecraft.block.BlockRedstoneWire;
+import net.minecraft.block.BlockSand;
+import net.minecraft.block.BlockSign;
 import net.minecraft.block.BlockSnow;
+import net.minecraft.block.BlockSoulSand;
 import net.minecraft.block.BlockStairs;
 import net.minecraft.block.BlockTorch;
+import net.minecraft.block.BlockVine;
 import net.minecraft.block.BlockWeb;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -757,7 +772,7 @@ public class Building
     private int rotateMetadata( int blockID, int metadata) {
                 int tempdata = 0;
                 if(IS_STAIRS_BLOCK[blockID]){    
-                	if (metadata>=4)
+                	while (metadata>=4)
                 			{
                 		tempdata+=4;
                 		metadata-=4;
@@ -769,13 +784,9 @@ public class Building
                     //in this case, door metas match the dir in which the door opens
                     //e.g. a door on the south face of a wall, opening in to the north has a meta value of 0 (or 4 if the door is opened).                                                                          
                    
-                    if( metadata - 8 >= 0 ) {
-                            // the top half of the door
-                            tempdata += 8;
-                            metadata -= 8;
-                    }
-                    if( metadata - 4 >= 0 ) {
-                            // the door has swung counterclockwise around its hinge
+                    while( metadata - 4 >= 0 ) {
+                    		// >=8:the top half of the door
+                            // >=4:the door has swung counterclockwise around its hinge
                             tempdata+=4;
                             metadata -= 4;
                     }
@@ -1011,24 +1022,21 @@ public class Building
     public static String metaValueCheck(int blockID, int metadata){
     	//TODO:Check metadata for every block
         if(metadata<0 || metadata >=16) return "All Minecraft meta values should be between 0 and 15";
-       
+        if(IS_STAIRS_BLOCK[blockID])
+        	 return metadata < 8 ? META_VALUE_OK : (Block.blocksList[blockID].getUnlocalizedName() +"meta values should be between 0 and 7");
         switch( blockID ) {                                      
                 //orientation metas    					
                         case RAILS_ID:
                                 return metadata < 10 ? META_VALUE_OK : "Rail meta values should be between 0 and 9";                      
                         case STONE_BUTTON_ID: case WOOD_BUTTON_ID:
                                 if(metadata > 8) metadata-=8;
-                                return metadata>0 && metadata < 5 ? META_VALUE_OK : Block.blocksList[blockID].getUnlocalizedName()+"meta values should be between 1 and 4 or 9 and 12";
-                        case WOOD_STAIRS_ID: case COBBLESTONE_STAIRS_ID: case BRICK_STAIRS_ID: case STONE_BRICK_STAIRS_ID: case SAND_STAIRS_ID:
-                                return metadata < 8 ? META_VALUE_OK : (Block.blocksList[blockID].getUnlocalizedName() +"meta values should be between 0 and 7");
-                               
+                                return metadata>0 && metadata < 5 ? META_VALUE_OK : Block.blocksList[blockID].getUnlocalizedName()+"meta values should be between 1 and 4 or 9 and 12";                        
                         case LADDER_ID: case DISPENSER_ID: case FURNACE_ID: case BURNING_FURNACE_ID:
                         case WALL_SIGN_ID: case PAINTING_SPECIAL_ID: case PISTON_ID: case PISTON_EXTENSION_ID:
                         case CHEST_ID: case HOPPER_ID: case DROPPER_ID:
                         case POWERED_RAIL_ID: case DETECTOR_RAIL_ID: case ACTIVATORRAIL_ID:
                                 if(metadata >= 8) metadata-=8;
-                                return metadata < 6 ? META_VALUE_OK : (Block.blocksList[blockID].getUnlocalizedName() +"meta values should be between 0 and 5 or 8 and 13");
-                               
+                                return metadata < 6 ? META_VALUE_OK : (Block.blocksList[blockID].getUnlocalizedName() +"meta values should be between 0 and 5 or 8 and 13");                             
                         case PUMPKIN_ID: case JACK_O_LANTERN_ID:
                                 return metadata < 5 ? META_VALUE_OK : Block.blocksList[blockID].getUnlocalizedName() +"meta values should be between 0 and 4";
                         case FENCE_GATE_ID:
@@ -1074,7 +1082,7 @@ public class Building
     		ACTIVATORRAIL_ID=157,DROPPER_ID=158;
    
     //Special Blocks
-    public final static int SPECIAL_BLOCKID_START=299, HOLE_ID=299,
+    public final static int SPECIAL_BLOCKID_START=299, HOLE_ID=0,
     		PRESERVE_ID=300,ZOMBIE_SPAWNER_ID=301, SKELETON_SPAWNER_ID=302,
     		SPIDER_SPAWNER_ID=303,CREEPER_SPAWNER_ID=304,UPRIGHT_SPAWNER_ID=305,
     		EASY_SPAWNER_ID=306,MEDIUM_SPAWNER_ID=307,HARD_SPAWNER_ID=308,EASY_CHEST_ID=309,
@@ -1095,7 +1103,7 @@ public class Building
                                         LADDER_META_TO_DIR=new int[]    {0,0,   DIR_NORTH,DIR_SOUTH,DIR_WEST,DIR_EAST},
                                         TRAPDOOR_META_TO_DIR=new int[]  {       DIR_SOUTH,DIR_NORTH,DIR_EAST,DIR_WEST},
                                         VINES_META_TO_DIR=new int[]     {0,     DIR_SOUTH,DIR_WEST,0,DIR_NORTH,0,0,0,DIR_EAST},
-                                        DOOR_META_TO_DIR=new int[]      {       DIR_EAST,DIR_SOUTH,DIR_WEST,DIR_NORTH};
+                                        DOOR_META_TO_DIR=new int[]      {       DIR_WEST,DIR_NORTH,DIR_EAST,DIR_SOUTH};
        
         //inverse map should be {North_inv,East_inv,dummy,West_inv,South_inv}
     //inverse map should be {North_inv,East_inv,South_inv, West_inv}
@@ -1152,7 +1160,7 @@ public class Building
                
                 IS_FLOWING_BLOCK[blockID]=block instanceof BlockFlowing || IS_WATER_BLOCK[blockID] || blockID==STATIONARY_LAVA_ID || blockID==LAVA_ID || blockID==SAND_ID || blockID==GRAVEL_ID;
                
-                IS_WALLABLE[blockID]= IS_WATER_BLOCK[blockID]
+                IS_WALLABLE[blockID]= blockID>=346 || IS_WATER_BLOCK[blockID]
                    || block instanceof BlockLog || block instanceof BlockWeb                
                    || block instanceof BlockSnow|| block instanceof BlockPumpkin 
                    || block instanceof BlockMelon|| block instanceof IShearable
@@ -1162,13 +1170,15 @@ public class Building
                
                 //Define by what it is not. Not IS_WALLABLE and not a naturally occurring solid block (obsidian/bedrock are exceptions)
                 IS_ARTIFICAL_BLOCK[blockID]= !( IS_WALLABLE[blockID] || IS_ORE_BLOCK[blockID]
-                   || blockID==STONE_ID || blockID==DIRT_ID || blockID==GRASS_ID || blockID==GRAVEL_ID || blockID==SAND_ID || blockID==NETHERRACK_ID
-                   || blockID==SOUL_SAND_ID || blockID==MYCELIUM_ID || blockID==LAVA_ID || blockID==STATIONARY_LAVA_ID);
+                   || blockID==STONE_ID || block instanceof BlockDirt || block instanceof BlockGrass 
+                   || block instanceof BlockGravel || block instanceof BlockSand || block instanceof BlockNetherrack
+                   || block instanceof BlockSoulSand || block instanceof BlockMycelium || blockID==LAVA_ID || blockID==STATIONARY_LAVA_ID);
                
                 IS_DELAY_BLOCK[blockID]=IS_STAIRS_BLOCK[blockID]
-                   || block instanceof BlockTorch || blockID==LEVER_ID || blockID==SIGN_POST_ID || blockID==WALL_SIGN_ID || blockID==FIRE_ID
-                   || block instanceof BlockButton || blockID==GLOWSTONE_ID || blockID==VINES_ID || blockID==REDSTONE_WIRE_ID
-                   || blockID==DISPENSER_ID || blockID==FURNACE_ID;
+                   || block instanceof BlockTorch || block instanceof BlockLever || block instanceof BlockSign 
+                   || block instanceof BlockFire || block instanceof BlockButton || block instanceof BlockGlowStone 
+                   || block instanceof BlockVine || block instanceof BlockRedstoneWire
+                   || block instanceof BlockDispenser || block instanceof BlockFurnace;
                
                 //Define by what it is not.
                 IS_LOAD_TRASMITER_BLOCK[blockID]= !(IS_WALLABLE[blockID]  || IS_FLOWING_BLOCK[blockID]
