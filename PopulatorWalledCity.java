@@ -46,7 +46,7 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.registry.GameRegistry;
 
-@Mod(modid = "WalledCityMod", name = "Walled City Generator", version = "0.0.7",dependencies= "after:ExtraBiomes,BiomesOPlenty")
+@Mod(modid = "WalledCityMod", name = "Walled City Generator", version = "0.0.8",dependencies= "after:ExtraBiomes,BiomesOPlenty")
 @NetworkMod(clientSideRequired = false, serverSideRequired = false)
 public class PopulatorWalledCity extends BuildingExplorationHandler{
 	@Instance("WalledCityMod")
@@ -78,17 +78,12 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	public void preInit(FMLPreInitializationEvent event) {
 		instance=this;
 		}
-	//****************************  CONSTRUCTOR - PopulatorWalledCity  *************************************************************************************//
-	public PopulatorWalledCity(){
-		max_exploration_distance=MAX_EXPLORATION_DISTANCE;
-		master=this;
-	}
+	
 	@Init
 	public void load(FMLInitializationEvent event) {
 		GameRegistry.registerWorldGenerator(this);
-		MinecraftForge.TERRAIN_GEN_BUS.register(this);
-		MinecraftForge.EVENT_BUS.register(this);
-		//loadDataFiles();
+		max_exploration_distance=MAX_EXPLORATION_DISTANCE;
+		master=this;
 	}
 	//****************************  FUNCTION - loadDataFiles *************************************************************************************//
 	public void loadDataFiles(){

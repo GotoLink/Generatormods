@@ -64,7 +64,8 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 	protected boolean logActivated=false,chatMessage=false;
 	//protected LinkedList<int[]> lightingList=new LinkedList<int[]>();UNUSED
 	protected int max_exploration_distance;
-	protected static int chunksExploredThisTick=0, chunksExploredFromStart=0;
+	protected int chunksExploredThisTick=0;
+	protected static int chunksExploredFromStart=0;
 	private int lastExploredChunkI, lastExploredChunkK;	
 	protected LinkedList<WorldGeneratorThread> exploreThreads=new LinkedList<WorldGeneratorThread>();
 	public int[] flushCallChunk=NO_CALL_CHUNK, AllowedDimensions=new int[]{-1,0};
@@ -94,16 +95,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 			runWorldGenThreads();
 		}
 	}
-	//**************************** FORGE EVENTS ********************************************************************************************//
-	@ForgeSubscribe
-	public void onPopulatingChunk(PopulateChunkEvent event){
-		if(chunksExploredFromStart==0 && exploreThreads.size()==0 && lastExploredChunkI!=event.chunkX && lastExploredChunkK!=event.chunkZ) 
-		{
-		lastExploredChunkI=event.chunkX;
-		lastExploredChunkK=event.chunkZ;
-		logOrPrint("Event called and last chunk changed");
-		}	
-	}
+	
 	//**************************** FORGE WORLD GENERATING HOOK ****************************************************************************//
 	
 	@Override
@@ -239,7 +231,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 		//announce there is about to be lag because we are about to flush generation threads
 		List<EntityPlayerMP> playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
 		if(!isAboutToFlushGenThreads && !isCreatingDefaultChunks && playerList!=null && chunksExploredFromStart > 2*CHUNKS_AT_WORLD_START-15){
-			String flushAnnouncement=chunksExploredFromStart+" chunks explored this wave, lag may occur from "+this.toString();
+			String flushAnnouncement="["+this.toString()+"] explored "+chunksExploredFromStart+" chunks, please stop moving.";
 			for (EntityPlayerMP player:playerList)
 			{
 				if (this.chatMessage)

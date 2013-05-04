@@ -43,7 +43,7 @@ public class TemplateTML
 	public HashMap<String,String> extraOptions=null;
 	public BuildingExplorationHandler explorationHandler=null;
 	public String name="";
-	//public int[] targets;
+	public int[] targets;
 	protected boolean readInWaterHeight=false;
 	public int templateTypeCode=TML_CODE;
 	public int height = 0, length = 0, width = 0, weight = 1, embed = 1,leveling = 4, cutIn = 0, waterHeight=3;
@@ -132,7 +132,7 @@ public class TemplateTML
 				length = dim[1];
 				width = dim[2];
 			}
-			//else if(line.startsWith("acceptable_target_blocks" )) targets=WallStyle.readIntList(lw,targets,"=",line);
+			else if(line.startsWith("acceptable_target_blocks" )) targets=BuildingExplorationHandler.readIntList(lw,targets,"=",line);
 			else if(line.startsWith("weight" )) {
 				weight = BuildingExplorationHandler.readIntParam(lw,weight,"=",line);
 				if(weight<=0) throw ZERO_WEIGHT_EXCEPTION;

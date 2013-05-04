@@ -14,6 +14,7 @@ import java.util.Random;
 
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
+import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.Init;
 import cpw.mods.fml.common.Mod.Instance;
@@ -39,7 +40,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-@Mod(modid = "CARuins", name = "Cellular Automata Generator", version = "0.0.7",dependencies= "after:ExtraBiomes,BiomesOPlenty")
+@Mod(modid = "CARuins", name = "Cellular Automata Generator", version = "0.0.8",dependencies= "after:ExtraBiomes,BiomesOPlenty")
 @NetworkMod(clientSideRequired = false, serverSideRequired = false)
 public class PopulatorCARuins extends BuildingExplorationHandler{
 	@Instance("CARuins")
@@ -134,23 +135,18 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 	
 	@PreInit
 	public void preInit(FMLPreInitializationEvent event) {	instance=this;	}
-	//****************************  CONSTRUCTOR - PopulatorCARuins*************************************************************************************//
-	public PopulatorCARuins(){
+	
+	@Init
+	public void load(FMLInitializationEvent event) {		
+		GameRegistry.registerWorldGenerator(this);
+
 		max_exploration_distance=MAX_EXPLORATION_DISTANCE;
 		
 		/*for(int m=0; m<DEFAULT_BLOCK_RULES .length; m++)
 		{
 			blockRules[m]=DEFAULT_BLOCK_RULES[m];
 		}*/
-		master=this;		
-	}
-	@Init
-	public void load(FMLInitializationEvent event) {		
-		GameRegistry.registerWorldGenerator(this);
-		//TickRegistry.registerTickHandler(new GeneratorTickHandler(this), Side.SERVER);
-		MinecraftForge.TERRAIN_GEN_BUS.register(this);
-		MinecraftForge.EVENT_BUS.register(this);
-		//loadDataFiles();
+		master=this;	
 	}
 	@ServerStarting
 	public void serverStarting(FMLServerStartingEvent event){
@@ -352,16 +348,16 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 	public void modsLoaded(FMLPostInitializationEvent event)
 	{		
 		//see if the walled city mod is loaded. If it is, make it load its templates (if not already loaded) and then combine explorers.
-		/*if (Loader.isModLoaded("WalledCityMod")){//FIXME ?
-			BuildingExplorationHandler wcm= PopulatorWalledCity.instance;
+		if (Loader.isModLoaded("WalledCityMod")){//FIXME ?
+			PopulatorWalledCity wcm= PopulatorWalledCity.instance;
 			if(!wcm.dataFilesLoaded)  wcm.loadDataFiles();
 			if(!wcm.errFlag){
-			master=wcm;
-			logOrPrint("Combining chunk explorers for "+toString()+" and "+master.toString()+".");
-					}
-				}
-			if(master==null) master=this;*/
-			if(!dataFilesLoaded)loadDataFiles();				
+				master=wcm;
+				logOrPrint("Combining chunk explorers for "+toString()+" and "+master.toString()+".");
+			}
+		}
+		if(master==null) master=this;
+		if(!dataFilesLoaded)loadDataFiles();				
 	}
 	
 	//TODO: Use this ?

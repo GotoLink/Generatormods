@@ -31,6 +31,7 @@ import java.util.Random;
 
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
+import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.Init;
 import cpw.mods.fml.common.Mod.Instance;
@@ -42,7 +43,7 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.registry.GameRegistry;
 
-@Mod(modid = "GreatWallMod", name = "Great Wall Mod", version = "0.0.7",dependencies= "after:ExtraBiomes,BiomesOPlenty")
+@Mod(modid = "GreatWallMod", name = "Great Wall Mod", version = "0.0.8",dependencies= "after:ExtraBiomes,BiomesOPlenty")
 @NetworkMod(clientSideRequired = false, serverSideRequired = false)
 public class PopulatorGreatWall extends BuildingExplorationHandler{
 	@Instance("GreatWallMod")
@@ -64,22 +65,16 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 	public World placedWorld=null;
 	@PreInit
 	public void preInit(FMLPreInitializationEvent event) {	instance=this;}
-	//****************************  CONSTRUCTOR - PopulatorGreatWall*************************************************************************************//
-	public PopulatorGreatWall(){
-				max_exploration_distance=MAX_EXPLORATION_DISTANCE;
-				master=this;
-			}
+	
 	@Init
 	public void load(FMLInitializationEvent event) { //TODO : Make surveyorsRod ?
 		//final Block surveyorsRod= new BlockSurveyorsRod(152, 0,this).setHardness(2.0F).setResistance(5.0F).setBlockName("SurveyorsRod").setCreativeTab(CreativeTabs.tabBlock);
 		//GameRegistry.registerBlock(surveyorsRod,"SurveyorsRod");
 	    	
-		//ModLoader.AddRecipe(new ItemStack(surveyorsRod,8), new Object[]{ "##", "##", Character.valueOf('#'), Block.dirt});
+		//GameRegistry.addRecipe(new ItemStack(surveyorsRod,8), new Object[]{ "##", "##", Character.valueOf('#'), Block.dirt});
 		GameRegistry.registerWorldGenerator(this);
-		//TickRegistry.registerTickHandler(new GeneratorTickHandler(this), Side.SERVER);
-		MinecraftForge.TERRAIN_GEN_BUS.register(this);
-		MinecraftForge.EVENT_BUS.register(this);
-		//loadDataFiles();
+		max_exploration_distance=MAX_EXPLORATION_DISTANCE;
+		master=this;
 	}
 	
 	//****************************  FUNCTION - loadDataFiles *************************************************************************************//
@@ -200,15 +195,15 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 	public void modsLoaded(FMLPostInitializationEvent event)
 	{		
 //see if the walled city mod is loaded. If it is, make it load its templates (if not already loaded) and then combine explorers.
-		/*if (Loader.isModLoaded("WalledCityMod")){//FIXME ?
-		BuildingExplorationHandler wcm= PopulatorWalledCity.instance;
-		if(!wcm.dataFilesLoaded)  wcm.loadDataFiles();
-		if(!wcm.errFlag){
-		master=wcm;
-		logOrPrint("Combining chunk explorers for "+toString()+" and "+master.toString()+".");
-				}
+		if (Loader.isModLoaded("WalledCityMod")){//FIXME ?
+			PopulatorWalledCity wcm= PopulatorWalledCity.instance;
+			if(!wcm.dataFilesLoaded)  wcm.loadDataFiles();
+			if(!wcm.errFlag){
+				master=wcm;
+				logOrPrint("Combining chunk explorers for "+toString()+" and "+master.toString()+".");
 			}
-		if(master==null) master=this;*/
+		}
+		if(master==null) master=this;
 		if(!dataFilesLoaded)loadDataFiles();		
 	}
 }
