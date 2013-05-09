@@ -47,7 +47,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.TickRegistry;
 import cpw.mods.fml.relauncher.Side;
 
-@Mod(modid = "WalledCityMod", name = "Walled City Generator", version = "0.0.8",dependencies= "after:ExtraBiomes,BiomesOPlenty")
+@Mod(modid = "WalledCityMod", name = "Walled City Generator", version = "0.1.0",dependencies= "after:ExtraBiomes,BiomesOPlenty")
 @NetworkMod(clientSideRequired = false, serverSideRequired = false)
 public class PopulatorWalledCity extends BuildingExplorationHandler{
 	@Instance("WalledCityMod")

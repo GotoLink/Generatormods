@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -33,21 +35,20 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.packet.Packet3Chat;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldProviderEnd;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.chunk.storage.AnvilChunkLoader;
-import net.minecraft.world.gen.ChunkProviderEnd;
-import net.minecraft.world.gen.ChunkProviderHell;
 import net.minecraft.world.storage.ISaveHandler;
-import net.minecraftforge.event.ForgeSubscribe;
-import net.minecraftforge.event.terraingen.PopulateChunkEvent;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.FMLLog;
+import cpw.mods.fml.common.ITickHandler;
 import cpw.mods.fml.common.IWorldGenerator;
 import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.TickType;
 import cpw.mods.fml.relauncher.Side;
 
-public abstract class BuildingExplorationHandler implements IWorldGenerator
+public abstract class BuildingExplorationHandler implements IWorldGenerator,ITickHandler
 {
 	protected final static int MAX_TRIES_PER_CHUNK=100,CHUNKS_AT_WORLD_START=256;
 	public final static int MAX_CHUNKS_PER_TICK=100;
@@ -64,16 +65,15 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 	protected boolean logActivated=false,chatMessage=false;
 	//protected LinkedList<int[]> lightingList=new LinkedList<int[]>();UNUSED
 	protected int max_exploration_distance;
-	protected int chunksExploredThisTick=0;
-	protected static int chunksExploredFromStart=0;
-	private int lastExploredChunkI, lastExploredChunkK;	
+	protected int chunksExploredThisTick=0,chunksExploredFromStart=0;
+	private List<int[]> lastExploredChunk=new ArrayList();	
 	protected LinkedList<WorldGeneratorThread> exploreThreads=new LinkedList<WorldGeneratorThread>();
 	public int[] flushCallChunk=NO_CALL_CHUNK, AllowedDimensions=new int[]{-1,0};
 	public PrintWriter lw=null;
-	private World currentWorld=null;
+	private List<World> currentWorld=new ArrayList();
  	int[] chestTries=new int[]{4,6,6,6};
 	int[][][] chestItems=new int[][][]{null,null,null,null};
- 	
+	
 	public static Logger logger=FMLLog.getLogger();
 	
 	abstract public void updateWorldExplored(World world);
@@ -86,30 +86,40 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 		return true;
 	}
 
-	//****************************  FUNCTION - doOnTick *************************************************************************************//
-	
-	public void doOnTick(World tickWorld){
-		if(this==master){
-			updateWorldExplored(tickWorld);
-			flushGenThreads(tickWorld, NO_CALL_CHUNK);
+	//****************************  FORGE WORLD TICK *************************************************************************************//
+	@Override
+	public void tickEnd(EnumSet<TickType> type, Object... tickData){
+		if(tickData[0] instanceof World && isFlushingGenThreads && this==master)
+		{
+			updateWorldExplored((World)tickData[0]);
+			flushGenThreads((World)tickData[0], NO_CALL_CHUNK);
 			runWorldGenThreads();
 		}
 	}
-	
+	@Override
+	public void tickStart(EnumSet<TickType> type, Object... tickData) {}
+	@Override
+	public EnumSet<TickType> ticks() {
+		return EnumSet.of(TickType.WORLD);
+	}
+	@Override
+	public String getLabel() {
+		return this.toString()+" Tick";
+	}
 	//**************************** FORGE WORLD GENERATING HOOK ****************************************************************************//
 	
 	@Override
 	public void generate(Random random, int chunkX, int chunkZ, World world, IChunkProvider chunkGenerator, IChunkProvider chunkProvider)
-    {  	if (world.getWorldInfo().isMapFeaturesEnabled() && !(chunkGenerator instanceof ChunkProviderEnd))
+    {  	
+		if (world.getWorldInfo().isMapFeaturesEnabled() && !(world.provider instanceof WorldProviderEnd))
     	{   //if structures are enabled
 	        //can generate in any world except in The End,
 	        //if id is in AllowedDimensions list
 	        for (int id :AllowedDimensions)
 	        {
-	        	if (world.provider.dimensionId==id)
+	        	if ( world.getWorldInfo().getDimension()==id)
 	        	{
-	        		generateSurface(world, random, chunkX*16, chunkZ*16);
-	        		break;
+	        		generateSurface(world, random, chunkX, chunkZ);   		
 	        	}
 	        }         
 	    }
@@ -126,7 +136,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 		if(this==master && !isFlushingGenThreads)
 			flushGenThreads(world, new int[]{i,k});
 		
-		generate(world,random,i,k);
+		generate(world,random,i*16,k*16);
 	}
 	//****************************  FUNCTION - killZombie *************************************************************************************//
 	public void killZombie(WorldGeneratorThread wgt){
@@ -159,23 +169,23 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 	//****************************  FUNCTION - queryChunk *************************************************************************************//
 	//query chunk should be called from the WorldGeneratorThread wgt.
 	public boolean queryExplorationHandlerForChunk(World world, int chunkI, int chunkK, WorldGeneratorThread wgt) throws InterruptedException{	
-		logOrPrint("Query Chunk"+chunkI+","+chunkK);
+		if(lastExploredChunk.size()>60)
+			lastExploredChunk.remove(0);
 		//SMP - world.chunkProvider.chunkExists(chunkI, chunkK) calls ChunkProviderServer.java which returns id2ChunkMap.containsKey(ChunkCoordIntPair.chunkXZ2Int(i, j));
 		//If we call this after, no building is spawned !!
-		if(world.getChunkProvider().chunkExists(chunkI, chunkK)){ 
+		if(lastExploredChunk.contains(new int[]{chunkI,chunkK}) || world.getChunkProvider().chunkExists(chunkI, chunkK)){ 
 			logOrPrint("Chunk already exist at"+chunkI+","+chunkK);
-			lastExploredChunkI=chunkI;
-			lastExploredChunkK=chunkK;
+			if(!lastExploredChunk.contains(new int[]{chunkI,chunkK}))
+			{
+				lastExploredChunk.add(new int[]{chunkI,chunkK});
+				chunksExploredThisTick++;
+			}
 			return true;
 		}
-		if(chunksExploredFromStart==0) {
-			lastExploredChunkI=chunkI;
-			lastExploredChunkK=chunkK;
-		}
-		 logOrPrint("Start chunk is"+lastExploredChunkI+","+lastExploredChunkK);
-		if(Math.abs(chunkI - lastExploredChunkI) > max_exploration_distance
-		   || Math.abs(chunkK - lastExploredChunkK) > max_exploration_distance){
-			 logOrPrint("Chunk"+chunkI+","+chunkK+"too far away from"+lastExploredChunkI+","+lastExploredChunkK);
+		
+		if(Math.abs(chunkI - lastExploredChunk.get(lastExploredChunk.size()-1)[0]) > max_exploration_distance
+		   || Math.abs(chunkK - lastExploredChunk.get(lastExploredChunk.size()-1)[1]) > max_exploration_distance){
+			 logOrPrint("Chunk"+chunkI+","+chunkK+"too far away from latest explored chunk");
 			return false;
 		}
 		boolean flag=false;
@@ -185,29 +195,29 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 			if( Math.abs(chunkI-((int)player.posX)>>4) < MIN_CHUNK_SEPARATION_FROM_PLAYER 
 			 && Math.abs(chunkK-((int)player.posZ)>>4) < MIN_CHUNK_SEPARATION_FROM_PLAYER){ //try not to bury the player alive
 				if (this.chatMessage)
-					player.playerNetServerHandler.sendPacketToPlayer(new Packet3Chat("Terminating "+this.toString()+" generation thread, too close to player.\n "+Thread.currentThread().getId()+". at "+(((int)player.posX>>4))+","+(((int)player.posZ>>4))+"), while querying chunk "+chunkI+","+chunkK+")."));
+					player.playerNetServerHandler.sendPacketToPlayer(new Packet3Chat("Terminating "+this.toString()+" generation thread, too close to player.\n at "+(((int)player.posX>>4))+","+(((int)player.posZ>>4))+"), while querying chunk "+chunkI+","+chunkK+")."));
 				flag=true;				
 			}
 		}
 		if(flag)
 			return false;
-		//We've now failed world.chunkProvider.chunkExists(chunkI, chunkK),
-		// so we will have to load or generate this chunk
 		
-		if(chunksExploredThisTick > (isFlushingGenThreads ? CHUNKS_AT_WORLD_START : MAX_CHUNKS_PER_TICK))
+		
+		if(chunksExploredThisTick > (isCreatingDefaultChunks ? CHUNKS_AT_WORLD_START : MAX_CHUNKS_PER_TICK))
 		{
 		//suspend the thread if we've exceeded our quota of chunks to load for this tick
 			wgt.suspendGen();
 			logOrPrint("Too much chunks loaded this time");
 			return false;
 		}
-		chunksExploredThisTick++;
+		
 
 		if(flushCallChunk!=NO_CALL_CHUNK){
     		if(chunkI==flushCallChunk[0] && chunkK==flushCallChunk[1])
     			return false;
     	}
-		
+		//We've now failed world.chunkProvider.chunkExists(chunkI, chunkK),
+		// so we will have to load or generate this chunk
 		//SSP - world.chunkProvider.provideChunk calls ChunkProvider.java which returns (Chunk)chunkMap.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(i, j));
 		//       or loadChunk(i, j); if lookup fails. Since we already failed chunkExists(chunkI, chunkK) we could go directly to loadChunk(i,j);
 		//SMP - world.chunkProvider.loadChunk calls ChunkProviderServer.java which looks up id2ChunkMap.getValueByKey(l), 
@@ -215,12 +225,12 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 		try{
 			world.getChunkProvider().loadChunk(chunkI, chunkK);
 			logOrPrint("Force loaded chunk at"+chunkI+","+chunkK);
-	    	lastExploredChunkI=chunkI;
-			lastExploredChunkK=chunkK;
+			lastExploredChunk.add(new int[]{chunkI,chunkK});
+			chunksExploredThisTick++;
 			return true;
-		}catch(IllegalStateException i)
+		}catch(Exception e)
 		{
-			i.printStackTrace();
+			e.printStackTrace();
 			logOrPrint("Tried force loading a chunk at "+chunkI+","+chunkK+" but failed");
 		}
 		return false;
@@ -229,13 +239,15 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 	//****************************  FUNCTION - flushGenThreads *************************************************************************************//
 	protected void flushGenThreads(World world, int[] callChunk){		
 		//announce there is about to be lag because we are about to flush generation threads
-		List<EntityPlayerMP> playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
-		if(!isAboutToFlushGenThreads && !isCreatingDefaultChunks && playerList!=null && chunksExploredFromStart > 2*CHUNKS_AT_WORLD_START-15){
+		if(!isAboutToFlushGenThreads && !isCreatingDefaultChunks && chunksExploredFromStart > 2*CHUNKS_AT_WORLD_START){
+			List<EntityPlayerMP> playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
 			String flushAnnouncement="["+this.toString()+"] explored "+chunksExploredFromStart+" chunks, please stop moving.";
-			for (EntityPlayerMP player:playerList)
-			{
-				if (this.chatMessage)
-					player.playerNetServerHandler.sendPacketToPlayer(new Packet3Chat(flushAnnouncement));
+			if(playerList!=null){
+				for (EntityPlayerMP player:playerList)
+				{
+					if (this.chatMessage)
+						player.playerNetServerHandler.sendPacketToPlayer(new Packet3Chat(flushAnnouncement));
+				}
 			}
 			logOrPrint(flushAnnouncement);
 			isAboutToFlushGenThreads=true;
@@ -246,18 +258,14 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 		if(isFlushingGenThreads || Thread.currentThread() instanceof WorldGeneratorThread) 
 				return;
 		
-		if(chunksExploredFromStart>= (isCreatingDefaultChunks ? CHUNKS_AT_WORLD_START-1 : 2*CHUNKS_AT_WORLD_START))
+		//if(chunksExploredFromStart>= (isCreatingDefaultChunks ? CHUNKS_AT_WORLD_START-1 : 2*CHUNKS_AT_WORLD_START))
 		{
-			isFlushingGenThreads=true;
+			
 			flushCallChunk=callChunk;
-			while(exploreThreads.size() > 0) 
+			if(exploreThreads.size() > 0) 
 			{
-				doOnTick(world);
+				isFlushingGenThreads=true;
 			}			
-			isFlushingGenThreads=false;
-			isCreatingDefaultChunks=false;
-			isAboutToFlushGenThreads=false;
-			flushCallChunk=NO_CALL_CHUNK;
 		}
 	}
 	
@@ -292,10 +300,16 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 		}
 		
 		if(exploreThreads.size()==0) {
-			if(chunksExploredFromStart > 10) logOrPrint("Explored "+chunksExploredFromStart+" chunks in last wave.");
+			if(chunksExploredFromStart > 10) 
+				logOrPrint("Explored "+chunksExploredFromStart+" chunks in last wave.");
 			chunksExploredFromStart=0;
+			isFlushingGenThreads=false;
+			isCreatingDefaultChunks=false;
+			isAboutToFlushGenThreads=false;
+			flushCallChunk=NO_CALL_CHUNK;
 		}
 		chunksExploredThisTick=0;
+		
 	}
 	
 	//TODO: Use this ?
@@ -400,13 +414,11 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 	        try {
 					wait();
 	        } catch (InterruptedException e){
-	        	Thread.currentThread().interrupt();
 	        }
 		}
 		try {
 			if(wgt.hasTerminated) wgt.join();
 		}catch (InterruptedException e){
-			Thread.currentThread().interrupt();
 		}
 	}
 	
@@ -525,23 +537,26 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
     {
 		if (currentWorld == null)
         {
-        	currentWorld = world;
+        	currentWorld.add(world);
             return true;
         }
-		else if (currentWorld == world)
+		else if (currentWorld.contains(world))
         {
             return false;
         }
         else
         {
-            //check the filename in case we changed of dimension
-            File olddir = getWorldSaveDir(currentWorld);
             File newdir = getWorldSaveDir(world);
-            if (olddir.compareTo(newdir) != 0)
+            for (World w:currentWorld)
             {
-                // new world has definitely been created.
-                currentWorld = world;
-                return true;
+            	//check the filename in case we changed of dimension
+            	File olddir = getWorldSaveDir(w);
+            	if (olddir.compareTo(newdir) != 0)
+            	{
+            		// new world has definitely been created.
+            		currentWorld.add(world);
+            		return true;
+            	}
             }
             return false;
         }
