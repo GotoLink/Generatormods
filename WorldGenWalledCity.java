@@ -182,13 +182,8 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		walls[0].setCursor(0);
 		int[] cityCenter=new int[]{(walls[0].i1+walls[1].i1+walls[2].i1+walls[3].i1)/4,0,(walls[0].k1+walls[1].k1+walls[2].k1+walls[3].k1)/4};
 		cityCenter[1]=Building.findSurfaceJ(world, cityCenter[0], cityCenter[1], Building.WORLD_MAX_Y, false, 3);
-		try{
-			wc.cityLocations.add(new int[]{cityCenter[0],cityCenter[1],cityCenter[2],cityType});
-			wc.saveCityLocations();
-		}catch(Exception e)
-		{
-			e.printStackTrace();
-		}
+		wc.cityLocations.add(new int[]{cityCenter[0],cityCenter[1],cityCenter[2],cityType});
+		wc.saveCityLocations();
 
 		//=================================== Build it! =========================================
 		exploreArea(corner1, corner2, true);

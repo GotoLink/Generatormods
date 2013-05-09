@@ -535,7 +535,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
     }
 	protected boolean checkNewWorld(World world)
     {
-		if (currentWorld == null)
+		if (currentWorld == null || currentWorld.isEmpty())
         {
         	currentWorld.add(world);
             return true;
