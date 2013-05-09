@@ -34,7 +34,6 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.packet.Packet3Chat;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
-import net.minecraftforge.common.MinecraftForge;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.Init;
 import cpw.mods.fml.common.Mod.Instance;
@@ -45,6 +44,8 @@ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.registry.GameRegistry;
+import cpw.mods.fml.common.registry.TickRegistry;
+import cpw.mods.fml.relauncher.Side;
 
 @Mod(modid = "WalledCityMod", name = "Walled City Generator", version = "0.0.8",dependencies= "after:ExtraBiomes,BiomesOPlenty")
 @NetworkMod(clientSideRequired = false, serverSideRequired = false)
@@ -54,7 +55,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	public final static int MIN_CITY_LENGTH=40;
 	private final static int MAX_EXPLORATION_DISTANCE=10;
 	private final static int MAX_FOG_HEIGHT=27;
-	public final static int CITY_TYPE_SURFACE=0, CITY_TYPE_NETHER=2, CITY_TYPE_UNDERGROUND=3;
+	public final static int CITY_TYPE_SURFACE=0, CITY_TYPE_NETHER=-1, CITY_TYPE_UNDERGROUND=1;
 	private final static String SETTINGS_FILE_NAME="WalledCitySettings.txt",
 								LOG_FILE_NAME="walled_city_log.txt",
 								CITY_TEMPLATES_FOLDER_NAME="walledcity",
@@ -81,9 +82,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	
 	@Init
 	public void load(FMLInitializationEvent event) {
-		GameRegistry.registerWorldGenerator(this);
-		max_exploration_distance=MAX_EXPLORATION_DISTANCE;
-		master=this;
+		
 	}
 	//****************************  FUNCTION - loadDataFiles *************************************************************************************//
 	public void loadDataFiles(){
@@ -151,8 +150,9 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	//****************************  FUNCTION - updateWorldExplored *************************************************************************************//
 	public /*synchronized*/ void updateWorldExplored(World world_) {//should test synchronized or not
 		if (checkNewWorld(world_))
-		{setNewWorld(world_,"Starting to survey a world for city generation...");
-			
+		{
+			setNewWorld(world_,"Starting to survey a world for city generation...");		
+	
 			if(this==master){
 				//kill zombies
 				for(WorldGeneratorThread wgt: exploreThreads) killZombie(wgt);
@@ -324,9 +324,14 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	@PostInit
 	public void modsLoaded(FMLPostInitializationEvent event)
 	{
-		master=this;
 		if(!dataFilesLoaded)
-		loadDataFiles();		
+			loadDataFiles();
+		if(!errFlag){
+			master=this;
+			GameRegistry.registerWorldGenerator(this);
+			TickRegistry.registerTickHandler(master, Side.SERVER);
+			max_exploration_distance=MAX_EXPLORATION_DISTANCE;
+		}	
 	}
 }
 

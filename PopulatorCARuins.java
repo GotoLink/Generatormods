@@ -13,7 +13,6 @@ import java.util.LinkedList;
 import java.util.Random;
 
 import net.minecraft.world.World;
-import net.minecraftforge.common.MinecraftForge;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.Init;
@@ -27,6 +26,8 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.registry.GameRegistry;
+import cpw.mods.fml.common.registry.TickRegistry;
+import cpw.mods.fml.relauncher.Side;
 /*
  *  Source code for the CA Ruins Mod for the game Minecraft
  *  Copyright (C) 2011 by formivore
@@ -138,15 +139,10 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 	
 	@Init
 	public void load(FMLInitializationEvent event) {		
-		GameRegistry.registerWorldGenerator(this);
-
-		max_exploration_distance=MAX_EXPLORATION_DISTANCE;
-		
 		/*for(int m=0; m<DEFAULT_BLOCK_RULES .length; m++)
 		{
 			blockRules[m]=DEFAULT_BLOCK_RULES[m];
-		}*/
-		master=this;	
+		}*/	
 	}
 	@ServerStarting
 	public void serverStarting(FMLServerStartingEvent event){
@@ -155,7 +151,8 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 	//****************************   FUNCTION - updateWorldExplored *************************************************************************************//
 	public synchronized void updateWorldExplored(World world_) {
 		if (checkNewWorld(world_))
-		{setNewWorld(world_,"Starting to survey a world for automata generation...");
+		{
+			setNewWorld(world_,"Starting to survey a world for automata generation...");
 			
 			if(this==master)
 			{//kill zombies
@@ -347,17 +344,25 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 	@PostInit
 	public void modsLoaded(FMLPostInitializationEvent event)
 	{		
-		//see if the walled city mod is loaded. If it is, make it load its templates (if not already loaded) and then combine explorers.
-		if (Loader.isModLoaded("WalledCityMod")){//FIXME ?
-			PopulatorWalledCity wcm= PopulatorWalledCity.instance;
-			if(!wcm.dataFilesLoaded)  wcm.loadDataFiles();
-			if(!wcm.errFlag){
-				master=wcm;
-				logOrPrint("Combining chunk explorers for "+toString()+" and "+master.toString()+".");
-			}
-		}
-		if(master==null) master=this;
-		if(!dataFilesLoaded)loadDataFiles();				
+		if(!dataFilesLoaded)
+			loadDataFiles();
+		if(!errFlag){
+				//see if the walled city mod is loaded. If it is, make it load its templates (if not already loaded) and then combine explorers.
+			/*if (Loader.isModLoaded("WalledCityMod")){//FIXME
+				PopulatorWalledCity wcm= PopulatorWalledCity.instance;
+				if(!wcm.dataFilesLoaded)  
+					wcm.loadDataFiles();
+				if(!wcm.errFlag){
+					master=wcm;
+					logOrPrint("Combining chunk explorers for "+this.toString()+" and "+master.toString()+".");
+				}
+			}*/
+			if(master==null) 
+				master=this;
+			GameRegistry.registerWorldGenerator(this);
+			TickRegistry.registerTickHandler(master, Side.SERVER);
+			max_exploration_distance=MAX_EXPLORATION_DISTANCE;
+		}				
 	}
 	
 	//TODO: Use this ?

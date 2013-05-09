@@ -62,6 +62,7 @@ public abstract class WorldGeneratorThread extends Thread
 		ChunkTryProb=ChunkTryProb_;
 		master=master_;
 		max_spawn_height=Building.WORLD_MAX_Y;
+		
 	}
 	
 	//****************************  FUNCTION - abstract and stub functions  *************************************************************************************//
@@ -94,7 +95,6 @@ public abstract class WorldGeneratorThread extends Thread
 				tries++;
 			}while(!success && tries<TriesPerChunk && j0!=Building.HIT_WATER);
 		} catch(InterruptedException e){
-			Thread.currentThread().interrupt();
 		}
 		
 		synchronized(master){

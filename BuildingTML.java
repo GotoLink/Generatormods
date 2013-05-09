@@ -63,28 +63,34 @@ public class BuildingTML extends Building
 	    }
 
 	//****************************************  FUNCTION - build *************************************************************************************//
-	public void build() {
+	public void build() throws InterruptedException {
+				
 		tmlt.setFixedRules(random);
 		
 		//build base
 		int[][] base=tmlt.namedLayers.get("base");
-		for(int y=0;y<bLength;y++){ for(int x=0;x<bWidth;x++){
-			if(base!=null) 
-				buildDown(x,-1,y,tmlt.rules[base[y][x]],tmlt.leveling,0,0);
-			else fillDown(getSurfaceIJKPt(x,y,j0-1,true,IGNORE_WATER),j0-1,world);
-		}}
-
+		for(int y=0;y<bLength;y++) 
+			for(int x=0;x<bWidth;x++)
+			{
+				if(!queryExplorationHandlerForChunk(x,0,y)) 
+					break;
+				if(base!=null) 
+					buildDown(x,-1,y,tmlt.rules[base[y][x]],tmlt.leveling,0,0);
+				else fillDown(getSurfaceIJKPt(x,y,j0-1,true,IGNORE_WATER),j0-1,world);
+			}
 		
 		//clear overhead
 		for(int z=bHeight; z<tmlt.cutIn+tmlt.embed; z++)
-			for(int y=0;y<bLength;y++) for(int x=0;x<bWidth;x++)
-				setBlockLocal(x,z,y,0);
+			for(int y=0;y<bLength;y++) 
+				for(int x=0;x<bWidth;x++)
+					setBlockLocal(x,z,y,0);
 
 
 		//build
 		for(int z=0;z<bHeight;z++)
-			for(int y=0;y<bLength;y++) for(int x=0;x<bWidth;x++)
-				setBlockLocal(x,z,y,tmlt.rules[tmlt.template[z][y][x]]);
+			for(int y=0;y<bLength;y++) 
+				for(int x=0;x<bWidth;x++)
+					setBlockLocal(x,z,y,tmlt.rules[tmlt.template[z][y][x]]);
 
 
 		flushDelayed();

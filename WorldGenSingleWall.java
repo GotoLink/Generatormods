@@ -20,9 +20,7 @@ public class WorldGenSingleWall extends WorldGeneratorThread{
                 hasStarted=true;
                 try{
                         generate(pt[0],pt[1],pt[2]);
-                } catch(InterruptedException e){
-                	Thread.currentThread().interrupt();
-                }
+                } catch(InterruptedException e){}
 
                 synchronized(master){
                         hasTerminated=true;

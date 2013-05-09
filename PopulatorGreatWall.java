@@ -30,7 +30,6 @@ import java.util.LinkedList;
 import java.util.Random;
 
 import net.minecraft.world.World;
-import net.minecraftforge.common.MinecraftForge;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.Init;
@@ -42,6 +41,8 @@ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.registry.GameRegistry;
+import cpw.mods.fml.common.registry.TickRegistry;
+import cpw.mods.fml.relauncher.Side;
 
 @Mod(modid = "GreatWallMod", name = "Great Wall Mod", version = "0.0.8",dependencies= "after:ExtraBiomes,BiomesOPlenty")
 @NetworkMod(clientSideRequired = false, serverSideRequired = false)
@@ -72,10 +73,7 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 		//GameRegistry.registerBlock(surveyorsRod,"SurveyorsRod");
 	    	
 		//GameRegistry.addRecipe(new ItemStack(surveyorsRod,8), new Object[]{ "##", "##", Character.valueOf('#'), Block.dirt});
-		GameRegistry.registerWorldGenerator(this);
-		max_exploration_distance=MAX_EXPLORATION_DISTANCE;
-		master=this;
-	}
+		}
 	
 	//****************************  FUNCTION - loadDataFiles *************************************************************************************//
 	public final void loadDataFiles(){
@@ -103,7 +101,8 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 	//****************************  FUNCTION - updateWorldExplored *************************************************************************************//
 	public synchronized void updateWorldExplored(World world_) {
 		if (checkNewWorld(world_))
-		{setNewWorld(world_,"Starting to survey a world for wall generation...");
+		{
+			setNewWorld(world_,"Starting to survey a world for wall generation...");
 			
 			if(this==master){
 				//kill zombies
@@ -194,16 +193,24 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 	@PostInit
 	public void modsLoaded(FMLPostInitializationEvent event)
 	{		
-//see if the walled city mod is loaded. If it is, make it load its templates (if not already loaded) and then combine explorers.
-		if (Loader.isModLoaded("WalledCityMod")){//FIXME ?
-			PopulatorWalledCity wcm= PopulatorWalledCity.instance;
-			if(!wcm.dataFilesLoaded)  wcm.loadDataFiles();
-			if(!wcm.errFlag){
-				master=wcm;
-				logOrPrint("Combining chunk explorers for "+toString()+" and "+master.toString()+".");
-			}
-		}
-		if(master==null) master=this;
-		if(!dataFilesLoaded)loadDataFiles();		
+		if(!dataFilesLoaded)
+			loadDataFiles();
+		if(!errFlag){
+				//see if the walled city mod is loaded. If it is, make it load its templates (if not already loaded) and then combine explorers.
+			/*if (Loader.isModLoaded("WalledCityMod")){//FIXME
+				PopulatorWalledCity wcm= PopulatorWalledCity.instance;
+				if(!wcm.dataFilesLoaded)  
+					wcm.loadDataFiles();
+				if(!wcm.errFlag){
+					master=wcm;
+					logOrPrint("Combining chunk explorers for "+this.toString()+" and "+master.toString()+".");
+				}
+			}*/
+			if(master==null) 
+				master=this;
+			GameRegistry.registerWorldGenerator(this);
+			TickRegistry.registerTickHandler(master, Side.SERVER);
+			max_exploration_distance=MAX_EXPLORATION_DISTANCE;
+		}		
 	}
 }

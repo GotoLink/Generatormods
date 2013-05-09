@@ -239,7 +239,8 @@ public class Building
         if(blockID>=SPECIAL_BLOCKID_START) { setSpecialBlockLocal(x,z,y,blockID,0); return; }
        
         int[] pt=getIJKPt(x,z,y);
-        if(blockID==0 && world.getBlockId(pt[0], pt[1], pt[2])==0) return;
+        if(blockID==0 && world.getBlockId(pt[0], pt[1], pt[2])==0) 
+        	return;
         emptyIfChest(pt);
 
         if(randLightingHash[(x & 0x7) | (y & 0x38) | (z & 0x1c0)])
@@ -251,9 +252,12 @@ public class Building
         if(blockID>=SPECIAL_BLOCKID_START) { setSpecialBlockLocal(x,z,y,blockID,metadata); return; }
        
         int[] pt=getIJKPt(x,z,y);
-        if(blockID==0 && world.getBlockId(pt[0], pt[1], pt[2])==0) return;
-        if(blockID!=CHEST_ID) emptyIfChest(pt);//wrong ID check ?
-        if(IS_DELAY_BLOCK[blockID]) delayedBuildQueue.offer(new int[]{pt[0],pt[1],pt[2],blockID,rotateMetadata(blockID,metadata)});
+        if(blockID==0 && world.getBlockId(pt[0], pt[1], pt[2])==0) 
+        	return;
+        if(blockID!=CHEST_ID) 
+        	emptyIfChest(pt);
+        if(IS_DELAY_BLOCK[blockID]) 
+        	delayedBuildQueue.offer(new int[]{pt[0],pt[1],pt[2],blockID,rotateMetadata(blockID,metadata)});
         else{
                 if(randLightingHash[(x & 0x7) | (y & 0x38) | (z & 0x1c0)])
                         world.setBlock(pt[0],pt[1],pt[2],blockID,rotateMetadata(blockID,metadata),3);
@@ -262,15 +266,21 @@ public class Building
     }
    
     protected final void setBlockLocal(int x, int z, int y, int[] block){
-        if(block[0]>=SPECIAL_BLOCKID_START) { setSpecialBlockLocal(x,z,y,block[0],block[1]); return; }
-       
+        if(block[0]>=SPECIAL_BLOCKID_START) 
+        { 
+        	setSpecialBlockLocal(x,z,y,block[0],block[1]); 
+        	return; 
+        }
         int[] pt=getIJKPt(x,z,y);
-        if(block[0]==0 && world.getBlockId(pt[0], pt[1], pt[2])==0) return;
-        if(block[0]!=CHEST_ID) emptyIfChest(pt);
-        if(IS_DELAY_BLOCK[block[0]]) delayedBuildQueue.offer(new int[]{pt[0],pt[1],pt[2],block[0],rotateMetadata(block[0],block[1])});
+        if(block[0]==0 && world.getBlockId(pt[0], pt[1], pt[2])==0) 
+        	return;
+        if(block[0]!=CHEST_ID) 
+        	emptyIfChest(pt);
+        if(IS_DELAY_BLOCK[block[0]]) 
+        	delayedBuildQueue.offer(new int[]{pt[0],pt[1],pt[2],block[0],rotateMetadata(block[0],block[1])});
         else{
                 if(randLightingHash[(x & 0x7) | (y & 0x38) | (z & 0x1c0)])
-                        world.setBlock(pt[0],pt[1],pt[2],block[0],rotateMetadata(block[0],block[1]),3);
+                	world.setBlock(pt[0],pt[1],pt[2],block[0],rotateMetadata(block[0],block[1]),3);
                 else setBlockAndMetaNoLighting(world,pt[0],pt[1],pt[2],block[0],rotateMetadata(block[0],block[1]));
         }
     }
@@ -280,9 +290,12 @@ public class Building
         if(idAndMeta[0]>=SPECIAL_BLOCKID_START) { setSpecialBlockLocal(x,z,y,idAndMeta[0],idAndMeta[1]); return; }      
        
         int[] pt=getIJKPt(x,z,y);
-        if(idAndMeta[0]==0 && world.getBlockId(pt[0], pt[1], pt[2])==0) return;
-        if(idAndMeta[0]!=CHEST_ID) emptyIfChest(pt);
-        if(IS_DELAY_BLOCK[idAndMeta[0]]) delayedBuildQueue.offer(new int[]{pt[0],pt[1],pt[2],idAndMeta[0],rotateMetadata(idAndMeta[0],idAndMeta[1])});
+        if(idAndMeta[0]==0 && world.getBlockId(pt[0], pt[1], pt[2])==0) 
+        	return;
+        if(idAndMeta[0]!=CHEST_ID) 
+        	emptyIfChest(pt);
+        if(IS_DELAY_BLOCK[idAndMeta[0]]) 
+        	delayedBuildQueue.offer(new int[]{pt[0],pt[1],pt[2],idAndMeta[0],rotateMetadata(idAndMeta[0],idAndMeta[1])});
         else{
                 if(randLightingHash[(x & 0x7) | (y & 0x38) | (z & 0x1c0)])
                         world.setBlock(pt[0],pt[1],pt[2],idAndMeta[0],rotateMetadata(idAndMeta[0],idAndMeta[1]),3);
@@ -296,7 +309,8 @@ public class Building
        
         int[] pt=getIJKPt(x,z,y);
         if(blockID!=CHEST_ID) emptyIfChest(pt);
-        if(IS_DELAY_BLOCK[blockID]) delayedBuildQueue.offer(new int[]{pt[0],pt[1],pt[2],blockID,rotateMetadata(blockID,metadata)});
+        if(IS_DELAY_BLOCK[blockID]) 
+        	delayedBuildQueue.offer(new int[]{pt[0],pt[1],pt[2],blockID,rotateMetadata(blockID,metadata)});
         else{
                 if(lighting)
                         world.setBlock(pt[0],pt[1],pt[2],blockID,rotateMetadata(blockID,metadata),3);
@@ -348,7 +362,8 @@ public class Building
                 //      block[4]=1;
                 //}
                
-                if(block[3]==PAINTING_SPECIAL_ID) setPainting(block, block[4]);           
+                if(block[3]==PAINTING_SPECIAL_ID) 
+                	setPainting(block, block[4]);           
                 else if(block[3]==TORCH_ID){
                         if(Block.torchWood.canPlaceBlockAt(world,block[0],block[1],block[2]))
                                 world.setBlock(block[0],block[1],block[2],block[3],block[4],3); //force lighting update
@@ -722,33 +737,36 @@ public class Building
       
     public static int findSurfaceJ(World world, int i, int k, int jinit, boolean wallIsSurface, int waterSurfaceBuffer){
         int blockId;
-                if(world.provider.isHellWorld) {//the Nether
-                        if( (i%2==1) ^ (k%2==1) ) {
-                                for(int j=(int) (WORLD_MAX_Y*0.5); j>-1; j--) {
-                                        if(world.getBlockId(i,j,k)==0)
-                                                for(; j>-1; j--)
-                                                        if(!IS_WALLABLE[world.getBlockId(i,j,k)])
-                                                                return j;
-                                }
-                        }else {
-                                for(int j=0; j<=(int)(WORLD_MAX_Y*0.5); j++)
-                                        if(world.getBlockId(i,j,k)==0 )
-                                                                return j;
-                        }
-                        return -1;
+        //if(world.getChunkProvider().chunkExists(i>>4, k>>4))
+        {
+            if(world.provider.isHellWorld) {//the Nether
+                    if( (i%2==1) ^ (k%2==1) ) {
+                            for(int j=(int) (WORLD_MAX_Y*0.5); j>-1; j--) {
+                                    if(world.getBlockId(i,j,k)==0)
+                                            for(; j>-1; j--)
+                                                    if(!IS_WALLABLE[world.getBlockId(i,j,k)])
+                                                            return j;
+                            }
+                    }else {
+                            for(int j=0; j<=(int)(WORLD_MAX_Y*0.5); j++)
+                                    if(world.getBlockId(i,j,k)==0 )
+                                                            return j;
+                    }
+                    return -1;
+            }
+            else{ //other dimensions
+                int minecraftHeight=world.getChunkFromBlockCoords(i,k).getHeightValue(i & 0xf,k & 0xf);
+                if(minecraftHeight < jinit) jinit=minecraftHeight;
+                for(int j=jinit; j>=0; j--){
+                    blockId=world.getBlockId(i,j,k);
+                    if(!IS_WALLABLE[blockId] && (wallIsSurface || !IS_ARTIFICAL_BLOCK[blockId]))
+                            return j;
+                    if(waterSurfaceBuffer!=IGNORE_WATER && IS_WATER_BLOCK[blockId])
+                            return IS_WATER_BLOCK[world.getBlockId(i, j-waterSurfaceBuffer, k)] ? HIT_WATER : j;  //so we can still build in swamps...
                 }
-                else{ //other dimensions
-                        int minecraftHeight=world.getChunkFromBlockCoords(i,k).getHeightValue(i & 0xf,k & 0xf);
-                        if(minecraftHeight < jinit) jinit=minecraftHeight;
-                        for(int j=jinit; j>=0; j--){
-                                blockId=world.getBlockId(i,j,k);
-                                if(!IS_WALLABLE[blockId] && (wallIsSurface || !IS_ARTIFICAL_BLOCK[blockId]))
-                                        return j;
-                                if(waterSurfaceBuffer!=IGNORE_WATER && IS_WATER_BLOCK[blockId])
-                                        return IS_WATER_BLOCK[world.getBlockId(i, j-waterSurfaceBuffer, k)] ? HIT_WATER : j;  //so we can still build in swamps...
-                        }
-                }
-                return -1;
+            }
+        }
+        return -1;
     }
          
       public static int pickWeightedOption( Random random, int[] weights, int[] options){

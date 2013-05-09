@@ -55,7 +55,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		BacktrackLength=wc.BacktrackLength;
 		chestTries=wc.chestTries;
 		chestItems=wc.chestItems;
-		cityType=world.provider.isHellWorld ? PopulatorWalledCity.CITY_TYPE_NETHER : PopulatorWalledCity.CITY_TYPE_SURFACE;
+		cityType=world_.provider.isHellWorld ? -1 : 0;
 		setName("WorldGenWalledCityThread");
 		
 	}
@@ -182,10 +182,13 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		walls[0].setCursor(0);
 		int[] cityCenter=new int[]{(walls[0].i1+walls[1].i1+walls[2].i1+walls[3].i1)/4,0,(walls[0].k1+walls[1].k1+walls[2].k1+walls[3].k1)/4};
 		cityCenter[1]=Building.findSurfaceJ(world, cityCenter[0], cityCenter[1], Building.WORLD_MAX_Y, false, 3);
-		for(int w=0;w<4;w++) 
-			wc.cityLocations.add(new int[]{walls[w].i1,walls[w].k1,cityType});
-		wc.saveCityLocations();
-
+		try{
+			wc.cityLocations.add(new int[]{cityCenter[0],cityCenter[1],cityCenter[2],cityType});
+			wc.saveCityLocations();
+		}catch(Exception e)
+		{
+			e.printStackTrace();
+		}
 
 		//=================================== Build it! =========================================
 		exploreArea(corner1, corner2, true);

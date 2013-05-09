@@ -40,23 +40,23 @@ public class CommandBuild extends CommandBase{
             if ("ruin".equalsIgnoreCase(coordinate[0]))
             {  
             	ruin=PopulatorCARuins.instance;
-            	ruin.exploreThreads.add(new WorldGenCARuins((PopulatorCARuins) ruin, world,new Random(), posX, posZ, 1, 1));	
+            	ruin.exploreThreads.add(new WorldGenCARuins((PopulatorCARuins) ruin, world,new Random(), posX, posZ, 100, 1));	
             }
             else if ("wall".equalsIgnoreCase(coordinate[0]))
             {
             	wall=PopulatorGreatWall.instance;
-            	wall.exploreThreads.add(new WorldGenGreatWall((PopulatorGreatWall) wall, world, new Random(), posX, posZ, 1, 1));         	            	
+            	wall.exploreThreads.add(new WorldGenGreatWall((PopulatorGreatWall) wall, world, new Random(), posX, posZ, 100, 1));         	            	
             }
             else if ("city".equalsIgnoreCase(coordinate[0]))
             {
             	city=PopulatorWalledCity.instance;
-            	city.exploreThreads.add(new WorldGenWalledCity((PopulatorWalledCity) city, world, new Random(), posX, posZ, 1, 1));
+            	city.exploreThreads.add(new WorldGenWalledCity((PopulatorWalledCity) city, world, new Random(), posX, posZ, 100, 1));
         		
             }
         }
         else
         {
-            throw new WrongUsageException("/" + getCommandName() + " <ruin:wall:city> <x> <z>");
+            throw new WrongUsageException(getCommandUsage(var1));
         }
 		
 	}
