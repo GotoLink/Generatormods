@@ -77,72 +77,72 @@ import net.minecraftforge.common.IShearable;
 
 public class Building
 {
-                public final static int HIT_WATER=-666; //, HIT_SWAMP=-667;
-                public final static int EASY_CHEST=0, MEDIUM_CHEST=1, HARD_CHEST=2, TOWER_CHEST=3;
-                public final static int DIR_NORTH=0, DIR_EAST=1, DIR_SOUTH=2, DIR_WEST=3;
-                public final static int ROT_R=1,R_HAND=1,L_HAND=-1;
-                public final static int SEA_LEVEL=63;
-                public final static int WORLD_MAX_Y=255,WORLD_HEIGHT=256;
-               
-                //**** WORKING VARIABLES ****
-                protected World world;
-                protected Random random;
-                protected TemplateRule bRule; //main structural blocktype
-                public int bWidth, bHeight, bLength;
-                public int bID; //Building ID number
-                private LinkedList<int[]> delayedBuildQueue;
-                protected WorldGeneratorThread wgt;
-                protected boolean centerAligned; //if true, alignPt x is the central axis of the building
-                                                                                 //if false, alignPt is the origin
-               
-                protected int i0, j0, k0; //origin coordinates (x=0,z=0,y=0). The child class may want to move the origin as it progress to use as a "cursor" position.
-                private int xI,yI,xK,yK; //
-               
-                protected int bHand; //hand of secondary axis. Takes values of 1 for right-handed, -1 for left-handed.
-                protected int bDir; //Direction code of primary axis. Takes values of DIR_NORTH=0,DIR_EAST=1,DIR_SOUTH=2,DIR_WEST=3.
+    public final static int HIT_WATER=-666; //, HIT_SWAMP=-667;
+    public final static int EASY_CHEST=0, MEDIUM_CHEST=1, HARD_CHEST=2, TOWER_CHEST=3;
+    public final static int DIR_NORTH=0, DIR_EAST=1, DIR_SOUTH=2, DIR_WEST=3;
+    public final static int ROT_R=1,R_HAND=1,L_HAND=-1;
+    public final static int SEA_LEVEL=63;
+    public final static int WORLD_MAX_Y=255,WORLD_HEIGHT=256;
+   
+    //**** WORKING VARIABLES ****
+    protected World world;
+    protected Random random;
+    protected TemplateRule bRule; //main structural blocktype
+    public int bWidth, bHeight, bLength;
+    public int bID; //Building ID number
+    private LinkedList<int[]> delayedBuildQueue;
+    protected WorldGeneratorThread wgt;
+    protected boolean centerAligned; //if true, alignPt x is the central axis of the building
+                                                                     //if false, alignPt is the origin
+   
+    protected int i0, j0, k0; //origin coordinates (x=0,z=0,y=0). The child class may want to move the origin as it progress to use as a "cursor" position.
+    private int xI,yI,xK,yK; //
+   
+    protected int bHand; //hand of secondary axis. Takes values of 1 for right-handed, -1 for left-handed.
+    protected int bDir; //Direction code of primary axis. Takes values of DIR_NORTH=0,DIR_EAST=1,DIR_SOUTH=2,DIR_WEST=3.
 
 
-        //****************************  CONSTRUCTORS - Building  *************************************************************************************//
-        public Building(int ID_, WorldGeneratorThread wgt_,TemplateRule buildingRule_,int dir_,int axXHand_, boolean centerAligned_,int[] dim, int[] alignPt) {
-                bID=ID_;
-                wgt=wgt_;
-                world=wgt.world;
-                bRule=buildingRule_;
-                if(bRule==null) bRule=TemplateRule.STONE_RULE;
-                bWidth=dim[0];
-                bHeight=dim[1];
-                bLength=dim[2];
-                random=wgt.random;
-                bHand=axXHand_;
-                centerAligned=centerAligned_;
-                setPrimaryAx(dir_);
-                if(alignPt!=null && alignPt.length==3){
-                        if(centerAligned) setOrigin(alignPt[0]-xI*bWidth/2,alignPt[1],alignPt[2]-xK*bWidth/2);
-                        else setOrigin(alignPt[0],alignPt[1],alignPt[2]);
-                }
-                delayedBuildQueue=new LinkedList<int[]>();
+    //****************************  CONSTRUCTORS - Building  *************************************************************************************//
+    public Building(int ID_, WorldGeneratorThread wgt_,TemplateRule buildingRule_,int dir_,int axXHand_, boolean centerAligned_,int[] dim, int[] alignPt) {
+        bID=ID_;
+        wgt=wgt_;
+        world=wgt.world;
+        bRule=buildingRule_;
+        if(bRule==null) bRule=TemplateRule.STONE_RULE;
+        bWidth=dim[0];
+        bHeight=dim[1];
+        bLength=dim[2];
+        random=wgt.random;
+        bHand=axXHand_;
+        centerAligned=centerAligned_;
+        setPrimaryAx(dir_);
+        if(alignPt!=null && alignPt.length==3){
+                if(centerAligned) setOrigin(alignPt[0]-xI*bWidth/2,alignPt[1],alignPt[2]-xK*bWidth/2);
+                else setOrigin(alignPt[0],alignPt[1],alignPt[2]);
         }
+        delayedBuildQueue=new LinkedList<int[]>();
+    }
    
     //******************** ORIENTATION FUNCTIONS *************************************************************************************************************//
        
-        public void setPrimaryAx(int dir_){
-                bDir=dir_;         
-                //changes of basis
-                switch(bDir){
-                        case DIR_NORTH: xI=bHand;       yI=0;
-                                                        xK=0;           yK=-1;
-                        break;
-                        case DIR_EAST:  xI=0;           yI=1;  
-                                                        xK=bHand;       yK=0;
-                        break;
-                        case DIR_SOUTH: xI=-bHand;      yI=0;
-                                                        xK=0;           yK=1;  
-                        break;
-                        case DIR_WEST:  xI=0;           yI=-1;
-                                                        xK=-bHand;      yK=0;
-                        break;
-                }
+    public void setPrimaryAx(int dir_){
+        bDir=dir_;         
+        //changes of basis
+        switch(bDir){
+                case DIR_NORTH: xI=bHand;       yI=0;
+                                                xK=0;           yK=-1;
+                break;
+                case DIR_EAST:  xI=0;           yI=1;  
+                                                xK=bHand;       yK=0;
+                break;
+                case DIR_SOUTH: xI=-bHand;      yI=0;
+                                                xK=0;           yK=1;  
+                break;
+                case DIR_WEST:  xI=0;           yI=-1;
+                                                xK=-bHand;      yK=0;
+                break;
         }
+    }
       
     public final static int rotDir(int dir,int rotation){
         return (dir+rotation+4) % 4;
@@ -1100,7 +1100,7 @@ public class Building
     		ACTIVATORRAIL_ID=157,DROPPER_ID=158;
    
     //Special Blocks
-    public final static int SPECIAL_BLOCKID_START=299, HOLE_ID=0,
+    public final static int SPECIAL_BLOCKID_START=300,HOLE_ID=0,
     		PRESERVE_ID=300,ZOMBIE_SPAWNER_ID=301, SKELETON_SPAWNER_ID=302,
     		SPIDER_SPAWNER_ID=303,CREEPER_SPAWNER_ID=304,UPRIGHT_SPAWNER_ID=305,
     		EASY_SPAWNER_ID=306,MEDIUM_SPAWNER_ID=307,HARD_SPAWNER_ID=308,EASY_CHEST_ID=309,
@@ -1167,18 +1167,18 @@ public class Building
     							IS_DOOR_BLOCK=new boolean[4096];
 
     static{
-        for(int blockID=0;blockID<Block.blocksList.length;blockID++){
+        for(int blockID=0;blockID<IS_ARTIFICAL_BLOCK.length;blockID++){
         	Block block = Block.blocksList[blockID];
         	if(block!=null)
-        		{
+        	{
         		IS_STAIRS_BLOCK[blockID]= block instanceof BlockStairs;
         		IS_DOOR_BLOCK[blockID]= block instanceof BlockDoor;   
                 //note lava is considered to NOT be a liquid, and is therefore not wallable. This is so we can build cities on the lava surface.
                 IS_WATER_BLOCK[blockID]= blockID==WATER_ID || blockID==STATIONARY_WATER_ID || blockID==ICE_ID;
                
-                IS_FLOWING_BLOCK[blockID]=block instanceof BlockFlowing || IS_WATER_BLOCK[blockID] || blockID==STATIONARY_LAVA_ID || blockID==LAVA_ID || blockID==SAND_ID || blockID==GRAVEL_ID;
+                IS_FLOWING_BLOCK[blockID]=block instanceof BlockFlowing || IS_WATER_BLOCK[blockID] || blockID==STATIONARY_LAVA_ID || blockID==LAVA_ID || block instanceof BlockSand || block instanceof BlockGravel;
                
-                IS_WALLABLE[blockID]= blockID>=346 || IS_WATER_BLOCK[blockID]
+                IS_WALLABLE[blockID]= IS_WATER_BLOCK[blockID]
                    || block instanceof BlockLog || block instanceof BlockWeb                
                    || block instanceof BlockSnow|| block instanceof BlockPumpkin 
                    || block instanceof BlockMelon|| block instanceof IShearable
@@ -1190,9 +1190,9 @@ public class Building
                 IS_ARTIFICAL_BLOCK[blockID]= !( IS_WALLABLE[blockID] || IS_ORE_BLOCK[blockID]
                    || blockID==STONE_ID || block instanceof BlockDirt || block instanceof BlockGrass 
                    || block instanceof BlockGravel || block instanceof BlockSand || block instanceof BlockNetherrack
-                   || block instanceof BlockSoulSand || block instanceof BlockMycelium || blockID==LAVA_ID || blockID==STATIONARY_LAVA_ID);
+                   || block instanceof BlockSoulSand || block instanceof BlockMycelium);
                
-                IS_DELAY_BLOCK[blockID]=IS_STAIRS_BLOCK[blockID]
+                IS_DELAY_BLOCK[blockID]=IS_STAIRS_BLOCK[blockID] || IS_FLOWING_BLOCK[blockID]
                    || block instanceof BlockTorch || block instanceof BlockLever || block instanceof BlockSign 
                    || block instanceof BlockFire || block instanceof BlockButton || block instanceof BlockGlowStone 
                    || block instanceof BlockVine || block instanceof BlockRedstoneWire
@@ -1200,10 +1200,11 @@ public class Building
                
                 //Define by what it is not.
                 IS_LOAD_TRASMITER_BLOCK[blockID]= !(IS_WALLABLE[blockID]  || IS_FLOWING_BLOCK[blockID]
-                   ||  blockID==HOLE_ID || blockID==PRESERVE_ID || blockID==TORCH_ID || blockID==LADDER_ID);
-        		} 
+                     || block instanceof BlockTorch || blockID==LADDER_ID);
+        	} 
         	else{
-        		IS_WALLABLE[blockID]=true;
+        		IS_WALLABLE[blockID]= blockID==HOLE_ID;
+        		IS_LOAD_TRASMITER_BLOCK[blockID]= !(IS_WALLABLE[blockID]|| blockID==PRESERVE_ID );
         	}
         }
     }
@@ -1214,20 +1215,20 @@ public class Building
    
     protected final static int[] STEP_TO_STAIRS={STONE_BRICK_STAIRS_ID,SAND_STAIRS_ID,WOOD_STAIRS_ID,COBBLESTONE_STAIRS_ID,BRICK_STAIRS_ID,STONE_BRICK_STAIRS_ID,NETHER_BRICK_STAIRS_ID,QUARTZ_STAIRS_ID };
    
-    protected final static int blockToStepMeta(int[] idAndMeta){
-        if(!IS_ARTIFICAL_BLOCK[idAndMeta[0]]) return 3;
+    protected final static int[] blockToStepMeta(int[] idAndMeta){
+        //if(!IS_ARTIFICAL_BLOCK[idAndMeta[0]]) return new int[]{idAndMeta[0],idAndMeta[1]};
         switch(idAndMeta[0]){
-                        case SANDSTONE_ID:                      return 1;
-                        case WOOD_ID:							return 2;
-                        case COBBLESTONE_ID:                    return 3;
-                        case BRICK_ID:                          return 4;
-                        case STONE_BRICK_ID:                    return 5;
-                        case NETHER_BRICK_ID:					return 6;
-                        case QUARTZ_ID:							return 7;
-                        case STEP_ID: case DOUBLE_STEP_ID:
-                        	case WOOD_DOUBLE_SLAB_ID: case WOOD_SLAB_ID:
-                        										return idAndMeta[1];
-                        default:                                return 0;
+                        case SANDSTONE_ID:                      return new int[]{STEP_ID,1};
+                        case WOOD_ID:							return new int[]{STEP_ID,2};
+                        case COBBLESTONE_ID:                    return new int[]{STEP_ID,3};
+                        case BRICK_ID:                          return new int[]{STEP_ID,4};
+                        case STONE_BRICK_ID:                    return new int[]{STEP_ID,5};
+                        case NETHER_BRICK_ID:					return new int[]{STEP_ID,6};
+                        case QUARTZ_ID:							return new int[]{STEP_ID,7};
+                        case STEP_ID: case DOUBLE_STEP_ID:case WOOD_DOUBLE_SLAB_ID:
+                        	case WOOD_SLAB_ID:
+                        										return new int[]{STEP_ID,idAndMeta[1]};
+                        	default:							return new int[]{idAndMeta[0],idAndMeta[1]};
         }
     }
    
@@ -1245,8 +1246,7 @@ public class Building
     }
    
     protected final static int blockToStairs(int[] idAndMeta){        
-    	if(IS_STAIRS_BLOCK[idAndMeta[0]]) return idAndMeta[0];
-        switch(idAndMeta[0]){
+    	switch(idAndMeta[0]){
                 case COBBLESTONE_ID: case MOSSY_COBBLESTONE_ID: return COBBLESTONE_STAIRS_ID;
                 case NETHER_BRICK_ID:                           return NETHER_BRICK_STAIRS_ID;
                 case STONE_BRICK_ID: case STONE_ID:             return STONE_BRICK_STAIRS_ID;                  

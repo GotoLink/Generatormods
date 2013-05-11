@@ -341,7 +341,7 @@ public class BuildingTower extends Building
 			buffer[x+1][z+1][y+1]=new int[]{WOODEN_DOOR_ID,metadata};
 			buffer[x+1][z+1+1][y+1]=new int[]{WOODEN_DOOR_ID,metadata+8};
 			if(isFloor(x+xFace,z-1,y+yFace) && x+xFace+1>=0 && x+xFace+1<buffer.length && y+yFace+1>=0 && y+yFace+1<buffer[0][0].length){
-				buffer[x+xFace+1][z-1+1][y+yFace+1]=new int[]{STEP_ID,blockToStepMeta(bRule.primaryBlock)};//build a step-up
+				buffer[x+xFace+1][z-1+1][y+yFace+1]=blockToStepMeta(bRule.primaryBlock);//build a step-up
 			}
 		} else for(int z1=z;z1<z+height;z1++) 
 			buffer[x+1][z1+1][y+1]=HOLE_BLOCK_LIGHTING; //carve out the aperture
@@ -453,7 +453,7 @@ public class BuildingTower extends Building
 					? new TemplateRule(new int[]{WOOD_ID,0}) : bRule;
 		}
 		
-		int stepMeta=blockToStepMeta(roofRule.primaryBlock);
+		int stepMeta=blockToStepMeta(roofRule.primaryBlock)[1];
 
 		TemplateRule stepRule=new TemplateRule(new int[]{STEP_ID,stepMeta},roofRule.chance);
 		TemplateRule doubleStepRule=(stepMeta==2) ? new TemplateRule(new int[]{WOOD_ID,0},roofRule.chance) : 

@@ -101,7 +101,7 @@ public class BuildingWall extends Building
 		xArray=new int[maxLength];
 		zArray=new int[maxLength];
 		bLength=0;
-		halfStairValue=blockToStepMeta(bRule.primaryBlock);
+		halfStairValue=blockToStepMeta(bRule.primaryBlock)[1];
 	}
 	
 	private void pickTowers(boolean circular_, boolean endTowers){
