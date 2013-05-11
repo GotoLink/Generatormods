@@ -197,19 +197,22 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 			loadDataFiles();
 		if(!errFlag){
 				//see if the walled city mod is loaded. If it is, make it load its templates (if not already loaded) and then combine explorers.
-			/*if (Loader.isModLoaded("WalledCityMod")){//FIXME
+			if (Loader.isModLoaded("WalledCityMod")){//FIXME
 				PopulatorWalledCity wcm= PopulatorWalledCity.instance;
 				if(!wcm.dataFilesLoaded)  
 					wcm.loadDataFiles();
 				if(!wcm.errFlag){
-					master=wcm;
-					logOrPrint("Combining chunk explorers for "+this.toString()+" and "+master.toString()+".");
+					master=wcm.master;
+					if(master!=null)
+						logOrPrint("Combining chunk explorers for "+this.toString()+" and "+master.toString()+".");
 				}
-			}*/
+			}
 			if(master==null) 
+			{
 				master=this;
-			GameRegistry.registerWorldGenerator(this);
-			TickRegistry.registerTickHandler(master, Side.SERVER);
+				GameRegistry.registerWorldGenerator(this);
+				TickRegistry.registerTickHandler(master, Side.SERVER);
+			}
 			max_exploration_distance=MAX_EXPLORATION_DISTANCE;
 		}		
 	}

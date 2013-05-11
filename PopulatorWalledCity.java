@@ -136,7 +136,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 		PrintWriter pw=null;
 		World world=MinecraftServer.getServer().worldServerForDimension(0);
 		try{
-			pw=new PrintWriter( new BufferedWriter( new FileWriter(logFile,true)));
+			pw=new PrintWriter( new BufferedWriter( new FileWriter(logFile)));
 			pw.println("City locations in World named:"+world.getWorldInfo().getWorldName());		
 			for(int[] location : cityLocations){
 				pw.println(new StringBuilder(Integer.toString(location[0]))

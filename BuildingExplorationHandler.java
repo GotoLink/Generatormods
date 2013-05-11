@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -34,6 +33,8 @@ import java.util.logging.Logger;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.packet.Packet3Chat;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.ServerListenThread;
+import net.minecraft.server.ThreadMinecraftServer;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldProviderEnd;
 import net.minecraft.world.chunk.IChunkProvider;
@@ -60,7 +61,8 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 	
 	public BuildingExplorationHandler master=null;
 	public int TriesPerChunk=1;
-	protected boolean isCreatingDefaultChunks=false, isFlushingGenThreads=false, isAboutToFlushGenThreads=false;
+	protected boolean isCreatingDefaultChunks=false, shouldFlushGenThreads=false,
+			isFlushingGenThreads=false, isAboutToFlushGenThreads=false;
 	protected boolean errFlag=false, dataFilesLoaded=false;
 	protected boolean logActivated=false,chatMessage=false;
 	//protected LinkedList<int[]> lightingList=new LinkedList<int[]>();UNUSED
@@ -89,10 +91,11 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 	//****************************  FORGE WORLD TICK *************************************************************************************//
 	@Override
 	public void tickEnd(EnumSet<TickType> type, Object... tickData){
-		if(tickData[0] instanceof World && isFlushingGenThreads && this==master)
+		if(tickData[0] instanceof World && this==master)
 		{
 			updateWorldExplored((World)tickData[0]);
-			flushGenThreads((World)tickData[0], NO_CALL_CHUNK);
+			if(shouldFlushGenThreads)
+				flushGenThreads((World)tickData[0], NO_CALL_CHUNK);
 			runWorldGenThreads();
 		}
 	}
@@ -171,7 +174,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 	public boolean queryExplorationHandlerForChunk(World world, int chunkI, int chunkK, WorldGeneratorThread wgt) throws InterruptedException{	
 		if(lastExploredChunk.size()>60)
 			lastExploredChunk.remove(0);
-		//SMP - world.chunkProvider.chunkExists(chunkI, chunkK) calls ChunkProviderServer.java which returns id2ChunkMap.containsKey(ChunkCoordIntPair.chunkXZ2Int(i, j));
+		//SMP - world.getChunkProvider().chunkExists(chunkI, chunkK) calls ChunkProviderServer.java which returns return loadedChunkHashMap.containsItem(ChunkCoordIntPair.chunkXZ2Int(chunkI, chunkK))
 		//If we call this after, no building is spawned !!
 		if(lastExploredChunk.contains(new int[]{chunkI,chunkK}) || world.getChunkProvider().chunkExists(chunkI, chunkK)){ 
 			logOrPrint("Chunk already exist at"+chunkI+","+chunkK);
@@ -182,17 +185,17 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 			}
 			return true;
 		}
-		
-		if(Math.abs(chunkI - lastExploredChunk.get(lastExploredChunk.size()-1)[0]) > max_exploration_distance
-		   || Math.abs(chunkK - lastExploredChunk.get(lastExploredChunk.size()-1)[1]) > max_exploration_distance){
-			 logOrPrint("Chunk"+chunkI+","+chunkK+"too far away from latest explored chunk");
-			return false;
-		}
+		if(lastExploredChunk.size()>1)
+			if(Math.abs(chunkI - lastExploredChunk.get(lastExploredChunk.size()-1)[0]) > max_exploration_distance
+					|| Math.abs(chunkK - lastExploredChunk.get(lastExploredChunk.size()-1)[1]) > max_exploration_distance){
+				logOrPrint("Chunk"+chunkI+","+chunkK+"too far away from latest explored chunk");
+				return false;
+			}
 		boolean flag=false;
 		List<EntityPlayerMP> playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
 		if(playerList!=null){
 		for (EntityPlayerMP player:playerList)
-			if( Math.abs(chunkI-((int)player.posX)>>4) < MIN_CHUNK_SEPARATION_FROM_PLAYER 
+			if( player.posY<126 && Math.abs(chunkI-((int)player.posX)>>4) < MIN_CHUNK_SEPARATION_FROM_PLAYER 
 			 && Math.abs(chunkK-((int)player.posZ)>>4) < MIN_CHUNK_SEPARATION_FROM_PLAYER){ //try not to bury the player alive
 				if (this.chatMessage)
 					player.playerNetServerHandler.sendPacketToPlayer(new Packet3Chat("Terminating "+this.toString()+" generation thread, too close to player.\n at "+(((int)player.posX>>4))+","+(((int)player.posZ>>4))+"), while querying chunk "+chunkI+","+chunkK+")."));
@@ -255,15 +258,16 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 		//Must make sure that a)There is only one call to flushGenThreads on the stack at a time
 		//                    b)flushGenThreads is only called from the main Minecraft thread.
 		//This check is not at the beginning of function because we want to announce we are about to flush no matter what.
-		if(isFlushingGenThreads || Thread.currentThread() instanceof WorldGeneratorThread) 
-				return;
+		if(!isFlushingGenThreads && Thread.currentThread() instanceof ThreadMinecraftServer/*WorldGeneratorThread*/) 
+				//return;
 		
-		//if(chunksExploredFromStart>= (isCreatingDefaultChunks ? CHUNKS_AT_WORLD_START-1 : 2*CHUNKS_AT_WORLD_START))
+		if(chunksExploredFromStart>= (isCreatingDefaultChunks ? CHUNKS_AT_WORLD_START-1 : 2*CHUNKS_AT_WORLD_START))
 		{
 			
 			flushCallChunk=callChunk;
 			if(exploreThreads.size() > 0) 
 			{
+				shouldFlushGenThreads=true;
 				isFlushingGenThreads=true;
 			}			
 		}
@@ -303,6 +307,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 			if(chunksExploredFromStart > 10) 
 				logOrPrint("Explored "+chunksExploredFromStart+" chunks in last wave.");
 			chunksExploredFromStart=0;
+			shouldFlushGenThreads=false;
 			isFlushingGenThreads=false;
 			isCreatingDefaultChunks=false;
 			isAboutToFlushGenThreads=false;
