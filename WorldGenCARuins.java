@@ -42,10 +42,10 @@ private TemplateRule[] blockRules, blockRule;
 		
 		int th=MinHeight+random.nextInt(MaxHeight-MinHeight+1);
 		
-		
 		if(caRule==null) //if we haven't picked in an earlier generate call 
 			caRule=ca.caRules.get(Building.pickWeightedOption(random, caRulesWeightsAndIndex[0], caRulesWeightsAndIndex[1]));
-		if(caRule==null) return false;
+		if(caRule==null) 
+			return false;
 		
 		int seedCode=Building.pickWeightedOption(random, seedTypeWeights, SEED_TYPE_CODES);
 		byte[][] seed = seedCode==0 || (caRule[0][0]==0 && caRule[0][1]==0 && caRule[0][2]==0 && caRule[0][3]==0) //only use symmetric for 4-rules

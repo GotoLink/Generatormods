@@ -211,7 +211,7 @@ public class BuildingWall extends Building
 			int gradx=0,gradz=0;
 			failCode=NO_FAIL;
 			//query the exploration handler to see if we have reached limit, if so then terminate
-			if(!(queryExplorationHandlerForChunk(-1,0,0) && queryExplorationHandlerForChunk(bWidth,0,0))) {
+			if(!(queryExplorationHandlerForChunk(-1,0) && queryExplorationHandlerForChunk(bWidth,0))) {
 				failCode=FAIL_CANNOT_EXPLORE;
 				break; 
 			}

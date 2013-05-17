@@ -222,7 +222,7 @@ public class Building
                 return yI*(pt[0]-i0) + yK*(pt[2]-k0);
     }
    
-    protected final boolean queryExplorationHandlerForChunk(int x, int z, int y) throws InterruptedException{
+    protected final boolean queryExplorationHandlerForChunk(int x, int y) throws InterruptedException{
     	return wgt.master.queryExplorationHandlerForChunk(world, getI(x,y)>>4, getK(x,y)>>4, wgt);
     }
    
@@ -236,7 +236,9 @@ public class Building
    
   //******************** LOCAL COORDINATE FUNCTIONS - SET BLOCK FUNCTIONS *************************************************************************************************************//
     protected final void setBlockLocal(int x, int z, int y, int blockID){
-        if(blockID>=SPECIAL_BLOCKID_START) { setSpecialBlockLocal(x,z,y,blockID,0); return; }
+        if(blockID>=SPECIAL_BLOCKID_START) { 
+        	setSpecialBlockLocal(x,z,y,blockID,0); 
+        	return; }
        
         int[] pt=getIJKPt(x,z,y);
         if(blockID==0 && world.getBlockId(pt[0], pt[1], pt[2])==0) 
@@ -249,7 +251,9 @@ public class Building
     }
    
     protected final void setBlockLocal(int x, int z, int y, int blockID, int metadata){
-        if(blockID>=SPECIAL_BLOCKID_START) { setSpecialBlockLocal(x,z,y,blockID,metadata); return; }
+        if(blockID>=SPECIAL_BLOCKID_START) { 
+        	setSpecialBlockLocal(x,z,y,blockID,metadata); 
+        	return; }
        
         int[] pt=getIJKPt(x,z,y);
         if(blockID==0 && world.getBlockId(pt[0], pt[1], pt[2])==0) 
@@ -287,7 +291,10 @@ public class Building
    
     protected final void setBlockLocal(int x, int z, int y, TemplateRule rule){
         int [] idAndMeta=rule.getBlock(random);
-        if(idAndMeta[0]>=SPECIAL_BLOCKID_START) { setSpecialBlockLocal(x,z,y,idAndMeta[0],idAndMeta[1]); return; }      
+        if(idAndMeta[0]>=SPECIAL_BLOCKID_START) { 
+        	setSpecialBlockLocal(x,z,y,idAndMeta[0],idAndMeta[1]); 
+        	return; 
+        	}      
        
         int[] pt=getIJKPt(x,z,y);
         if(idAndMeta[0]==0 && world.getBlockId(pt[0], pt[1], pt[2])==0) 
