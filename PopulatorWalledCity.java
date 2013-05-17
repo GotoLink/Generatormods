@@ -34,6 +34,8 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.packet.Packet3Chat;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
+import net.minecraftforge.common.ForgeChunkManager;
+import net.minecraftforge.common.ForgeChunkManager.Ticket;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.Init;
 import cpw.mods.fml.common.Mod.Instance;
@@ -318,7 +320,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	}
 	@Override
 	public String toString(){
-		return "Walled City Mod";
+		return "WalledCityMod";
 	}
 	//Load templates after mods have loaded so we can check whether any modded blockIDs are valid
 	@PostInit
@@ -330,9 +332,11 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 			master=this;
 			GameRegistry.registerWorldGenerator(this);
 			TickRegistry.registerTickHandler(master, Side.SERVER);
+			ForgeChunkManager.setForcedChunkLoadingCallback(this, master);
 			max_exploration_distance=MAX_EXPLORATION_DISTANCE;
 		}	
 	}
+
 }
 
 

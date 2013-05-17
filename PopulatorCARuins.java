@@ -13,6 +13,7 @@ import java.util.LinkedList;
 import java.util.Random;
 
 import net.minecraft.world.World;
+import net.minecraftforge.common.ForgeChunkManager;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.Init;
@@ -338,7 +339,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 	}
 	@Override
 	public String toString(){
-		return "Cellular Automata Ruins";
+		return "CARuins";
 	}
 	
 	@PostInit
@@ -348,7 +349,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 			loadDataFiles();
 		if(!errFlag){
 				//see if the walled city mod is loaded. If it is, make it load its templates (if not already loaded) and then combine explorers.
-			if (Loader.isModLoaded("WalledCityMod")){//FIXME
+			if (Loader.isModLoaded("WalledCityMod")){
 				PopulatorWalledCity wcm= PopulatorWalledCity.instance;
 				if(!wcm.dataFilesLoaded)  
 					wcm.loadDataFiles();
@@ -363,6 +364,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 				master=this;
 				GameRegistry.registerWorldGenerator(this);
 				TickRegistry.registerTickHandler(master, Side.SERVER);
+				ForgeChunkManager.setForcedChunkLoadingCallback(this, master);
 			}
 			max_exploration_distance=MAX_EXPLORATION_DISTANCE;
 		}				

@@ -35,11 +35,16 @@ import net.minecraft.network.packet.Packet3Chat;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerListenThread;
 import net.minecraft.server.ThreadMinecraftServer;
+import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldProviderEnd;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.chunk.storage.AnvilChunkLoader;
 import net.minecraft.world.storage.ISaveHandler;
+import net.minecraftforge.common.ForgeChunkManager;
+import net.minecraftforge.common.ForgeChunkManager.LoadingCallback;
+import net.minecraftforge.common.ForgeChunkManager.Ticket;
+import net.minecraftforge.common.ForgeChunkManager.Type;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.FMLLog;
@@ -49,7 +54,7 @@ import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.TickType;
 import cpw.mods.fml.relauncher.Side;
 
-public abstract class BuildingExplorationHandler implements IWorldGenerator,ITickHandler
+public abstract class BuildingExplorationHandler implements IWorldGenerator,ITickHandler,LoadingCallback
 {
 	protected final static int MAX_TRIES_PER_CHUNK=100,CHUNKS_AT_WORLD_START=256;
 	public final static int MAX_CHUNKS_PER_TICK=100;
@@ -110,7 +115,6 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 		return this.toString()+" Tick";
 	}
 	//**************************** FORGE WORLD GENERATING HOOK ****************************************************************************//
-	
 	@Override
 	public void generate(Random random, int chunkX, int chunkZ, World world, IChunkProvider chunkGenerator, IChunkProvider chunkProvider)
     {  	
@@ -127,7 +131,14 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 	        }         
 	    }
     }
-	
+	//**************************** FORGE CHUNK LOADING CALLBACK ****************************************************************************//
+	@Override
+	public void ticketsLoaded(List<Ticket> tickets, World world) {
+		List<Ticket> loadedTickets=tickets;
+		for( Ticket tic:loadedTickets)
+			if(tic.getModId()==this.toString())
+				ForgeChunkManager.releaseTicket(tic);		
+	}
 	//****************************  FUNCTION - GenerateSurface  *************************************************************************************//
 	public void generateSurface( World world, Random random, int i, int k ) {
 		if(errFlag) return;
@@ -173,7 +184,9 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 	//query chunk should be called from the WorldGeneratorThread wgt.
 	public boolean queryExplorationHandlerForChunk(World world, int chunkI, int chunkK, WorldGeneratorThread wgt) throws InterruptedException{	
 		if(lastExploredChunk.size()>60)
+		{
 			lastExploredChunk.remove(0);
+		}
 		//SMP - world.getChunkProvider().chunkExists(chunkI, chunkK) calls ChunkProviderServer.java which returns return loadedChunkHashMap.containsItem(ChunkCoordIntPair.chunkXZ2Int(chunkI, chunkK))
 		//If we call this after, no building is spawned !!
 		if(lastExploredChunk.contains(new int[]{chunkI,chunkK}) || world.getChunkProvider().chunkExists(chunkI, chunkK)){ 
@@ -225,7 +238,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 		//       or loadChunk(i, j); if lookup fails. Since we already failed chunkExists(chunkI, chunkK) we could go directly to loadChunk(i,j);
 		//SMP - world.chunkProvider.loadChunk calls ChunkProviderServer.java which looks up id2ChunkMap.getValueByKey(l), 
 		//       returns this if it exists else calls serverChunkGenerator.provideChunk(i, j);
-		try{
+		/*try{
 			world.getChunkProvider().loadChunk(chunkI, chunkK);
 			logOrPrint("Force loaded chunk at"+chunkI+","+chunkK);
 			lastExploredChunk.add(new int[]{chunkI,chunkK});
@@ -233,10 +246,12 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 			return true;
 		}catch(Exception e)
 		{
-			e.printStackTrace();
+			//e.printStackTrace();
 			logOrPrint("Tried force loading a chunk at "+chunkI+","+chunkK+" but failed");
-		}
-		return false;
+		}*/
+		Ticket tick=ForgeChunkManager.requestTicket(this,world,Type.NORMAL);
+		ForgeChunkManager.forceChunk(tick, new ChunkCoordIntPair(chunkI,chunkK));
+		return tick!=null;
 	}
 	
 	//****************************  FUNCTION - flushGenThreads *************************************************************************************//
