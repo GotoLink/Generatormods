@@ -31,7 +31,7 @@ public class BuildingTML extends Building
 	   public boolean queryCanBuild(int ybuffer) throws InterruptedException{
 		   if(j0<=0) return false;
 		   
-	    	if(!( queryExplorationHandlerForChunk(0,0,bLength-1) && queryExplorationHandlerForChunk(bWidth-1,0,0) && queryExplorationHandlerForChunk(bWidth-1,0,bLength-1) )){
+	    	if(!( queryExplorationHandlerForChunk(0,bLength-1) && queryExplorationHandlerForChunk(bWidth-1,0) && queryExplorationHandlerForChunk(bWidth-1,bLength-1) )){
 				return false;
 			}
 	    	
@@ -72,26 +72,33 @@ public class BuildingTML extends Building
 		for(int y=0;y<bLength;y++) 
 			for(int x=0;x<bWidth;x++)
 			{
-				if(!queryExplorationHandlerForChunk(x,0,y)) 
+				if(!queryExplorationHandlerForChunk(x,y))
 					break;
 				if(base!=null) 
 					buildDown(x,-1,y,tmlt.rules[base[y][x]],tmlt.leveling,0,0);
-				else fillDown(getSurfaceIJKPt(x,y,j0-1,true,IGNORE_WATER),j0-1,world);
+				else 
+					fillDown(getSurfaceIJKPt(x,y,j0-1,true,IGNORE_WATER),j0-1,world);
 			}
 		
 		//clear overhead
 		for(int z=bHeight; z<tmlt.cutIn+tmlt.embed; z++)
 			for(int y=0;y<bLength;y++) 
-				for(int x=0;x<bWidth;x++)
+				for(int x=0;x<bWidth;x++) 
+				{
+					if(!queryExplorationHandlerForChunk(x,y))
+						break;
 					setBlockLocal(x,z,y,0);
-
+				}
 
 		//build
 		for(int z=0;z<bHeight;z++)
 			for(int y=0;y<bLength;y++) 
 				for(int x=0;x<bWidth;x++)
+				{
+					if(!queryExplorationHandlerForChunk(x,y))
+						break;
 					setBlockLocal(x,z,y,tmlt.rules[tmlt.template[z][y][x]]);
-
+				}
 
 		flushDelayed();
 	}

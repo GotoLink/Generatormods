@@ -98,9 +98,9 @@ public class BuildingTower extends Building
 		if(bHeight < baseHeight + 4){
 			return false;
 		}
-		if(!( queryExplorationHandlerForChunk(0,0,bLength-1) 
-		   && queryExplorationHandlerForChunk(bWidth-1,0,0) 
-		   && queryExplorationHandlerForChunk(bWidth-1,0,bLength-1) )) {
+		if(!( queryExplorationHandlerForChunk(0,bLength-1) 
+		   && queryExplorationHandlerForChunk(bWidth-1,0) 
+		   && queryExplorationHandlerForChunk(bWidth-1,bLength-1) )) {
 			return false;
 		}
 		
@@ -146,7 +146,7 @@ public class BuildingTower extends Building
 	//RETURNS:
 	//true if tower was built (dependency: buildOver).
 	//
-	public void build(int doorOffset1, int doorOffset2,boolean hanging) {
+	public void build(int doorOffset1, int doorOffset2,boolean hanging) throws InterruptedException {
 		
 		//check against spawner chance to see if haunted. 
 		//If hasUndeadSpawner =>	Don't make torches anywhere in tower.
@@ -191,11 +191,10 @@ public class BuildingTower extends Building
 					}
 					
 					//column above source point
-					for(int z1=-1; z1<baseHeight-1; z1++) buffer[x1+1][z1+1][y1+1]=bRule.getBlockOrHole(random);
+					for(int z1=-1; z1<baseHeight-1; z1++) 
+						buffer[x1+1][z1+1][y1+1]=bRule.getBlockOrHole(random);
 	
-					//column below source point, set zmin to taper overhangs
-					
-					
+					//column below source point, set zmin to taper overhangs	
 					//int zmin=hanging && y1>=TWidth/2 && isWallable(x1,-BUILDDOWN,y1) ?  Math.max(2*(y1-TWidth/2)+3*Math.abs(x1-TWidth/2)-5*TWidth/2,-BUILDDOWN) : -BUILDDOWN;
 					buildDown(x1,-2,y1,bRule,TOWER_LEVELING,2,(bLength-y1-1)/2);
 					
@@ -252,7 +251,6 @@ public class BuildingTower extends Building
 					buffer[bWidth/2+1][z1+1+1][sideWindowY+1]=spawnerBlock;
 			}
 			
-			
 			//chests
 			//System.out.println("checking for chest");
 			if(ChestRule!=TemplateRule.RULE_NOT_PROVIDED && random.nextInt(100)<ChestRule.chance)
@@ -282,37 +280,48 @@ public class BuildingTower extends Building
 			for(int y1=1;y1<buffer[0][0].length-1;y1++){
 				if(!circular || circle_shape[x1-1][y1-1]>=0){
 					for(int z1=0; z1<Math.min(bHeight,zLim); z1++){
-						setBlockLocal(x1-1,z1-1,y1-1,buffer[x1][z1][y1]);		
+						if(queryExplorationHandlerForChunk(x1-1,y1-1))
+								setBlockLocal(x1-1,z1-1,y1-1,buffer[x1][z1][y1]);		
 		}}}}
 		//build roof
 		for(int x1=0;x1<buffer.length;x1++){
 			for(int y1=0;y1<buffer[0][0].length;y1++){
 				for(int z1=bHeight; z1<zLim; z1++){
-					setBlockLocal(x1-1,z1-1,y1-1,buffer[x1][z1][y1]);		
+					if(queryExplorationHandlerForChunk(x1-1,y1-1))
+						setBlockLocal(x1-1,z1-1,y1-1,buffer[x1][z1][y1]);		
 		}}}
 
 
 		//*** prettify any stairs outside entrance/exit ***
 		for(int x1=1; x1<bWidth-1;x1++){
-			if(isStairBlock(x1,baseHeight, -1) && getBlockIdLocal(x1, baseHeight, -2)==bRule.primaryBlock[0])   setBlockLocal(x1, baseHeight, -1,bRule.primaryBlock[0]);
-			if(isStairBlock(x1, baseHeight, bLength) && getBlockIdLocal(x1, baseHeight, bLength+1)==bRule.primaryBlock[0])   setBlockLocal(x1, baseHeight, bLength,bRule.primaryBlock[0]);
+			if(isStairBlock(x1,baseHeight, -1) && queryExplorationHandlerForChunk(x1,-2) && getBlockIdLocal(x1, baseHeight, -2)==bRule.primaryBlock[0])  
+				setBlockLocal(x1, baseHeight, -1,bRule.primaryBlock[0]);
+			if(isStairBlock(x1, baseHeight, bLength) && queryExplorationHandlerForChunk(x1,bLength+1) && getBlockIdLocal(x1, baseHeight, bLength+1)==bRule.primaryBlock[0])   
+				setBlockLocal(x1, baseHeight, bLength,bRule.primaryBlock[0]);
 		}
 		
 		//furniture
 		if(PopulateFurniture){
 			for(int z1=baseHeight;z1<bHeight-2;z1+=4){
 				for(int m=0; m<bLength*bWidth/25; m++){ //scale to floor area
-					if(!undeadTower && random.nextInt(BED_ODDS)==0) populateBeds(z1);
-					if(bHeight-baseHeight>8 && random.nextInt(BOOKSHELF_ODDS)==0) populateBookshelves(z1);
-					if(random.nextInt(CAULDRON_ODDS)==0) populateFurnitureColumn(z1,new int[][]{{CAULDRON_BLOCK_ID,random.nextInt(4)}});
-					if(z1>12 && random.nextInt(BREWING_STAND_ODDS)==0) populateFurnitureColumn(z1,new int[][]{bRule.primaryBlock,{BREWING_STAND_BLOCK_ID,random.nextInt(2)+1}});
-					if(z1>20 && random.nextInt(ENCHANTMENT_TABLE_ODDS)==0) populateFurnitureColumn(z1,new int[][]{{ENCHANTMENT_TABLE_ID,0}});
+					if(!undeadTower && random.nextInt(BED_ODDS)==0) 
+						populateBeds(z1);
+					if(bHeight-baseHeight>8 && random.nextInt(BOOKSHELF_ODDS)==0) 
+						populateBookshelves(z1);
+					if(random.nextInt(CAULDRON_ODDS)==0) 
+						populateFurnitureColumn(z1,new int[][]{{CAULDRON_BLOCK_ID,random.nextInt(4)}});
+					if(z1>12 && random.nextInt(BREWING_STAND_ODDS)==0) 
+						populateFurnitureColumn(z1,new int[][]{bRule.primaryBlock,{BREWING_STAND_BLOCK_ID,random.nextInt(2)+1}});
+					if(z1>20 && random.nextInt(ENCHANTMENT_TABLE_ODDS)==0) 
+						populateFurnitureColumn(z1,new int[][]{{ENCHANTMENT_TABLE_ID,0}});
 				}
 				if(z1==baseHeight) z1++;
 			}
 		}
-		if(ghastTower) populateGhastSpawner(bHeight+1);
-		else if(roofStyle==ROOF_CRENEL && bHeight>22 ) populatePortal(bHeight+1);
+		if(ghastTower) 
+			populateGhastSpawner(bHeight+1);
+		else if(roofStyle==ROOF_CRENEL && bHeight>22 ) 
+			populatePortal(bHeight+1);
 
 		//*** debug signs ***
 		if(BuildingWall.DEBUG_SIGNS){
@@ -330,9 +339,11 @@ public class BuildingTower extends Building
 		boolean buildWoodDoor=false;
 		if(isFloor(x+xFace,z-1,y+yFace) || isFloor(x+xFace,z-2,y+yFace)){
 			z--;
-			if(MakeDoors) buildWoodDoor=true;
+			if(MakeDoors) 
+				buildWoodDoor=true;
 		}
-		if(!IS_WALLABLE[getBlockIdLocal(x,z+height-2,y+yFace)]) return;
+		if(!IS_WALLABLE[getBlockIdLocal(x,z+height-2,y+yFace)]) 
+			return;
 		
 		if(buildWoodDoor){
 			int metadata=xFace==0 

@@ -54,18 +54,20 @@ public class BuildingCellularAutomaton extends Building {
 	}
 	
 	//unlike other Buildings, this should be called after plan()
-	public boolean queryCanBuild(int ybuffer,boolean nonLayoutFrameCheck) throws InterruptedException{
-		if(!( queryExplorationHandlerForChunk(0,0,bLength-1) && queryExplorationHandlerForChunk(bWidth-1,0,0) && queryExplorationHandlerForChunk(bWidth-1,0,bLength-1) )){
+	public boolean queryCanBuild( int ybuffer, boolean nonLayoutFrameCheck) throws InterruptedException{
+		if(!( queryExplorationHandlerForChunk(0,bLength-1) && queryExplorationHandlerForChunk(bWidth-1,0) && queryExplorationHandlerForChunk(bWidth-1,bLength-1) )){
 			return false;
 		}
 		
 		int layoutCode= bWidth*bLength > 120 ? WorldGeneratorThread.LAYOUT_CODE_TOWER : WorldGeneratorThread.LAYOUT_CODE_TEMPLATE;
     	if(wgt.isLayoutGenerator()){
-	    	if(wgt.layoutIsClear(getIJKPt(0,0,ybuffer),getIJKPt(bWidth-1,0,bLength-1),layoutCode)){
+	    	if(wgt.layoutIsClear(getIJKPt(0,0,ybuffer),getIJKPt(bWidth-1,0,bLength-1),layoutCode))
 	    		wgt.setLayoutCode(getIJKPt(0,0,ybuffer),getIJKPt(bWidth-1,0,bLength-1),layoutCode);
-	    	} else return false;
+	    	else 
+	    		return false;
     	}else if(nonLayoutFrameCheck){
-    		if(isObstructedFrame(0,ybuffer)) return false;
+    		if(isObstructedFrame(0,ybuffer)) 
+    			return false;
     	}
 		return true;
 	}
@@ -204,7 +206,7 @@ public class BuildingCellularAutomaton extends Building {
 		return true;
 	}
 		
-	public void build(boolean SmoothWithStairs,boolean makeFloors){
+	public void build(boolean SmoothWithStairs,boolean makeFloors) throws InterruptedException{
 		int stairsBlock=SmoothWithStairs ? blockToStairs(bRule.primaryBlock) : 0;
 		if(stairsBlock==WOOD_STAIRS_ID) stairsBlock=0;
 		TemplateRule[] stairs=new TemplateRule[]{ new TemplateRule(new int[]{stairsBlock,STAIRS_DIR_TO_META[DIR_NORTH]},bRule.chance),
@@ -219,71 +221,73 @@ public class BuildingCellularAutomaton extends Building {
 		}
 		int centerX=(fBB[0][0]+fBB[1][0])/2;
 		int[][]holeLimits=new int[bLength][2];
-		for(int y=0; y<bLength; y++){ holeLimits[y][0]=centerX; holeLimits[y][1]=centerX+1; }
-		
-		
+		for(int y=0; y<bLength; y++){ 
+			holeLimits[y][0]=centerX; 
+			holeLimits[y][1]=centerX+1; 
+			}
 		
 		for(int z=bHeight-1; z>=0; z--){
-			//for(int y=0; y<bLength; y++){ holeLimits[y][0]=centerX; holeLimits[y][1]=centerX+1; }
-			
-			for(int x=0; x<bWidth; x++){ for(int y=0; y<bLength; y++){
-				//if(fBB[0][z]<=x && x<=fBB[1][z] && fBB[2][z]<=y && y<=fBB[3][z])
-				//	setBlockLocal(x,z,y,GLASS_ID);
-				
-				if(layers[z][x][y]==ALIVE)
-					setBlockLocal(x,z,y,bRule);
-				
-				else if(z>0 && layers[z-1][x][y]==ALIVE){ //if a floor block
-					//if in central core
-					if(z<bHeight-5 && fBB[0][z]<=x && x<=fBB[1][z] && fBB[2][z]<=y && y<=fBB[3][z]){ 
-						if(makeFloors){
-							floorBlocks.get(z).add(new int[]{x,y});
-							if(x-HOLE_FLOOR_BUFFER<holeLimits[y][0]) 
-								holeLimits[y][0]=Math.max(fBB[0][z], x-HOLE_FLOOR_BUFFER);
-							if(x+HOLE_FLOOR_BUFFER>holeLimits[y][1]) 
-								holeLimits[y][1]=Math.min(fBB[1][z], x+HOLE_FLOOR_BUFFER);
-							floorBlockCounts[z]++;
+			//for(int y=0; y<bLength; y++){ 
+			//holeLimits[y][0]=centerX; holeLimits[y][1]=centerX+1; }
+			for(int x=0; x<bWidth; x++){ 
+				for(int y=0; y<bLength; y++){
+					//if(fBB[0][z]<=x && x<=fBB[1][z] && fBB[2][z]<=y && y<=fBB[3][z])
+					//	setBlockLocal(x,z,y,GLASS_ID);
+					if(!queryExplorationHandlerForChunk(x,y))
+						break;
+					if(layers[z][x][y]==ALIVE)
+						setBlockLocal(x,z,y,bRule);			
+					else if(z>0 && layers[z-1][x][y]==ALIVE){ //if a floor block
+						//if in central core
+						if(z<bHeight-5 && fBB[0][z]<=x && x<=fBB[1][z] && fBB[2][z]<=y && y<=fBB[3][z]){ 
+							if(makeFloors){
+								floorBlocks.get(z).add(new int[]{x,y});
+								if(x-HOLE_FLOOR_BUFFER<holeLimits[y][0]) 
+									holeLimits[y][0]=Math.max(fBB[0][z], x-HOLE_FLOOR_BUFFER);
+								if(x+HOLE_FLOOR_BUFFER>holeLimits[y][1]) 
+									holeLimits[y][1]=Math.min(fBB[1][z], x+HOLE_FLOOR_BUFFER);
+								floorBlockCounts[z]++;
+							}
+						}				
+						//try smoothing with stairs here
+						else if(stairsBlock!=0 && (z==bHeight-1 || layers[z+1][x][y]!=ALIVE)){
+							if(y+1<bLength && layers[z][x][y+1]==ALIVE && (	y-1<0 || //y+1 present and (we are at the edge or...	
+								(			  layers[z][x][y-1]!=ALIVE //y-1 empty and..
+									&& (x+1==bWidth || !(layers[z][x+1][y]!=ALIVE && layers[z][x+1][y-1]==ALIVE)) //not obstructing gaps to the sides
+									&& (x-1<0       || !(layers[z][x-1][y]!=ALIVE && layers[z][x-1][y-1]==ALIVE))				 
+								) && random.nextInt(100)<bRule.chance)
+							)setBlockLocal(x,z,y,stairs[DIR_NORTH]);
+							else
+							if(y-1>=0      && layers[z][x][y-1]==ALIVE && (	y+1==bLength ||
+								(		      layers[z][x][y+1]!=ALIVE 
+										&& (x+1==bWidth || !(layers[z][x+1][y]!=ALIVE && layers[z][x+1][y+1]==ALIVE)) 
+										&& (x-1<0       || !(layers[z][x-1][y]!=ALIVE && layers[z][x-1][y+1]==ALIVE))				 
+								) && random.nextInt(100)<bRule.chance)
+							)setBlockLocal(x,z,y,stairs[DIR_SOUTH]);
+							
+							else
+							if(x+1<bWidth && layers[z][x+1][y]==ALIVE && (	x-1<0 || 	
+								(			 layers[z][x-1][y]!=ALIVE 
+										&& (y+1==bLength|| !(layers[z][x][y+1]!=ALIVE && layers[z][x-1][y+1]==ALIVE))
+										&& (y-1<0       || !(layers[z][x][y-1]!=ALIVE && layers[z][x-1][y-1]==ALIVE))				 
+								) && random.nextInt(100)<bRule.chance)
+							)setBlockLocal(x,z,y,stairs[DIR_EAST]);
+							else
+							if(x-1>=0     && layers[z][x-1][y]==ALIVE && (	x+1==bWidth ||
+								(		     layers[z][x+1][y]!=ALIVE 
+										&& (y+1==bLength|| !(layers[z][x][y+1]!=ALIVE && layers[z][x+1][y+1]==ALIVE))
+										&& (y-1<0       || !(layers[z][x][y-1]!=ALIVE && layers[z][x+1][y-1]==ALIVE))				 
+								) && random.nextInt(100)<bRule.chance)
+							)setBlockLocal(x,z,y,stairs[DIR_WEST]);
 						}
 					}
-					
-					//try smoothing with stairs here
-					else if(stairsBlock!=0 && (z==bHeight-1 || layers[z+1][x][y]!=ALIVE)){
-						if(y+1<bLength && layers[z][x][y+1]==ALIVE && (	y-1<0 || //y+1 present and (we are at the edge or...	
-							(			  layers[z][x][y-1]!=ALIVE //y-1 empty and..
-								&& (x+1==bWidth || !(layers[z][x+1][y]!=ALIVE && layers[z][x+1][y-1]==ALIVE)) //not obstructing gaps to the sides
-								&& (x-1<0       || !(layers[z][x-1][y]!=ALIVE && layers[z][x-1][y-1]==ALIVE))				 
-							) && random.nextInt(100)<bRule.chance)
-						)setBlockLocal(x,z,y,stairs[DIR_NORTH]);
-						else
-						if(y-1>=0      && layers[z][x][y-1]==ALIVE && (	y+1==bLength ||
-							(		      layers[z][x][y+1]!=ALIVE 
-									&& (x+1==bWidth || !(layers[z][x+1][y]!=ALIVE && layers[z][x+1][y+1]==ALIVE)) 
-									&& (x-1<0       || !(layers[z][x-1][y]!=ALIVE && layers[z][x-1][y+1]==ALIVE))				 
-							) && random.nextInt(100)<bRule.chance)
-						)setBlockLocal(x,z,y,stairs[DIR_SOUTH]);
-						
-						else
-						if(x+1<bWidth && layers[z][x+1][y]==ALIVE && (	x-1<0 || 	
-							(			 layers[z][x-1][y]!=ALIVE 
-									&& (y+1==bLength|| !(layers[z][x][y+1]!=ALIVE && layers[z][x-1][y+1]==ALIVE))
-									&& (y-1<0       || !(layers[z][x][y-1]!=ALIVE && layers[z][x-1][y-1]==ALIVE))				 
-							) && random.nextInt(100)<bRule.chance)
-						)setBlockLocal(x,z,y,stairs[DIR_EAST]);
-						else
-						if(x-1>=0     && layers[z][x-1][y]==ALIVE && (	x+1==bWidth ||
-							(		     layers[z][x+1][y]!=ALIVE 
-									&& (y+1==bLength|| !(layers[z][x][y+1]!=ALIVE && layers[z][x+1][y+1]==ALIVE))
-									&& (y-1<0       || !(layers[z][x][y-1]!=ALIVE && layers[z][x+1][y-1]==ALIVE))				 
-							) && random.nextInt(100)<bRule.chance)
-						)setBlockLocal(x,z,y,stairs[DIR_WEST]);
-					}
 				}
-			}}
+			}
 			
 			//now clear a hole surrounding the central floor volume
 			for(int y=0; y<bLength; y++)
 				for(int x=holeLimits[y][0]+1; x<=holeLimits[y][1]-1; x++)
-					if(layers[z][x][y]!=ALIVE && !IS_ARTIFICAL_BLOCK[getBlockIdLocal(x,z,y)])
+					if(layers[z][x][y]!=ALIVE && queryExplorationHandlerForChunk(x,y) && !IS_ARTIFICAL_BLOCK[getBlockIdLocal(x,z,y)])
 						setBlockLocal(x,z,y,HOLE_ID);
 			
 			//then gradually taper hole limits...
@@ -291,7 +295,8 @@ public class BuildingCellularAutomaton extends Building {
 				for(int y=0; y<bLength; y++){ 
 					holeLimits[y][0] = holeLimits[y][0] < centerX ? (holeLimits[y][0]+1) : centerX; 
 					holeLimits[y][1] = holeLimits[y][1] > (centerX+1) ? (holeLimits[y][1]-1) : centerX+1; 
-			}}
+				}		
+			}
 		}
 		
 		flushDelayed();
