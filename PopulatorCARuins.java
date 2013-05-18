@@ -42,7 +42,7 @@ import cpw.mods.fml.relauncher.Side;
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-@Mod(modid = "CARuins", name = "Cellular Automata Generator", version = "0.1.0",dependencies= "after:ExtraBiomes,BiomesOPlenty")
+@Mod(modid = "CARuins", name = "Cellular Automata Generator", version = "0.1.1",dependencies= "after:ExtraBiomes,BiomesOPlenty")
 @NetworkMod(clientSideRequired = false, serverSideRequired = false)
 public class PopulatorCARuins extends BuildingExplorationHandler{
 	@Instance("CARuins")
