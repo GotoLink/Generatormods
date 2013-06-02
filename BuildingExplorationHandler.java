@@ -78,6 +78,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 	public int[] flushCallChunk=NO_CALL_CHUNK, AllowedDimensions=new int[]{-1,0};
 	public PrintWriter lw=null;
 	private List<World> currentWorld=new ArrayList();
+	private List<Ticket> tickets=new ArrayList();
  	int[] chestTries=new int[]{4,6,6,6};
 	int[][][] chestItems=new int[][][]{null,null,null,null};
 	
@@ -141,7 +142,8 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 	}
 	//****************************  FUNCTION - GenerateSurface  *************************************************************************************//
 	public void generateSurface( World world, Random random, int i, int k ) {
-		if(errFlag) return;
+		if(errFlag) 
+			return;
 		updateWorldExplored(world);
 		chunksExploredFromStart++;
 		
@@ -218,7 +220,6 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 		if(flag)
 			return false;
 		
-		
 		if(chunksExploredThisTick > (isCreatingDefaultChunks ? CHUNKS_AT_WORLD_START : MAX_CHUNKS_PER_TICK))
 		{
 		//suspend the thread if we've exceeded our quota of chunks to load for this tick
@@ -226,12 +227,10 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 			logOrPrint("Too much chunks loaded this time");
 			return false;
 		}
-		
 
-		if(flushCallChunk!=NO_CALL_CHUNK){
-    		if(chunkI==flushCallChunk[0] && chunkK==flushCallChunk[1])
-    			return false;
-    	}
+		if(flushCallChunk!=NO_CALL_CHUNK && chunkI==flushCallChunk[0] && chunkK==flushCallChunk[1])
+    		return false;
+    	
 		//We've now failed world.chunkProvider.chunkExists(chunkI, chunkK),
 		// so we will have to load or generate this chunk
 		//SSP - world.chunkProvider.provideChunk calls ChunkProvider.java which returns (Chunk)chunkMap.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(i, j));
@@ -247,11 +246,24 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 		}catch(Exception e)
 		{
 			//e.printStackTrace();
-			logOrPrint("Tried force loading a chunk at "+chunkI+","+chunkK+" but failed");
-		}*/
+			
+		 */
 		Ticket tick=ForgeChunkManager.requestTicket(this,world,Type.NORMAL);
+		if(tick!=null)
+			tickets.add(tick);
+		if(tickets.isEmpty()){
+			logOrPrint(this.toString()+"Tried force loading a chunk at "+chunkI+","+chunkK+" but failed");
+			return false;
+		}
+		tick=null;
+		while (tick==null)
+			tick=tickets.get(new Random().nextInt(tickets.size()));
+		
 		ForgeChunkManager.forceChunk(tick, new ChunkCoordIntPair(chunkI,chunkK));
-		return tick!=null;
+		lastExploredChunk.add(new int[]{chunkI,chunkK});
+		chunksExploredThisTick++;
+		return true;
+		//}
 	}
 	
 	//****************************  FUNCTION - flushGenThreads *************************************************************************************//
