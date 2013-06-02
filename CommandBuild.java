@@ -10,7 +10,9 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 
 public class CommandBuild extends CommandBase{
-	private BuildingExplorationHandler ruin,wall,city;
+	private PopulatorCARuins ruin;
+	private PopulatorWalledCity city;
+	private PopulatorGreatWall wall;
 	private World world;
 	@Override
 	public int getRequiredPermissionLevel()
@@ -23,7 +25,7 @@ public class CommandBuild extends CommandBase{
 	}
 
 	public String getCommandUsage(ICommandSender commandSender) {
-		return "/" + getCommandName() + " <ruin:wall:city> <x> <z>";
+		return "/" + getCommandName() + " <ruin:wall:city:undcity> <dimensionID,default:0> <x> <z>";
 	}
 
 	public List getCommandAliases() {
@@ -31,27 +33,52 @@ public class CommandBuild extends CommandBase{
 	}
 	//TODO
 	public void processCommand(ICommandSender var1, String[] coordinate) {
-		if (coordinate.length == 3)
-        {	//int bound = 10000000;
-            int posX = Integer.parseInt(coordinate[1]);//parseIntBounded(var1, coordinate[1],-bound,bound);
-            int posZ = Integer.parseInt(coordinate[2]);//parseIntBounded(var1, coordinate[2],-bound,bound);
-            world=MinecraftServer.getServer().worldServers[0];
+		if (coordinate.length == 4 || coordinate.length == 3)
+        {	
+			notifyAdmins(var1, 0, "/build command used", new Object[]{var1.getCommandSenderName(),coordinate});
+            int posX = Integer.parseInt(coordinate[1+coordinate.length-3]);
+            int posZ = Integer.parseInt(coordinate[2+coordinate.length-3]);
+            world=MinecraftServer.getServer().worldServers[coordinate.length == 3? 0 : Integer.parseInt(coordinate[1])];
             
             if ("ruin".equalsIgnoreCase(coordinate[0]))
             {  
             	ruin=PopulatorCARuins.instance;
-            	ruin.exploreThreads.add(new WorldGenCARuins((PopulatorCARuins) ruin, world,new Random(), posX, posZ, 100, 1));	
+            	ruin.master.exploreThreads.add(new WorldGenCARuins( ruin, world,new Random(), posX, posZ, 100, 1));	
             }
             else if ("wall".equalsIgnoreCase(coordinate[0]))
             {
             	wall=PopulatorGreatWall.instance;
-            	wall.exploreThreads.add(new WorldGenGreatWall((PopulatorGreatWall) wall, world, new Random(), posX, posZ, 100, 1));         	            	
+            	wall.master.exploreThreads.add(new WorldGenGreatWall( wall, world, new Random(), posX, posZ, 100, 1));         	            	
             }
+            /*else if ("monowall".equalsIgnoreCase(coordinate[0]))
+            {
+            	wall=PopulatorGreatWall.instance;
+            	if(wall.placedCoords==null || wall.placedWorld!=world){
+            		wall.placedCoords=new int[]{posX,world.getHeightValue(posX, posZ),posZ};
+            		wall.placedWorld=world;
+            		var1.sendChatToPlayer("First set of wall coordinates stored.");
+            	}
+        		else{
+                	wall.master.exploreThreads.add(new WorldGenSingleWall( wall, world, new Random(), new int[]{posX, world.getHeightValue(posX, posZ), posZ})); 
+                	wall.placedCoords=null;
+                	wall.placedWorld=null;
+        		}
+            }
+            */
             else if ("city".equalsIgnoreCase(coordinate[0]))
             {
             	city=PopulatorWalledCity.instance;
-            	city.exploreThreads.add(new WorldGenWalledCity((PopulatorWalledCity) city, world, new Random(), posX, posZ, 100, 1));
-        		
+            	city.master.exploreThreads.add(new WorldGenWalledCity( city, world, new Random(), posX, posZ, 100, 1));	
+            }
+            else if("undcity".equalsIgnoreCase(coordinate[0]))
+            {
+            	city=PopulatorWalledCity.instance;
+            	WorldGeneratorThread wgt=new WorldGenUndergroundCity( city, world, new Random(), posX, posZ, 100, 1);
+    			int maxSpawnHeight=Building.findSurfaceJ(world,posX,posZ,Building.WORLD_MAX_Y,false,Building.IGNORE_WATER)- WorldGenUndergroundCity.MAX_DIAM/2 - 5; //44 at sea level
+    			int minSpawnHeight=PopulatorWalledCity.MAX_FOG_HEIGHT+WorldGenUndergroundCity.MAX_DIAM/2 - 8; //34, a pretty thin margin. Too thin for underocean cities?
+    			if(minSpawnHeight<=maxSpawnHeight)
+    				wgt.setSpawnHeight(minSpawnHeight, maxSpawnHeight, false);
+            	city.master.exploreThreads.add(wgt);          
             }
         }
         else
@@ -63,7 +90,7 @@ public class CommandBuild extends CommandBase{
 
 	@Override
 	public List addTabCompletionOptions(ICommandSender var1, String[] var2) {
-		return var2.length == 1 ? getListOfStringsMatchingLastWord(var2, new String[] {"ruin", "wall", "city"}): null;
+		return var2.length == 1 ? getListOfStringsMatchingLastWord(var2, new String[] {"ruin", "wall", "city", "undcity"}): null;
 	    
 	}
 
