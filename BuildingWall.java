@@ -22,7 +22,7 @@ import net.minecraftforge.common.IShearable;
  */
 public class BuildingWall extends Building
 {
-	public final static boolean DEBUG=true;
+	public final static boolean DEBUG=false;
 	public final static boolean DEBUG_SIGNS=false;
 	
 	public final static int SEARCHDOWN=2, MIN_SEARCHUP=2;

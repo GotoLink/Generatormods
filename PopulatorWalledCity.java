@@ -56,7 +56,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	public static PopulatorWalledCity instance;
 	public final static int MIN_CITY_LENGTH=40;
 	private final static int MAX_EXPLORATION_DISTANCE=10;
-	private final static int MAX_FOG_HEIGHT=27;
+	final static int MAX_FOG_HEIGHT=27;
 	public final static int CITY_TYPE_SURFACE=0, CITY_TYPE_NETHER=-1, CITY_TYPE_UNDERGROUND=1;
 	private final static String SETTINGS_FILE_NAME="WalledCitySettings.txt",
 								LOG_FILE_NAME="walled_city_log.txt",
@@ -82,10 +82,6 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 		instance=this;
 		}
 	
-	@Init
-	public void load(FMLInitializationEvent event) {
-		
-	}
 	//****************************  FUNCTION - loadDataFiles *************************************************************************************//
 	public void loadDataFiles(){
 		try {
@@ -122,14 +118,13 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	
 	//****************************  FUNCTION - cityIsSeparated *************************************************************************************//
 	public boolean cityIsSeparated(int i, int k, int cityType){
-		if(cityLocations ==null) 
-			return true;
-		for(int [] location : cityLocations){
-			if( location[2]==cityType && Math.abs(location[0]-i) + Math.abs(location[1]-k) 
-					                     < (cityType==CITY_TYPE_SURFACE ?  MinCitySeparation : UndergroundMinCitySeparation)){
-				return false;
+		if(cityLocations!=null) 
+			for(int [] location : cityLocations){
+				if( location[2]==cityType && Math.abs(location[0]-i) + Math.abs(location[1]-k) 
+						                     < (cityType==CITY_TYPE_UNDERGROUND ? UndergroundMinCitySeparation : MinCitySeparation )){
+					return false;
+				}
 			}
-		}
 		return true;
 	}
 	
@@ -150,7 +145,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	}
 
 	//****************************  FUNCTION - updateWorldExplored *************************************************************************************//
-	public /*synchronized*/ void updateWorldExplored(World world_) {//should test synchronized or not
+	public synchronized void updateWorldExplored(World world_) {
 		if (checkNewWorld(world_))
 		{
 			setNewWorld(world_,"Starting to survey a world for city generation...");		

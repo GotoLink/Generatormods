@@ -138,13 +138,6 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 	@PreInit
 	public void preInit(FMLPreInitializationEvent event) {	instance=this;	}
 	
-	@Init
-	public void load(FMLInitializationEvent event) {		
-		/*for(int m=0; m<DEFAULT_BLOCK_RULES .length; m++)
-		{
-			blockRules[m]=DEFAULT_BLOCK_RULES[m];
-		}*/	
-	}
 	@ServerStarting
 	public void serverStarting(FMLServerStartingEvent event){
 		event.registerServerCommand(new CommandBuild());

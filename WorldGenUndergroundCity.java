@@ -50,20 +50,21 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 	//****************************  FUNCTION - generate*************************************************************************************//
 	public boolean generate(int i0,int j0,int k0) throws InterruptedException{
 		pws=TemplateWall.pickBiomeWeightedWallStyle(wc.undergroundCityStyles,world,i0,k0,random,true);
-		if(pws==null) return false;
+		if(pws==null) 
+			return false;
 		willBuild=true;
-		if(!wc.cityIsSeparated(i0,k0,PopulatorWalledCity.CITY_TYPE_UNDERGROUND)) return false;
+		if(!wc.cityIsSeparated(i0,k0,PopulatorWalledCity.CITY_TYPE_UNDERGROUND)) 
+			return false;
 		
 		//make hollows recursively
 		hollow(i0,j0,k0,MAX_DIAM);
-		if(hollows.size()==0) return false;
+		if(hollows.size()==0) 
+			return false;
 		wc.cityLocations.add(new int[]{i0,k0,PopulatorWalledCity.CITY_TYPE_UNDERGROUND});
 		wc.saveCityLocations();
 		wc.logOrPrint("\n***** Building "+pws.name+" city with "+hollows.size()+" hollows at ("+i0+","+j0+","+k0+"). ******\n");
 		
 		ArrayList<BuildingUndergroundEntranceway> entranceways= buildEntranceways();
-		
-
 		
 		//build streets, towers
 		fillHollows();
@@ -73,7 +74,8 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 				entranceway.street.makeBuildings(true,true,false,false,false);
 		}}
 		for(BuildingDoubleWall street : streets) {
-			if(!master.isFlushingGenThreads) suspendGen();
+			if(!master.isFlushingGenThreads) 
+				suspendGen();
 			street.buildTowers(true,true,false,pws.StreetDensity > TemplateWall.MAX_STREET_DENSITY/2,false);
 		}
 
@@ -101,15 +103,16 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 				if(Building.CIRCLE_SHAPE[top_diam][x1][y1]>=0){
 					Building.setBlockAndMetaNoLighting(world,i+offset+x1, j+z1, k+offset+y1,0,0);
 			}}}
-			for(int y1=0; y1<top_diam;y1++){ for(int x1=0; x1<top_diam;x1++){
-				if(Building.CIRCLE_SHAPE[top_diam][x1][y1]>=0){
-					//keep gravel and water from pouring in
-					for(int z2=z1+1; z2<=z1+3; z2++)
-						if( Building.IS_FLOWING_BLOCK[world.getBlockId(i+offset+x1, j+z2, k+offset+y1)])
-						{
-							world.setBlock(i+offset+x1, j+z1+1, k+offset+y1,Building.STONE_ID);
-							break;
-						}
+			for(int y1=0; y1<top_diam;y1++){ 
+				for(int x1=0; x1<top_diam;x1++){
+					if(Building.CIRCLE_SHAPE[top_diam][x1][y1]>=0){
+						//keep gravel and water from pouring in
+						for(int z2=z1+1; z2<=z1+3; z2++)
+							if( Building.IS_FLOWING_BLOCK[world.getBlockId(i+offset+x1, j+z2, k+offset+y1)])
+							{
+								world.setBlock(i+offset+x1, j+z1+1, k+offset+y1,Building.STONE_ID);
+								break;
+							}
 			}}}
 			
 			//bottom half, make flatter than top half
@@ -141,7 +144,8 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 		for(int tries=0; tries<(diam>=MAX_DIAM-2*DIAM_INCREMENT ? 10:MAX_CHILDREN); tries++){
 			if(random.nextFloat()<P_CHILDREN){
 				float theta;
-				if(diam>=MAX_DIAM-2*DIAM_INCREMENT) theta=random.nextFloat()*6.283185F;
+				if(diam>=MAX_DIAM-2*DIAM_INCREMENT) 
+					theta=random.nextFloat()*6.283185F;
 				//theta points away from center of mass + noise
 				else theta=(float)Math.atan((cavernMass*i-cavernMass_i)/(cavernMass*k-cavernMass_k)) 
 				                + THETA_SHIFT_SIGMA*random.nextFloat()*(random.nextFloat()-0.5F);
@@ -152,7 +156,8 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 					   k + (int)(MathHelper.cos(theta)*rshift),
 					   diam-DIAM_INCREMENT))
 					successes++;
-				if(successes >= MAX_CHILDREN) break;
+				if(successes >= MAX_CHILDREN) 
+					break;
 			}
 		}
 		return true;
@@ -160,10 +165,10 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 	
 	//****************************  FUNCTION - buildEntranceways *************************************************************************************//
 	private ArrayList<BuildingUndergroundEntranceway> buildEntranceways() throws InterruptedException{
-		if(!pws.MakeUndergroundEntranceways) return new ArrayList<BuildingUndergroundEntranceway>();
+		if(!pws.MakeUndergroundEntranceways) 
+			return new ArrayList<BuildingUndergroundEntranceway>();
 		
-		
-		int[] center=new int[]{(int)(cavernMass_i/cavernMass),Building.WORLD_HEIGHT,(int)(cavernMass_k/cavernMass)}; 
+		int[] center=new int[]{(int)(cavernMass_i/cavernMass),Building.WORLD_MAX_Y+1,(int)(cavernMass_k/cavernMass)}; 
 		int[] pole=new int[]{center[0]+100,center[1],center[2]};
 		ArrayList<BuildingUndergroundEntranceway> entranceways = new ArrayList<BuildingUndergroundEntranceway>();
 
@@ -180,7 +185,8 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 			
 			boolean separated=true;
 			for(BuildingUndergroundEntranceway entranceway : entranceways)
-				if(Building.distance(entranceway.getIJKPt(0,0,0), pt)<400) separated=false;
+				if(Building.distance(entranceway.getIJKPt(0,0,0), pt)<400) 
+					separated=false;
 			
 			BuildingUndergroundEntranceway entranceway=new BuildingUndergroundEntranceway(attempts,this,pws,axDir,pt);
 			if(separated && entranceway.build()){
@@ -189,7 +195,8 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 			}
 			pole[0]=center[0]+(center[2]-hollow[2])/2; //new pole is midpoint of old center and hollow, rotated by 90 degrees.
 			pole[2]=center[2]+(hollow[0]-center[0])/2;
-			if(entranceways.size()>=4) break;
+			if(entranceways.size()>=4) 
+				break;
 		}
 		return entranceways;
 	}
@@ -216,7 +223,8 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 					streets.add(street);
 					successes++;
 				}
-				if(successes > Math.min(hollows.size()*pws.StreetDensity, 4*pws.StreetDensity)) break;
+				if(successes > Math.min(hollows.size()*pws.StreetDensity, 4*pws.StreetDensity)) 
+					break;
 			}
 		}
 	}

@@ -54,7 +54,7 @@ public class TemplateRule {
         	blockMDs[i]= data.length>1 ? Integer.parseInt( data[1]) : 0;
         	if(checkMetaValue){
         		String checkStr=Building.metaValueCheck(blockIDs[i], blockMDs[i]);
-        		if(checkStr!=Building.META_VALUE_OK)
+        		if(checkStr!=null)
         			throw new Exception("Error reading rule: "+rule+"\nBad meta value "+blockMDs[i]+". "+checkStr);
         	}
         }

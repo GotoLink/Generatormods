@@ -132,7 +132,8 @@ public class BuildingTower extends Building
 		int rHeight=(roofStyle==ROOF_CRENEL ? 2 : minHorizDim/2);
 		if(isObstructedSolid(new int[]{rBuffer,bHeight,Math.max(rBuffer, ybuffer)},
 				             new int[]{bWidth-1-rBuffer,bHeight+rHeight,bLength-1-rBuffer}) ) {
-			if(BuildingWall.DEBUG) System.err.println("Cannot build Tower "+IDString()+". Obstructed!");
+			if(BuildingWall.DEBUG) 
+				System.err.println("Cannot build Tower "+IDString()+". Obstructed!");
 			return true;
 		}
 		return false;
@@ -160,19 +161,24 @@ public class BuildingTower extends Building
 						blockID==UPRIGHT_SPAWNER_ID || blockID==EASY_SPAWNER_ID) 
 					undeadTower=true;
 			ghastTower=roofStyle==ROOF_CRENEL && SpawnerRule.getBlock(random)[0]==GHAST_SPAWNER_ID;
-			if(ghastTower ||  random.nextInt(100)>SpawnerRule.chance) undeadTower=false;
+			if(ghastTower ||  random.nextInt(100)>SpawnerRule.chance)
+				undeadTower=false;
 		}
 
 		
-		if(undeadTower && bHeight - baseHeight < 9) bHeight = baseHeight  + 9;
-		if(baseHeight<0) baseHeight=0;
+		if(undeadTower && bHeight - baseHeight < 9) 
+			bHeight = baseHeight  + 9;
+		if(baseHeight<0) 
+			baseHeight=0;
 
 
 		//buffer - dimensions have an offset of one on each side (except top) to fit in roof overhang and floor.
 		//So to translate from Building coord system need to add +1 to all entries, annoying but that's life.
 		buffer=new int[bWidth+2][bHeight+minHorizDim+3][bLength+2][2];
-		for(int x1=0;x1<bWidth+2;x1++) for(int y1=0;y1<bLength+2;y1++) for(int z1=0;z1<bHeight+minHorizDim+3;z1++)
-			buffer[x1][z1][y1]=PRESERVE_BLOCK;
+		for(int x1=0;x1<bWidth+2;x1++) 
+			for(int y1=0;y1<bLength+2;y1++) 
+				for(int z1=0;z1<bHeight+minHorizDim+3;z1++)
+					buffer[x1][z1][y1]=PRESERVE_BLOCK;
 
 		//========================================= build it ==========================================
 		//*** sidewalls and base ***

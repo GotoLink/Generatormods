@@ -33,11 +33,9 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeChunkManager;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
-import cpw.mods.fml.common.Mod.Init;
 import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.Mod.PostInit;
 import cpw.mods.fml.common.Mod.PreInit;
-import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
@@ -68,13 +66,6 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 	@PreInit
 	public void preInit(FMLPreInitializationEvent event) {	instance=this;}
 	
-	@Init
-	public void load(FMLInitializationEvent event) { //TODO : Make surveyorsRod ?
-		//final Block surveyorsRod= new BlockSurveyorsRod(152, 0,this).setHardness(2.0F).setResistance(5.0F).setBlockName("SurveyorsRod").setCreativeTab(CreativeTabs.tabBlock);
-		//GameRegistry.registerBlock(surveyorsRod,"SurveyorsRod");
-	    	
-		//GameRegistry.addRecipe(new ItemStack(surveyorsRod,8), new Object[]{ "##", "##", Character.valueOf('#'), Block.dirt});
-		}
 	
 	//****************************  FUNCTION - loadDataFiles *************************************************************************************//
 	public final void loadDataFiles(){

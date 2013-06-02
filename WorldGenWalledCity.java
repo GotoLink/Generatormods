@@ -55,7 +55,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		BacktrackLength=wc.BacktrackLength;
 		chestTries=wc.chestTries;
 		chestItems=wc.chestItems;
-		cityType=world_.provider.isHellWorld ? -1 : 0;
+		cityType=world_.getWorldInfo().getDimension();
 		setName("WorldGenWalledCityThread");
 		
 	}
@@ -64,10 +64,13 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 	
 	public boolean generate(int i0,int j0,int k0) throws InterruptedException{
 		ows=TemplateWall.pickBiomeWeightedWallStyle(wc.cityStyles,world,i0,k0,random,false);
-		if(ows==null) return false;
+		if(ows==null) 
+			return false;
 		sws=TemplateWall.pickBiomeWeightedWallStyle(ows.streets,world,i0,k0,random,false);
-		if(sws==null) return false;
-		if(!wc.cityIsSeparated(i0,k0,cityType)) return false;
+		if(sws==null) 
+			return false;
+		if(!wc.cityIsSeparated(i0,k0,cityType)) 
+			return false;
 		
 		int ID=(random.nextInt(9000)+1000)*100;
 		int minJ=ows.LevelInterior ? Building.SEA_LEVEL-1 : BuildingWall.NO_MIN_J;
@@ -76,28 +79,34 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 
 
 		//==========================      outer walls    ====================================================
-		if(ows.MinL < PopulatorWalledCity.MIN_CITY_LENGTH) ows.MinL=PopulatorWalledCity.MIN_CITY_LENGTH;
+		if(ows.MinL < PopulatorWalledCity.MIN_CITY_LENGTH) 
+			ows.MinL=PopulatorWalledCity.MIN_CITY_LENGTH;
 		walls=new BuildingWall[4];
 		ows.setFixedRules(random);
 		
 		//plan walls[0]
 		walls[0] = new BuildingWall(ID,this,ows,dir[0],axXHand,ows.MinL+random.nextInt(ows.MaxL-ows.MinL),false,i0,j0,k0).setMinJ(minJ);
 		walls[0].plan(1,0,BuildingWall.DEFAULT_LOOKAHEAD,true);
-		if(walls[0].bLength<ows.MinL) return false;
+		if(walls[0].bLength<ows.MinL) 
+			return false;
 
 		//plan walls[1]
 		walls[0].setCursor(walls[0].bLength-1);
 		walls[1] = new BuildingWall(ID+1,this,ows,dir[1],axXHand, ows.MinL+random.nextInt(ows.MaxL-ows.MinL),false,walls[0].getIJKPt(-1-ows.TowerXOffset,0,1+ows.TowerXOffset)).setTowers(walls[0]).setMinJ(minJ);
-		if(!wc.cityIsSeparated(walls[1].i1,walls[1].k1,cityType)) return false;
+		if(!wc.cityIsSeparated(walls[1].i1,walls[1].k1,cityType)) 
+			return false;
 		walls[1].plan(1,0,BuildingWall.DEFAULT_LOOKAHEAD,false);
-		if(walls[1].bLength<ows.MinL) return false;
+		if(walls[1].bLength<ows.MinL) 
+			return false;
 
 		//plan walls[2]
 		walls[1].setCursor(walls[1].bLength-1);
 		int distToTarget=walls[0].bLength + walls[1].xArray[walls[1].bLength-1];
-		if(distToTarget<MIN_SIDE_LENGTH) return false;
+		if(distToTarget<MIN_SIDE_LENGTH) 
+			return false;
 		walls[2] = new BuildingWall(ID+2,this,ows,dir[2],axXHand,distToTarget+2,false,walls[1].getIJKPt(-1-ows.TowerXOffset,0,1+ows.TowerXOffset)).setTowers(walls[0]).setMinJ(minJ);
-		if(!wc.cityIsSeparated(walls[2].i1,walls[2].k1,cityType)) return false;
+		if(!wc.cityIsSeparated(walls[2].i1,walls[2].k1,cityType)) 
+			return false;
 		walls[2].setCursor(0);
 		walls[2].setTarget(walls[2].getIJKPt(0,0,distToTarget));
 		walls[2].plan(1,0,BuildingWall.DEFAULT_LOOKAHEAD,false);
@@ -109,9 +118,11 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		//plan walls[3]
 		walls[2].setCursor(walls[2].bLength-1);
 		distToTarget=walls[1].bLength - walls[0].xArray[walls[0].bLength-1] + walls[1].xArray[walls[1].bLength-1];
-		if(distToTarget<MIN_SIDE_LENGTH) return false;
+		if(distToTarget<MIN_SIDE_LENGTH) 
+			return false;
 		walls[3] = new BuildingWall(ID+3,this,ows,dir[3],axXHand,distToTarget+2,false,walls[2].getIJKPt(-1-ows.TowerXOffset,0,1+ows.TowerXOffset)).setTowers(walls[0]).setMinJ(minJ);
-		if(!wc.cityIsSeparated(walls[3].i1,walls[3].k1,cityType)) return false;
+		if(!wc.cityIsSeparated(walls[3].i1,walls[3].k1,cityType)) 
+			return false;
 		walls[0].setCursor(0);
 		walls[3].setCursor(0);
 		walls[3].setTarget(walls[0].getIJKPt(-1-ows.TowerXOffset,0,-1-ows.TowerXOffset));
@@ -122,7 +133,8 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		}
 		//if(BuildingWall.DEBUG) FMLLog.getLogger().info("smoothingwalls");
 		//smoothing
-		for(BuildingWall w : walls) w.smooth(ows.ConcaveDownSmoothingScale,ows.ConcaveUpSmoothingScale,true);
+		for(BuildingWall w : walls) 
+			w.smooth(ows.ConcaveDownSmoothingScale,ows.ConcaveUpSmoothingScale,true);
 		
 		//======================= Additional site checks =======================================
 		
@@ -131,9 +143,11 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		for(int w=0;w<4;w++){
 			xmax[w]=0;
 			for(int n=0; n<walls[w].bLength; n++)
-				if(walls[w].xArray[n]>xmax[w]) xmax[w]=walls[w].xArray[n];
+				if(walls[w].xArray[n]>xmax[w]) 
+					xmax[w]=walls[w].xArray[n];
 		}
-		for(BuildingWall w : walls) w.setCursor(0);
+		for(BuildingWall w : walls) 
+			w.setCursor(0);
 		corner1=walls[1].getIJKPt(xmax[1]+walls[1].bWidth+1, 0, walls[0].xArray[walls[0].bLength-1] - xmax[0] - walls[0].bWidth - 2);
 		corner2=walls[3].getIJKPt(xmax[3]+walls[3].bWidth+1, 0, walls[2].xArray[walls[2].bLength-1] - xmax[2] - walls[2].bWidth - 2);
 		mincorner=new int[]{Math.min(corner1[0], corner2[0]),0,Math.min(corner1[2], corner2[2])};
@@ -182,16 +196,19 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		walls[0].setCursor(0);
 		int[] cityCenter=new int[]{(walls[0].i1+walls[1].i1+walls[2].i1+walls[3].i1)/4,0,(walls[0].k1+walls[1].k1+walls[2].k1+walls[3].k1)/4};
 		cityCenter[1]=Building.findSurfaceJ(world, cityCenter[0], cityCenter[1], Building.WORLD_MAX_Y, false, 3);
-		wc.cityLocations.add(new int[]{cityCenter[0],cityCenter[2],cityType});
+		for(int w=0;w<4;w++)
+			wc.cityLocations.add(new int[]{walls[w].i1,walls[w].k1,cityType});//TODO:Improve this
 		wc.saveCityLocations();
 
 		//=================================== Build it! =========================================
 		exploreArea(corner1, corner2, true);
 		willBuild=true;
-		if(!master.isFlushingGenThreads) suspendGen();
+		if(!master.isFlushingGenThreads) 
+			suspendGen();
 		
 		wc.chatBuildingCity("** Building city... **","\n***** Building "+ows.name+" city"+", ID="+ID+" in "+world.getBiomeGenForCoords(walls[0].i1,walls[0].k1).biomeName+" biome between "+walls[0].localCoordString(0,0,0)+" and "+walls[2].localCoordString(0,0,0) + " ******\n");
-		if(ows.LevelInterior) levelCity();
+		if(ows.LevelInterior) 
+			levelCity();
 		
 		TemplateWall avenueWS=TemplateWall.pickBiomeWeightedWallStyle(ows.streets,world,i0,k0,random,false);
 		LinkedList<BuildingWall> radialAvenues=new LinkedList<BuildingWall>();
@@ -249,7 +266,8 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		}
 		
 		
-		if(!master.isFlushingGenThreads) suspendGen();
+		if(!master.isFlushingGenThreads) 
+			suspendGen();
 		//===============================================      streets   ===============================================
 		//Plan/Build Order:
 		//1)Plan radial avenues as part of wall building
@@ -265,8 +283,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		//build avenues and cross avenues
 		boolean cityIsDense=ows.StreetDensity >= 3*TemplateWall.MAX_STREET_DENSITY/4;
 		LinkedList<BuildingDoubleWall> crossAvenues=new LinkedList<BuildingDoubleWall>();
-		int avInterval=cityIsDense ? 60 
-								   : Lmean > 110 ? 35:20;
+		int avInterval=cityIsDense ? 60 : Lmean > 110 ? 35:20;
 				
 		//maxStreetCount scales linearly with LMean since we fill 2-D city quadrants with 1-D objects.
 		int maxStreetCount=Lmean*ows.StreetDensity/20;  
@@ -281,7 +298,8 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 			radialAvenue.setLayoutCode(LAYOUT_CODE_AVENUE);
 		}
 		
-		for(BuildingWall avenue : radialAvenues) avenue.buildFromTML();
+		for(BuildingWall avenue : radialAvenues) 
+			avenue.buildFromTML();
 		
 		LinkedList<BuildingDoubleWall> plannedStreets=new LinkedList<BuildingDoubleWall>();
 
@@ -290,19 +308,22 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 			if(tries % 5==0 && !master.isFlushingGenThreads) suspendGen();
 			int[] pt=randInteriorPoint();
 			if(pt!=null){
-			pt[1]++;//want block above surface block
-			sws=TemplateWall.pickBiomeWeightedWallStyle(ows.streets,world,i0,k0,random,true);
+				pt[1]++;//want block above surface block
+				sws=TemplateWall.pickBiomeWeightedWallStyle(ows.streets,world,i0,k0,random,true);
 				if(pt[1]!=-1){
 				//streets
-				BuildingDoubleWall street=new BuildingDoubleWall(ID+tries,this,sws,random.nextInt(4),Building.R_HAND,pt);
-				if(street.plan()){ plannedStreets.add(street); streetsBuilt++; }
-			}
+					BuildingDoubleWall street=new BuildingDoubleWall(ID+tries,this,sws,random.nextInt(4),Building.R_HAND,pt);
+					if(street.plan())
+					{ plannedStreets.add(street); streetsBuilt++; }
+				}
 			}
 		}	
 		
-		for(BuildingDoubleWall avenue : crossAvenues) avenue.build(LAYOUT_CODE_AVENUE);
+		for(BuildingDoubleWall avenue : crossAvenues) 
+			avenue.build(LAYOUT_CODE_AVENUE);
 			
-		for(BuildingDoubleWall street : plannedStreets) street.build(LAYOUT_CODE_STREET);
+		for(BuildingDoubleWall street : plannedStreets) 
+			street.build(LAYOUT_CODE_STREET);
 		
 		//build towers
 		for(BuildingWall avenue : radialAvenues)
@@ -324,9 +345,6 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		
 		return true;
 	}
-	
-
-	
 	
 	//****************************************  FUNCTION - layoutIsClear *************************************************************************************//
 	public boolean isLayoutGenerator(){ return true; }
@@ -455,7 +473,8 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 			for(int chunkK=corner1[2]>>4; ((corner2[2]>>4)-chunkK)*incK > 0; chunkK+=incK)
 				world.getChunkFromChunkCoords(chunkI,chunkK).generateSkylightMap();
 		
-		if(!master.isFlushingGenThreads) suspendGen();
+		if(!master.isFlushingGenThreads) 
+			suspendGen();
 	}
 	
 	//****************************************  FUNCTION - chooseDirection *************************************************************************************//
@@ -470,10 +489,10 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		//pick an explored direction if it exists
 		dir=new int[4];
 		int randDir=random.nextInt(4);
-		
-	
+			
 		for(dir[0]=(randDir+1)%4; dir[0]!=randDir; dir[0]=(dir[0]+1)%4)
-			if(exploredChunk[dir[0]]) break;  //this chunk has been explored so we want to go in this direction
+			if(exploredChunk[dir[0]]) 
+				break;  //this chunk has been explored so we want to go in this direction
 
 		//Choose axXHand (careful it is opposite the turn direction of the square).
 		//if RH direction explored, then turn RH; else turn LH;
