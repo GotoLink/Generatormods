@@ -49,7 +49,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.TickRegistry;
 import cpw.mods.fml.relauncher.Side;
 
-@Mod(modid = "WalledCityMod", name = "Walled City Generator", version = "0.1.1",dependencies= "after:ExtraBiomes,BiomesOPlenty")
+@Mod(modid = "WalledCityMod", name = "Walled City Generator", version = "0.1.2",dependencies= "after:ExtraBiomes,BiomesOPlenty")
 @NetworkMod(clientSideRequired = false, serverSideRequired = false)
 public class PopulatorWalledCity extends BuildingExplorationHandler{
 	@Instance("WalledCityMod")
@@ -145,10 +145,11 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	}
 
 	//****************************  FUNCTION - updateWorldExplored *************************************************************************************//
+	@Override
 	public synchronized void updateWorldExplored(World world_) {
 		if (checkNewWorld(world_))
 		{
-			setNewWorld(world_,"Starting to survey a world for city generation...");		
+			setNewWorld(world_,"Starting to survey dimension "+world_.getWorldInfo().getDimension()+" for city generation...");		
 	
 			if(this==master){
 				//kill zombies
@@ -235,10 +236,10 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 				chatCityBuilt(citiesBuiltMessages.remove());
 		
 		if(cityStyles.size() > 0 && cityIsSeparated(i,k,CITY_TYPE_SURFACE) && random.nextFloat() < GlobalFrequency){		
-			exploreThreads.add(new WorldGenWalledCity(this, world, random, i, k,TriesPerChunk, GlobalFrequency));
+			exploreThreads.add(new WorldGenWalledCity(this, world, i, k,TriesPerChunk, GlobalFrequency));
 		}
 		if(undergroundCityStyles.size() > 0 && cityIsSeparated(i,k,CITY_TYPE_UNDERGROUND) && random.nextFloat() < UndergroundGlobalFrequency){
-			WorldGeneratorThread wgt=new WorldGenUndergroundCity(this, world, random, i, k,1, UndergroundGlobalFrequency);
+			WorldGeneratorThread wgt=new WorldGenUndergroundCity(this, world, i, k,1, UndergroundGlobalFrequency);
 			int maxSpawnHeight=Building.findSurfaceJ(world,i,k,Building.WORLD_MAX_Y,false,Building.IGNORE_WATER)- WorldGenUndergroundCity.MAX_DIAM/2 - 5; //44 at sea level
 			int minSpawnHeight=MAX_FOG_HEIGHT+WorldGenUndergroundCity.MAX_DIAM/2 - 8; //34, a pretty thin margin. Too thin for underocean cities?
 			if(minSpawnHeight<=maxSpawnHeight)

@@ -42,7 +42,7 @@ import cpw.mods.fml.relauncher.Side;
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-@Mod(modid = "CARuins", name = "Cellular Automata Generator", version = "0.1.1",dependencies= "after:ExtraBiomes,BiomesOPlenty")
+@Mod(modid = "CARuins", name = "Cellular Automata Generator", version = "0.1.2",dependencies= "after:ExtraBiomes,BiomesOPlenty")
 @NetworkMod(clientSideRequired = false, serverSideRequired = false)
 public class PopulatorCARuins extends BuildingExplorationHandler{
 	@Instance("CARuins")
@@ -141,23 +141,6 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 	@ServerStarting
 	public void serverStarting(FMLServerStartingEvent event){
 		event.registerServerCommand(new CommandBuild());
-	}
-	//****************************   FUNCTION - updateWorldExplored *************************************************************************************//
-	public synchronized void updateWorldExplored(World world_) {
-		if (checkNewWorld(world_))
-		{
-			setNewWorld(world_,"Starting to survey a world for automata generation...");
-			
-			if(this==master)
-			{//kill zombies
-				for(WorldGeneratorThread wgt: exploreThreads) killZombie(wgt);
-				exploreThreads=new LinkedList<WorldGeneratorThread>();
-			} else
-			{
-				master.updateWorldExplored(world_);
-				exploreThreads=master.exploreThreads;
-			}
-		}
 	}
 	
 	//****************************  FUNCTION - loadDataFiles *************************************************************************************//
@@ -328,7 +311,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 	
 	public final void generate( World world, Random random, int i, int k ) {	
 		if(random.nextFloat() < GlobalFrequency)
-			exploreThreads.add(new WorldGenCARuins(this, world, random, i, k,TriesPerChunk, GlobalFrequency));		
+			exploreThreads.add(new WorldGenCARuins(this, world, i, k,TriesPerChunk, GlobalFrequency));		
 	}
 	@Override
 	public String toString(){

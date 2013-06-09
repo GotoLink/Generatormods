@@ -43,7 +43,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.TickRegistry;
 import cpw.mods.fml.relauncher.Side;
 
-@Mod(modid = "GreatWallMod", name = "Great Wall Mod", version = "0.1.1",dependencies= "after:ExtraBiomes,BiomesOPlenty")
+@Mod(modid = "GreatWallMod", name = "Great Wall Mod", version = "0.1.2",dependencies= "after:ExtraBiomes,BiomesOPlenty")
 @NetworkMod(clientSideRequired = false, serverSideRequired = false)
 public class PopulatorGreatWall extends BuildingExplorationHandler{
 	@Instance("GreatWallMod")
@@ -89,29 +89,12 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 		}finally{ if(lw!=null) lw.close(); }
 		dataFilesLoaded=true;
 	}
-
-	//****************************  FUNCTION - updateWorldExplored *************************************************************************************//
-	public synchronized void updateWorldExplored(World world_) {
-		if (checkNewWorld(world_))
-		{
-			setNewWorld(world_,"Starting to survey a world for wall generation...");
-			
-			if(this==master){
-				//kill zombies
-				for(WorldGeneratorThread wgt: exploreThreads) killZombie(wgt);
-				exploreThreads=new LinkedList<WorldGeneratorThread>();
-			} else {
-				master.updateWorldExplored(world_);
-				exploreThreads=master.exploreThreads;
-			}
-		}
-	}
 	
 	//****************************  FUNCTION - generate *************************************************************************************//
 	
 	public final void generate( World world, Random random, int i, int k ) {	
 		if(random.nextFloat() < GlobalFrequency)
-			exploreThreads.add(new WorldGenGreatWall(this,world, random, i, k,TriesPerChunk, GlobalFrequency));		
+			exploreThreads.add(new WorldGenGreatWall(this,world, i, k,TriesPerChunk, GlobalFrequency));		
 	}
 
 	//****************************  FUNCTION - getGlobalOptions  *************************************************************************************//

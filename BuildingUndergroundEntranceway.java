@@ -27,7 +27,7 @@ public class BuildingUndergroundEntranceway extends Building{
 	public BuildingUndergroundEntranceway (int ID_,WorldGeneratorThread wgt_,TemplateWall ws_,int dir_,int[] sourcePt){
 		super(ID_,wgt_, ws_.TowerRule,dir_,1,false,new int[]{PASSAGE_WIDTH,PASSAGE_HEIGHT,0},sourcePt);
 		ws=ws_;
-		stairsID=STEP_TO_STAIRS[blockToStepMeta(ws.rules[ws.template[0][0][ws.WWidth/2]].primaryBlock)[1]];
+		stairsID=blockToStairs(ws.rules[ws.template[0][0][ws.WWidth/2]].primaryBlock);
 		//wallBlockRule=new TemplateRule(new int[]{ws_.TowerBlock,0});
 	}
 	
@@ -64,7 +64,7 @@ public class BuildingUndergroundEntranceway extends Building{
 					else setBlockLocal(x,z+z1,z,0);
 			}}
 			for(int x=0; x<PASSAGE_WIDTH; x++){
-				setBlockLocal(x, z, z, random.nextInt(100) < bRule.chance ? stairsID : 0,STAIRS_DIR_TO_META[DIR_NORTH]);
+				setBlockLocal(x, z, z, world.rand.nextInt(100) < bRule.chance ? stairsID : 0,STAIRS_DIR_TO_META[DIR_NORTH]);
 				buildDown(x, z-1, z, STONE_RULE,20,0,3);
 			}
 			flushDelayed();
@@ -78,8 +78,10 @@ public class BuildingUndergroundEntranceway extends Building{
 					setBlockLocal(x,z+PASSAGE_HEIGHT-1,z,bRule);
 			}
 			if(z%SUPPORT_INTERVAL==SUPPORT_INTERVAL/2 && z<=bLength-PASSAGE_HEIGHT){
-				if(random.nextInt(2)==0) setBlockLocal(0,z+PASSAGE_HEIGHT-3,z,EAST_FACE_TORCH_BLOCK);
-				if(random.nextInt(2)==0) setBlockLocal(PASSAGE_WIDTH-1,z+PASSAGE_HEIGHT-3,z,WEST_FACE_TORCH_BLOCK);
+				if(world.rand.nextInt(2)==0) 
+					setBlockLocal(0,z+PASSAGE_HEIGHT-3,z,EAST_FACE_TORCH_BLOCK);
+				if(world.rand.nextInt(2)==0) 
+					setBlockLocal(PASSAGE_WIDTH-1,z+PASSAGE_HEIGHT-3,z,WEST_FACE_TORCH_BLOCK);
 			}
 		}
 		
