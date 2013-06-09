@@ -72,15 +72,15 @@ public class BuildingDispenserTrap extends Building{
 			setBlockLocal(0,-2,y,bRule);
 			setBlockLocal(2,-2,y,bRule);
 			setBlockLocal(1,-1,y,bRule);
-			setBlockLocal(1,0,y,multipleTriggers && random.nextBoolean() ? STONE_PLATE_ID : HOLE_ID);
-			setBlockLocal(1,1,y,HOLE_ID);
+			setBlockLocal(1,0,y,multipleTriggers && world.rand.nextBoolean() ? STONE_PLATE_ID : 0);
+			setBlockLocal(1,1,y,0);
 		}
 		setBlockLocal(1,0,0,STONE_PLATE_ID);
 		
 		flushDelayed();
 		
-		ItemStack itemstack= missileType==ARROW_MISSILE ? new ItemStack(Item.arrow.itemID, 30+random.nextInt(10),0)
-		                                                 :new ItemStack(Item.potion.itemID,30+random.nextInt(10),12 | 0x4000);
+		ItemStack itemstack= missileType==ARROW_MISSILE ? new ItemStack(Item.arrow.itemID, 30+world.rand.nextInt(10),0)
+		                                                 :new ItemStack(Item.potion.itemID,30+world.rand.nextInt(10),12 | 0x4000);
 		setItemDispenser(1,1,bLength+1,LADDER_DIR_TO_META[DIR_SOUTH],itemstack);
 	}
 	
@@ -91,7 +91,7 @@ public class BuildingDispenserTrap extends Building{
 		try{	
 		    TileEntityDispenser tileentitychest=(TileEntityDispenser)world.getBlockTileEntity(pt[0],pt[1],pt[2]);
 		    if(itemstack != null && tileentitychest!=null)
-		    	tileentitychest.setInventorySlotContents(random.nextInt(tileentitychest.getSizeInventory()), itemstack);
+		    	tileentitychest.setInventorySlotContents(world.rand.nextInt(tileentitychest.getSizeInventory()), itemstack);
 	    }catch(Exception e) { 
         	System.err.println("Error filling dispenser: "+e.toString());
         	e.printStackTrace();

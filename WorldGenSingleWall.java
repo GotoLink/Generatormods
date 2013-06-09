@@ -8,8 +8,8 @@ public class WorldGenSingleWall extends WorldGeneratorThread{
     private int[] pt;
     private PopulatorGreatWall gw;
    
-    public WorldGenSingleWall (PopulatorGreatWall gw_, World world_, Random random_, int[] pt_) {
-            super(gw_, world_, random_, pt_[0]>>4, pt_[2]>>4, 0, 0.0);
+    public WorldGenSingleWall (PopulatorGreatWall gw_, World world_, int[] pt_) {
+            super(gw_, world_, pt_[0]>>4, pt_[2]>>4, 0, 0.0);
             setName("WorldGenSingleWallThread");
             pt=pt_;
             gw=gw_;
@@ -30,7 +30,7 @@ public class WorldGenSingleWall extends WorldGeneratorThread{
     }
    
     public boolean generate(int i0, int j0, int k0) throws InterruptedException{
-            TemplateWall ws=TemplateWall.pickBiomeWeightedWallStyle(gw.wallStyles,world,i0,k0,random,false);
+            TemplateWall ws=TemplateWall.pickBiomeWeightedWallStyle(gw.wallStyles,world,i0,k0,world.rand,false);
             BuildingWall wall=new BuildingWall(0,this,ws,Building.DIR_NORTH,Building.R_HAND, ws.MaxL,true,i0,j0,k0);
             //BuildingWall(int ID_, WorldGeneratorThread wgt_,WallStyle ws_,int dir_,int axXHand_, int maxLength_,int i0_,int j0_, int k0_){
            

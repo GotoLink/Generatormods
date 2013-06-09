@@ -35,10 +35,11 @@ public class TemplateRule {
     public int[] primaryBlock=null;
     private int[] fixedRuleChosen=null;
 
-    public TemplateRule (String rule, boolean checkMetaValue ) throws Exception {
+    public TemplateRule (String rule, boolean checkMetaValue ) {
         String[] items = rule.split( "," );
         int numblocks = items.length - 2;
-        if( numblocks < 1 ) { throw new Exception( "Error reading rule: No blockIDs specified for rule!" ); }
+        if( numblocks < 1 ) 
+        	System.err.println( "Error reading rule: No blockIDs specified for rule!" );
         condition = Integer.parseInt( items[0].trim() );
         chance = Integer.parseInt( items[1].trim() );
         blockIDs = new int[numblocks];
@@ -48,17 +49,16 @@ public class TemplateRule {
         for( int i = 0; i < numblocks; i++ ) {
         	data = items[i + 2].trim().split( "-" );
         	blockIDs[i]=Integer.parseInt( data[0] );
-        	if(!isValidRuleBlock(blockIDs[i])){
-        		throw new Exception(BLOCK_NOT_REGISTERED_ERROR_PREFIX+blockIDs[i]+" not registered!");
-        	}
+        	if(!isValidRuleBlock(blockIDs[i]))
+        		System.err.println(BLOCK_NOT_REGISTERED_ERROR_PREFIX+blockIDs[i]+" not registered!");
+        	
         	blockMDs[i]= data.length>1 ? Integer.parseInt( data[1]) : 0;
         	if(checkMetaValue){
         		String checkStr=Building.metaValueCheck(blockIDs[i], blockMDs[i]);
         		if(checkStr!=null)
-        			throw new Exception("Error reading rule: "+rule+"\nBad meta value "+blockMDs[i]+". "+checkStr);
+        			System.err.println("Error reading rule: "+rule+"\nBad meta value "+blockMDs[i]+". "+checkStr);
         	}
         }
-        
         primaryBlock=getPrimaryBlock();
     } 
 

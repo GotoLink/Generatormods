@@ -69,7 +69,7 @@ public class BuildingSpiralStaircase  extends Building {
 	   
 	   
 	   int x=0,y=1;
-	   setBlockLocal(x,2,y,HOLE_ID);
+	   setBlockLocal(x,2,y,0);
 	   for(int z=-1; z>=bHeight; z--){
 		   buildStairwaySegment(x,z,y,2,stairsBlockId,sDir);
 		   setBlockLocal(1,z,1,bRule); //central column
@@ -128,14 +128,14 @@ public class BuildingSpiralStaircase  extends Building {
    private void buildHallwaySegment(int x, int z, int y, int height){
 	   setBlockLocal(x,z-1,y,bRule);
 	   for(int z1=z; z1<z+height; z1++)
-		   setBlockLocal(x,z1,y,HOLE_ID);
+		   setBlockLocal(x,z1,y,0);
    }
    
    private void buildStairwaySegment(int x, int z, int y, int height, int stairsBlockId, int sDir){
 	   setBlockLocal(x,z-1,y,bRule);
 	   setBlockLocal(x,z,y,stairsBlockId,STAIRS_DIR_TO_META[sDir]);
 	   for(int z1=z+1; z1<=z+height; z1++)
-		   setBlockLocal(x,z1,y,HOLE_ID);
+		   setBlockLocal(x,z1,y,0);
    }
   
 }

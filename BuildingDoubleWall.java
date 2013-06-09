@@ -73,7 +73,7 @@ public class BuildingDoubleWall extends Building
 	}
 	
 	public void build(int layoutCode){
-		ws.setFixedRules(random);
+		ws.setFixedRules(world.rand);
 		if(layoutCode!=WorldGeneratorThread.LAYOUT_CODE_NOCODE){
 			wall1.setLayoutCode(layoutCode);
 			wall2.setLayoutCode(layoutCode);

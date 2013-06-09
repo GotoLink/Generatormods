@@ -30,8 +30,8 @@ public class WorldGenGreatWall extends WorldGeneratorThread
 	private PopulatorGreatWall gw;
 	
 	//****************************  CONSTRUCTOR - WorldGenGreatWall *************************************************************************************//
-	public WorldGenGreatWall (PopulatorGreatWall gw_, World world_, Random random_, int chunkI_, int chunkK_, int TriesPerChunk_, double ChunkTryProb_) { 
-		super(gw_, world_, random_, chunkI_, chunkK_, TriesPerChunk_, ChunkTryProb_);//got the "master" thingy out
+	public WorldGenGreatWall (PopulatorGreatWall gw_, World world_, int chunkI_, int chunkK_, int TriesPerChunk_, double ChunkTryProb_) { 
+		super(gw_, world_, chunkI_, chunkK_, TriesPerChunk_, ChunkTryProb_);//got the "master" thingy out
 		gw=gw_;
 		BacktrackLength=gw.BacktrackLength;
 		chestTries=gw.chestTries;
@@ -41,10 +41,10 @@ public class WorldGenGreatWall extends WorldGeneratorThread
 
 	//****************************  FUNCTION - generate  *************************************************************************************//
 	public boolean generate(int i0, int j0, int k0) throws InterruptedException{
-		TemplateWall ws=TemplateWall.pickBiomeWeightedWallStyle(gw.wallStyles,world,i0,k0,random,false);
+		TemplateWall ws=TemplateWall.pickBiomeWeightedWallStyle(gw.wallStyles,world,i0,k0,world.rand,false);
 		if(ws==null) return false;
 				
-		BuildingDoubleWall dw=new BuildingDoubleWall(10*(random.nextInt(9000)+1000),this,ws,random.nextInt(4),1,new int[] {i0,j0,k0});
+		BuildingDoubleWall dw=new BuildingDoubleWall(10*(world.rand.nextInt(9000)+1000),this,ws,world.rand.nextInt(4),1,new int[] {i0,j0,k0});
 		if(!dw.plan()) return false;
 
 		//calculate the integrated curvature
@@ -69,7 +69,7 @@ public class WorldGenGreatWall extends WorldGeneratorThread
 
 			double p=1.0/(1.0+Math.exp(-30.0*(curviness-(gw.CurveBias/5.0))));
 						
-			if(random.nextFloat() > p && curviness!=0){
+			if(world.rand.nextFloat() > p && curviness!=0){
 				gw.logOrPrint("Rejected great wall, curviness="+curviness+", length="+(dw.wall1.bLength+dw.wall1.bLength - 1)+", P="+p);
 				return false;
 			}

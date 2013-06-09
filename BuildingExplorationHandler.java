@@ -21,7 +21,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.LinkedList;
@@ -33,7 +32,6 @@ import java.util.logging.Logger;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.packet.Packet3Chat;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.ServerListenThread;
 import net.minecraft.server.ThreadMinecraftServer;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
@@ -73,18 +71,34 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 	//protected LinkedList<int[]> lightingList=new LinkedList<int[]>();UNUSED
 	protected int max_exploration_distance;
 	protected int chunksExploredThisTick=0,chunksExploredFromStart=0;
-	private List<int[]> lastExploredChunk=new ArrayList();	
+	private List<int[]> lastExploredChunk=new ArrayList<int[]>();	
 	protected LinkedList<WorldGeneratorThread> exploreThreads=new LinkedList<WorldGeneratorThread>();
 	public int[] flushCallChunk=NO_CALL_CHUNK, AllowedDimensions=new int[]{-1,0};
 	public PrintWriter lw=null;
-	private List<World> currentWorld=new ArrayList();
-	private List<Ticket> tickets=new ArrayList();
+	private List<World> currentWorld=new ArrayList<World>();
+	private List<Ticket> tickets=new ArrayList<Ticket>();
  	int[] chestTries=new int[]{4,6,6,6};
 	int[][][] chestItems=new int[][][]{null,null,null,null};
 	
 	public static Logger logger=FMLLog.getLogger();
 	
-	abstract public void updateWorldExplored(World world);
+	//****************************  FUNCTION - updateWorldExplored *************************************************************************************//
+	public synchronized void updateWorldExplored(World world_) {
+		if (checkNewWorld(world_))
+		{
+			setNewWorld(world_,"Starting to survey dimension "+world_.getWorldInfo().getDimension()+" for "+ this.toString()+" generation...");
+			
+			if(this==master){
+				//kill zombies
+				for(WorldGeneratorThread wgt: exploreThreads) 
+					killZombie(wgt);
+				exploreThreads=new LinkedList<WorldGeneratorThread>();
+			} else {
+				master.updateWorldExplored(world_);
+				exploreThreads=master.exploreThreads;
+			}
+		}
+	}
 	abstract public void loadDataFiles();
 	abstract public void generate(World world, Random random, int i, int k);
 	
@@ -192,7 +206,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 		//SMP - world.getChunkProvider().chunkExists(chunkI, chunkK) calls ChunkProviderServer.java which returns return loadedChunkHashMap.containsItem(ChunkCoordIntPair.chunkXZ2Int(chunkI, chunkK))
 		//If we call this after, no building is spawned !!
 		if(lastExploredChunk.contains(new int[]{chunkI,chunkK}) || world.getChunkProvider().chunkExists(chunkI, chunkK)){ 
-			logOrPrint("Chunk already exist at"+chunkI+","+chunkK);
+			logOrPrint("Chunk already exists at"+chunkI+","+chunkK);
 			if(!lastExploredChunk.contains(new int[]{chunkI,chunkK}))
 			{
 				lastExploredChunk.add(new int[]{chunkI,chunkK});
@@ -206,7 +220,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 				logOrPrint("Chunk"+chunkI+","+chunkK+"too far away from latest explored chunk");
 				return false;
 			}
-		boolean flag=false;
+		/*boolean flag=false;
 		List<EntityPlayerMP> playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
 		if(playerList!=null){
 		for (EntityPlayerMP player:playerList)
@@ -218,7 +232,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 			}
 		}
 		if(flag)
-			return false;
+			return false;*/
 		
 		if(chunksExploredThisTick > (isCreatingDefaultChunks ? CHUNKS_AT_WORLD_START : MAX_CHUNKS_PER_TICK))
 		{
@@ -248,21 +262,27 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 			//e.printStackTrace();
 			
 		 */
-		Ticket tick=ForgeChunkManager.requestTicket(this,world,Type.NORMAL);
-		if(tick!=null)
-			tickets.add(tick);
-		if(tickets.isEmpty()){
-			logOrPrint(this.toString()+"Tried force loading a chunk at "+chunkI+","+chunkK+" but failed");
-			return false;
+		Ticket tick;
+		if(tickets.size()<25){
+			tick = ForgeChunkManager.requestTicket(this,world,Type.NORMAL);
+			if(tick!=null)
+				tickets.add(tick);
+			if(tickets.isEmpty()){
+				logOrPrint(this.toString()+"Tried force loading a chunk at "+chunkI+","+chunkK+" but failed");
+				return false;
+			}
 		}
 		tick=null;
 		while (tick==null)
-			tick=tickets.get(new Random().nextInt(tickets.size()));
-		
-		ForgeChunkManager.forceChunk(tick, new ChunkCoordIntPair(chunkI,chunkK));
-		lastExploredChunk.add(new int[]{chunkI,chunkK});
-		chunksExploredThisTick++;
-		return true;
+			tick = tickets.get(world.rand.nextInt(tickets.size()));
+		try{
+			ForgeChunkManager.forceChunk(tick, new ChunkCoordIntPair(chunkI,chunkK));
+			lastExploredChunk.add(new int[]{chunkI,chunkK});
+			chunksExploredThisTick++;
+			return true;
+		}catch(NullPointerException n){
+			return false;
+		}
 		//}
 	}
 	
@@ -583,7 +603,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
             {
             	//check the filename in case we changed of dimension
             	File olddir = getWorldSaveDir(w);
-            	if (olddir.compareTo(newdir) != 0)
+            	if (newdir!=null && olddir!=null && olddir.compareTo(newdir) != 0)
             	{
             		// new world has definitely been created.
             		currentWorld.add(world);
@@ -598,25 +618,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
         ISaveHandler worldSaver = world.getSaveHandler();       
         if (worldSaver.getChunkLoader(world.provider) instanceof AnvilChunkLoader)
         {
-            AnvilChunkLoader loader = (AnvilChunkLoader) worldSaver.getChunkLoader(world.provider);
-            
-            for (Field field : loader.getClass().getDeclaredFields())
-            {
-                if (field.getType().equals(File.class))
-                {
-                    try
-                    {
-                        field.setAccessible(true);
-                        File saveLoc = (File) field.get(loader);
-                        return saveLoc;
-                    }
-                    catch (Exception e)
-                    {
-                        System.err.println("Failed trying to find World Save dir:");
-                        e.printStackTrace();
-                    }
-                }
-            }
+            return ((AnvilChunkLoader) worldSaver.getChunkLoader(world.provider)).chunkSaveLocation;
         } 
         return null;
     }

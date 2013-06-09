@@ -65,7 +65,7 @@ public class BuildingTML extends Building
 	//****************************************  FUNCTION - build *************************************************************************************//
 	public void build() throws InterruptedException {
 				
-		tmlt.setFixedRules(random);
+		tmlt.setFixedRules(world.rand);
 		
 		//build base
 		int[][] base=tmlt.namedLayers.get("base");
