@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -63,6 +64,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 	protected final static File CONFIG_DIRECTORY=new File(Loader.instance().getConfigDir(),"generatormods");
 	
 	public BuildingExplorationHandler master=null;
+	public float GlobalFrequency=0.025F;
 	public int TriesPerChunk=1;
 	protected boolean isCreatingDefaultChunks=false, shouldFlushGenThreads=false,
 			isFlushingGenThreads=false, isAboutToFlushGenThreads=false;
@@ -79,6 +81,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 	private List<Ticket> tickets=new ArrayList<Ticket>();
  	int[] chestTries=new int[]{4,6,6,6};
 	int[][][] chestItems=new int[][][]{null,null,null,null};
+	
 	
 	public static Logger logger=FMLLog.getLogger();
 	
@@ -460,6 +463,23 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 		}
 	}
 	
+	protected void printGlobalOptions(PrintWriter pw,boolean frequency) {
+		pw.println("<-README: This file should be in the config/generatormods folder->");
+		pw.println();
+		if(frequency)
+		{	
+			pw.println("<-GlobalFrequency controls how likely structures are to appear. Should be between 0.0 and 1.0. Lower to make less common->");
+			pw.println("GlobalFrequency:"+GlobalFrequency);
+		}
+		pw.println("<-TriesPerChunk allows multiple attempts per chunk. Only change from 1 if you want very dense generation!->");
+		pw.println("TriesPerChunk:"+TriesPerChunk);
+		pw.println("<-AllowedDimensions allows structures in corresponding dimension, by dimension ID. Default is Nether(-1) and OverWorld(0)->");
+		pw.println("AllowedDimensions:"+Arrays.toString(AllowedDimensions).replace("[", "").replace("]", "").trim());
+		pw.println("<-LogActivated controls information stored into forge logs. Set to true if you want to report an issue with complete forge logs.->");
+		pw.println("LogActivated:"+logActivated);
+		pw.println("<-ChatMessage controls lag warnings.->");
+		pw.println("ChatMessage:"+chatMessage);
+	}
 	//****************************  FUNCTION - joinAtSuspension *************************************************************************************//
 	protected void joinAtSuspension(WorldGeneratorThread wgt){
 		while (wgt.isAlive() && !wgt.threadSuspended){
@@ -475,6 +495,14 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 	}
 	
 	//****************************************  FUNCTIONS - error handling parameter readers  *************************************************************************************//
+	protected void readGlobalOptions(PrintWriter lw, String read) {
+		if(read.startsWith( "GlobalFrequency" )) GlobalFrequency = readFloatParam(lw,GlobalFrequency,":",read);
+		if(read.startsWith( "TriesPerChunk" )) TriesPerChunk = readIntParam(lw,TriesPerChunk,":",read);
+		if(read.startsWith( "AllowedDimensions" )) AllowedDimensions = readIntList(lw,AllowedDimensions,":",read);
+		if(read.startsWith( "LogActivated" )) logActivated = readBooleanParam(lw,logActivated,":",read);					
+		if(read.startsWith( "ChatMessage" )) chatMessage = readBooleanParam(lw,chatMessage,":",read);
+	}
+	
 	public static int readIntParam(PrintWriter lw,int defaultVal,String splitString, String read){
 		try{
 			defaultVal=Integer.parseInt(read.split(splitString)[1].trim());

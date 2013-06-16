@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.Random;
 
 import net.minecraft.world.World;
@@ -54,7 +53,6 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 								CITY_TEMPLATES_FOLDER_NAME="greatwall";
 
 	//USER MODIFIABLE PARAMETERS, values below are defaults
-	public float GlobalFrequency=0.005F;
 	public float CurveBias=0.5F;
 	public int LengthBiasNorm=200;
 	public int BacktrackLength=9;
@@ -107,15 +105,10 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 				lw.println("Getting global options...");    
 	
 				for(String read=br.readLine(); read!=null; read=br.readLine()){
-					if(read.startsWith( "GlobalFrequency" )) GlobalFrequency = readFloatParam(lw,GlobalFrequency,":",read);
-					if(read.startsWith( "TriesPerChunk" )) TriesPerChunk = readIntParam(lw,TriesPerChunk,":",read);
-					if(read.startsWith( "AllowedDimensions" )) AllowedDimensions = readIntList(lw,AllowedDimensions,":",read);
+					readGlobalOptions(lw,read);				
 					if(read.startsWith( "CurveBias" )) CurveBias = readFloatParam(lw,CurveBias,":",read);
 					if(read.startsWith( "LengthBiasNorm" )) LengthBiasNorm = readIntParam(lw,LengthBiasNorm,":",read);
 					if(read.startsWith( "BacktrackLength" )) BacktrackLength = readIntParam(lw,BacktrackLength,":",read);
-					if(read.startsWith( "LogActivated" )) logActivated = readBooleanParam(lw,logActivated,":",read);
-					if(read.startsWith( "ChatMessage" )) chatMessage = readBooleanParam(lw,chatMessage,":",read);
-					
 					readChestItemsList(lw,read,br);					
 				}
 				
@@ -130,13 +123,7 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 			PrintWriter pw=null;
 			try{
 				pw=new PrintWriter( new BufferedWriter( new FileWriter(settingsFile) ) );
-				pw.println("<-README: This file should be in the config/generatormods folder->");
-				pw.println();
-				pw.println("<-GlobalFrequency controls how likely walls are to appear. Should be between 0.0 and 1.0. Lower to make less common->");
-				pw.println("<-TriesPerChunk allows multiple attempts per chunk. Only change from 1 if you want very dense walls!->");
-				pw.println("GlobalFrequency:"+GlobalFrequency);
-				pw.println("TriesPerChunk:"+TriesPerChunk);
-				pw.println("AllowedDimensions:"+Arrays.toString(AllowedDimensions).replace("[", "").replace("]", "").trim());
+				printGlobalOptions(pw,true);
 				pw.println();
 				pw.println("<-BacktrackLength - length of backtracking for wall planning if a dead end is hit->");
 				pw.println("<-CurveBias - strength of the bias towards curvier walls. Value should be between 0.0 and 1.0.->");
@@ -144,10 +131,6 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 				pw.println("BacktrackLength:"+BacktrackLength);
 				pw.println("CurveBias:"+CurveBias);
 				pw.println("LengthBiasNorm:"+LengthBiasNorm);
-				pw.println("<-LogActivated controls information stored into forge logs. Set to true if you want to report an issue with complete forge logs.->");
-				pw.println("LogActivated:"+logActivated);							
-				pw.println("<-ChatMessage controls lag warnings.->");
-				pw.println("ChatMessage:"+chatMessage);
 				pw.println();
 				printDefaultChestItems(pw);
 				//printDefaultBiomes(pw);		

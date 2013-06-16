@@ -9,19 +9,16 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.Random;
 
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeChunkManager;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
-import cpw.mods.fml.common.Mod.Init;
 import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.Mod.PostInit;
 import cpw.mods.fml.common.Mod.PreInit;
 import cpw.mods.fml.common.Mod.ServerStarting;
-import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
@@ -121,7 +118,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 	public final static String[] SEED_TYPE_STRINGS=new String[]{"SymmetricSeedWeight","LinearSeedWeight","CircularSeedWeight","CruciformSeedWeight"};
 	public int[] seedTypeWeights=new int[]{8,2,2,1};
 	
-	public float GlobalFrequency=0.1F,SymmetricSeedDensity=0.5F;
+	public float SymmetricSeedDensity=0.5F;
 	public int MinHeight=20,MaxHeight=70;
 	public int ContainerWidth=40, ContainerLength=40;
 	public int MinHeightBeforeOscillation=12;
@@ -175,16 +172,12 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 				lw.println("Getting global options...");    
 	
 				for(String read=br.readLine(); read!=null; read=br.readLine()){
-					if(read.startsWith( "GlobalFrequency" )) GlobalFrequency = readFloatParam(lw,GlobalFrequency,":",read);
-					if(read.startsWith( "TriesPerChunk" )) TriesPerChunk = readIntParam(lw,TriesPerChunk,":",read);
-					if(read.startsWith( "AllowedDimensions" )) AllowedDimensions = readIntList(lw,AllowedDimensions,":",read);
+					readGlobalOptions(lw,read);
 					if(read.startsWith( "MinHeight" )) MinHeight = readIntParam(lw,MinHeight,":",read);
 					if(read.startsWith( "MaxHeight" )) MaxHeight = readIntParam(lw,MaxHeight,":",read);
 					if(read.startsWith( "MinHeightBeforeOscillation" )) MinHeightBeforeOscillation = readIntParam(lw,MinHeightBeforeOscillation,":",read);
 					if(read.startsWith( "SmoothWithStairs" )) SmoothWithStairs = readBooleanParam(lw,SmoothWithStairs,":",read);
 					if(read.startsWith( "MakeFloors" )) MakeFloors = readBooleanParam(lw,MakeFloors,":",read);
-					if(read.startsWith( "LogActivated" )) logActivated = readBooleanParam(lw,logActivated,":",read);					
-					if(read.startsWith( "ChatMessage" )) chatMessage = readBooleanParam(lw,chatMessage,":",read);
 					if(read.startsWith( "ContainerWidth" )) ContainerWidth = readIntParam(lw,ContainerWidth,":",read);
 					if(read.startsWith( "ContainerLength" )) ContainerLength = readIntParam(lw,ContainerLength,":",read);
 					readChestItemsList(lw,read,br);
@@ -235,13 +228,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 			PrintWriter pw=null;
 			try{
 				pw=new PrintWriter( new BufferedWriter( new FileWriter(settingsFile) ) );
-				pw.println("<-README: This file should be in the config/generatormods folder->");
-				pw.println();
-				pw.println("<-GlobalFrequency controls how likely structures are to appear. Should be between 0.0 and 1.0. Lower to make less common->");
-				pw.println("<-TriesPerChunk allows multiple attempts per chunk. Only change from 1 if you want very dense generation!->");
-				pw.println("GlobalFrequency:"+GlobalFrequency);
-				pw.println("TriesPerChunk:"+TriesPerChunk);
-				pw.println("AllowedDimensions:"+Arrays.toString(AllowedDimensions).replace("[", "").replace("]", "").trim());
+				printGlobalOptions(pw,true);
 				pw.println();
 				pw.println("<-MinHeight and MaxHeight are the minimum and maximum allowed height of the structures->");
 				pw.println("<-MinHeightBeforeOscillation - Any structures that form oscillators before MaxOscillatorCullStep will be culled.->");
@@ -254,10 +241,6 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 				pw.println("MakeFloors:"+MakeFloors);								
 				pw.println("ContainerWidth:"+ContainerWidth);
 				pw.println("ContainerLength:"+ContainerLength);
-				pw.println("<-LogActivated controls information stored into forge logs. Set to true if you want to report an issue with complete forge logs.->");
-				pw.println("LogActivated:"+logActivated);
-				pw.println("<-ChatMessage controls lag warnings.->");
-				pw.println("ChatMessage:"+chatMessage);
 				pw.println();
 				printDefaultChestItems(pw);
 				//printDefaultBiomes(lw);
@@ -307,8 +290,9 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 		}
 	}
 	
-	//****************************  FUNCTION - generate *************************************************************************************//
 	
+
+	//****************************  FUNCTION - generate *************************************************************************************//
 	public final void generate( World world, Random random, int i, int k ) {	
 		if(random.nextFloat() < GlobalFrequency)
 			exploreThreads.add(new WorldGenCARuins(this, world, i, k,TriesPerChunk, GlobalFrequency));		

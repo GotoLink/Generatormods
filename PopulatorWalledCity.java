@@ -35,13 +35,10 @@ import net.minecraft.network.packet.Packet3Chat;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeChunkManager;
-import net.minecraftforge.common.ForgeChunkManager.Ticket;
 import cpw.mods.fml.common.Mod;
-import cpw.mods.fml.common.Mod.Init;
 import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.Mod.PostInit;
 import cpw.mods.fml.common.Mod.PreInit;
-import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
@@ -64,7 +61,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 								STREET_TEMPLATES_FOLDER_NAME="streets";
 	
 	//USER MODIFIABLE PARAMETERS, values here are defaults
-	public float GlobalFrequency=0.025F, UndergroundGlobalFrequency=0.015F;
+	public float UndergroundGlobalFrequency=0.015F;
 	public int MinCitySeparation=500, UndergroundMinCitySeparation=500;
 	public boolean CityBuiltMessage=false; 
 	public int BacktrackLength=9;
@@ -261,10 +258,9 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 				for(String read=br.readLine(); read!=null; read=br.readLine()){
 		
 					//outer wall parameters
-					if(read.startsWith( "GlobalFrequency" )) GlobalFrequency = readFloatParam(lw,GlobalFrequency,":",read);
+					readGlobalOptions(lw,read);
+					
 					if(read.startsWith( "UndergroundGlobalFrequency" )) UndergroundGlobalFrequency = readFloatParam(lw,UndergroundGlobalFrequency,":",read);
-					if(read.startsWith( "TriesPerChunk" )) TriesPerChunk = readIntParam(lw,TriesPerChunk,":",read);
-					if(read.startsWith( "AllowedDimensions" )) AllowedDimensions = readIntList(lw,AllowedDimensions,":",read);
 					if(read.startsWith( "MinCitySeparation" )) MinCitySeparation= readIntParam(lw,MinCitySeparation,":",read);
 					if(read.startsWith( "MinUndergroundCitySeparation" )) UndergroundMinCitySeparation= readIntParam(lw,UndergroundMinCitySeparation,":",read);
 		
@@ -272,8 +268,6 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 					//if(read.startsWith( "ConvexSmoothingScale" )) ConvexSmoothingScale = readIntParam(lw,ConvexSmoothingScale,":",read);
 					if(read.startsWith( "BacktrackLength" )) BacktrackLength = readIntParam(lw,BacktrackLength,":",read);
 					if(read.startsWith( "CityBuiltMessage" )) CityBuiltMessage = readBooleanParam(lw,CityBuiltMessage,":",read);
-					if(read.startsWith( "ChatMessage" )) chatMessage = readBooleanParam(lw,chatMessage,":",read);
-					if(read.startsWith( "LogActivated" )) logActivated = readBooleanParam(lw,logActivated,":",read);
 					if(read.startsWith( "RejectOnPreexistingArtifacts" )) RejectOnPreexistingArtifacts = readBooleanParam(lw,RejectOnPreexistingArtifacts,":",read);
 					readChestItemsList(lw,read,br);
 		
@@ -286,26 +280,19 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 			PrintWriter pw=null;
 			try{
 				pw=new PrintWriter( new BufferedWriter( new FileWriter(settingsFile) ) );
-				pw.println("<-README: This file should be in the config/generatormods folder->");
-				pw.println();
+				printGlobalOptions(pw,false);
 				pw.println("<-GlobalFrequency/UndergroundGlobalFrequency controls how likely aboveground/belowground cities are to appear. Should be between 0.0 and 1.0. Lower to make less common->");
-				pw.println("<-MinCitySeparation/UndergroundMinCitySeparation define a minimum allowable separation between city spawns.->");
 				pw.println("GlobalFrequency:"+GlobalFrequency);
 				pw.println("UndergroundGlobalFrequency:"+UndergroundGlobalFrequency);
-				pw.println("TriesPerChunk:"+TriesPerChunk);
-				pw.println("AllowedDimensions:"+Arrays.toString(AllowedDimensions).replace("[", "").replace("]", "").trim());
+				pw.println("<-MinCitySeparation/UndergroundMinCitySeparation define a minimum allowable separation between city spawns.->");
 				pw.println("MinCitySeparation:"+MinCitySeparation);
 				pw.println("MinUndergroundCitySeparation:"+UndergroundMinCitySeparation);
 				pw.println();
 				pw.println("<-BacktrackLength - length of backtracking for wall planning if a dead end is hit->");
-				pw.println("<-CityBuiltMessage controls whether players receive message when a city is building. Set to true to receive message.->");
-				pw.println("<-ChatMessage controls lag warnings.->");
-				pw.println("<-LogActivated controls information stored into forge logs. Set to true if you want to report an issue with complete forge logs.->");
-				pw.println("<-RejectOnPreexistingArtifacts determines whether the planner rejects city sites that contain preexiting man-made blocks. Set to true to do this check.->");
 				pw.println("BacktrackLength:"+BacktrackLength);
+				pw.println("<-CityBuiltMessage controls whether players receive message when a city is building. Set to true to receive message.->");
 				pw.println("CityBuiltMessage:"+CityBuiltMessage);
-				pw.println("ChatMessage:"+chatMessage);
-				pw.println("LogActivated:"+logActivated);
+				pw.println("<-RejectOnPreexistingArtifacts determines whether the planner rejects city sites that contain preexiting man-made blocks. Set to true to do this check.->");
 				pw.println("RejectOnPreexistingArtifacts:"+RejectOnPreexistingArtifacts);
 				pw.println();
 				printDefaultChestItems(pw);
