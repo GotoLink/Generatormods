@@ -43,10 +43,10 @@ public class TemplateTML
 	public HashMap<String,String> extraOptions=null;
 	public BuildingExplorationHandler explorationHandler=null;
 	public String name="";
-	public int[] targets;
 	protected boolean readInWaterHeight=false;
 	public int templateTypeCode=TML_CODE;
 	public int height = 0, length = 0, width = 0, weight = 1, embed = 1,leveling = 4, cutIn = 0, waterHeight=3;
+	//public int[] targets;
 	//public int overhang = 0, primary=4, w_off=0, l_off=0, lbuffer =0;
 	//public boolean preserveWater = false, preserveLava = false, preservePlants = false, unique = false;
 
@@ -56,20 +56,20 @@ public class TemplateTML
 		// load in the given file as a template
 		explorationHandler=beh;
 		BufferedReader br=null;
-		try {
-			name=file.getName();
-			lw=beh.lw;
-			ArrayList<String> lines = new ArrayList<String>();
-			br= new BufferedReader( new FileReader( file ) );
-			for(String read=br.readLine(); read!=null; read=br.readLine())
-				lines.add(read);
+		name=file.getName();
+		lw=beh.lw;
+		ArrayList<String> lines = new ArrayList<String>();
+		
+		br= new BufferedReader( new FileReader( file ) );
+		try{
+		for(String read=br.readLine(); read!=null; read=br.readLine())
+			lines.add(read);
 			br.close();
-			parseFile( lines );
-			lw.println( "Successfully loaded template " + name + " with weight "+weight+".");
+		}catch(IOException io){
 			
-		} catch ( Exception e ) {
-			throw e;
-		}finally{ try{ if(br!=null) br.close();} catch(IOException e){} }
+		}
+		parseFile( lines );
+		lw.println( "Successfully loaded template " + name + " with weight "+weight+".");
 	}
 	
 	//a dummy constructor for use by TemplateWall for default towers/ CARuins
@@ -132,7 +132,7 @@ public class TemplateTML
 				length = dim[1];
 				width = dim[2];
 			}
-			else if(line.startsWith("acceptable_target_blocks" )) targets=BuildingExplorationHandler.readIntList(lw,targets,"=",line);
+			//else if(line.startsWith("acceptable_target_blocks" )) targets=BuildingExplorationHandler.readIntList(lw,targets,"=",line);
 			else if(line.startsWith("weight" )) {
 				weight = BuildingExplorationHandler.readIntParam(lw,weight,"=",line);
 				if(weight<=0) throw ZERO_WEIGHT_EXCEPTION;
@@ -162,8 +162,6 @@ public class TemplateTML
 		template=new int[height][length][width];
 		template=layers.toArray(template);
 		
-
-
 		//convert rules to array and check that rules in template are OK
 		rules=new TemplateRule[rulesArrayList.size()];
 		rules=rulesArrayList.toArray(rules);
