@@ -92,7 +92,7 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 	
 	public final void generate( World world, Random random, int i, int k ) {	
 		if(random.nextFloat() < GlobalFrequency)
-			exploreThreads.add(new WorldGenGreatWall(this,world, i, k,TriesPerChunk, GlobalFrequency));		
+			exploreThreads.add(new WorldGenGreatWall(this,world, random, i, k,TriesPerChunk, GlobalFrequency));		
 	}
 
 	//****************************  FUNCTION - getGlobalOptions  *************************************************************************************//

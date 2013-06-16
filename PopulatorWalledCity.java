@@ -233,10 +233,10 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 				chatCityBuilt(citiesBuiltMessages.remove());
 		
 		if(cityStyles.size() > 0 && cityIsSeparated(i,k,CITY_TYPE_SURFACE) && random.nextFloat() < GlobalFrequency){		
-			exploreThreads.add(new WorldGenWalledCity(this, world, i, k,TriesPerChunk, GlobalFrequency));
+			exploreThreads.add(new WorldGenWalledCity(this, world, random, i, k,TriesPerChunk, GlobalFrequency));
 		}
 		if(undergroundCityStyles.size() > 0 && cityIsSeparated(i,k,CITY_TYPE_UNDERGROUND) && random.nextFloat() < UndergroundGlobalFrequency){
-			WorldGeneratorThread wgt=new WorldGenUndergroundCity(this, world, i, k,1, UndergroundGlobalFrequency);
+			WorldGeneratorThread wgt=new WorldGenUndergroundCity(this, world, random, i, k,1, UndergroundGlobalFrequency);
 			int maxSpawnHeight=Building.findSurfaceJ(world,i,k,Building.WORLD_MAX_Y,false,Building.IGNORE_WATER)- WorldGenUndergroundCity.MAX_DIAM/2 - 5; //44 at sea level
 			int minSpawnHeight=MAX_FOG_HEIGHT+WorldGenUndergroundCity.MAX_DIAM/2 - 8; //34, a pretty thin margin. Too thin for underocean cities?
 			if(minSpawnHeight<=maxSpawnHeight)

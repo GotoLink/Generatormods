@@ -1,5 +1,7 @@
 package mods.generator;
 
+import java.util.Random;
+
 import net.minecraft.world.World;
 
 public class WorldGenCARuins extends WorldGeneratorThread{
@@ -18,8 +20,8 @@ private boolean SmoothWithStairs, MakeFloors;
 private TemplateRule[] blockRules, blockRule;
 
 //****************************************  CONSTRUCTOR - WorldGenCARuins  *************************************************************************************//
-	public WorldGenCARuins(PopulatorCARuins ca_, World world_, int chunkI_, int chunkK_, int TriesPerChunk_, double ChunkTryProb_) {
-		super(ca_, world_, chunkI_, chunkK_, TriesPerChunk_, ChunkTryProb_);
+	public WorldGenCARuins(PopulatorCARuins ca_, World world_, Random random_, int chunkI_, int chunkK_, int TriesPerChunk_, double ChunkTryProb_) {
+		super(ca_, world_, random_, chunkI_, chunkK_, TriesPerChunk_, ChunkTryProb_);
 		ca=ca_;
 		chestTries=ca.chestTries;
 		chestItems=ca.chestItems;
@@ -36,7 +38,7 @@ private TemplateRule[] blockRules, blockRule;
 	//****************************************  FUNCTION - generate  *************************************************************************************//
 	public boolean generate(int i0, int j0, int k0) throws InterruptedException {
 		
-		int th=MinHeight+world.rand.nextInt(MaxHeight-MinHeight+1);
+		int th=MinHeight+random.nextInt(MaxHeight-MinHeight+1);
 		
 		if(caRule==null) //if we haven't picked in an earlier generate call 
 			caRule=ca.caRules.get(Building.pickWeightedOption(world.rand, caRulesWeightsAndIndex[0], caRulesWeightsAndIndex[1]));
@@ -59,15 +61,15 @@ private TemplateRule[] blockRules, blockRule;
 		return true;
 		*/
 
-		BuildingCellularAutomaton bca=new BuildingCellularAutomaton(this,blockRule,world.rand.nextInt(4),1, false, 
+		BuildingCellularAutomaton bca=new BuildingCellularAutomaton(this,blockRule,random.nextInt(4),1, false, 
 				                           ContainerWidth, th,ContainerLength,seed,caRule,null,new int[]{i0,j0,k0});
 		if(bca.plan(true,MinHeightBeforeOscillation) && bca.queryCanBuild(0,true)){
 			bca.build(SmoothWithStairs,MakeFloors);													
-			if(GlobalFrequency < 0.05 && world.rand.nextInt(2)!=0){
+			if(GlobalFrequency < 0.05 && random.nextInt(2)!=0){
 				for(int tries=0; tries < 10; tries++){
-					int[] pt=new int[]{i0+(2*world.rand.nextInt(2)-1)*(ContainerWidth + world.rand.nextInt(ContainerWidth)),
+					int[] pt=new int[]{i0+(2*random.nextInt(2)-1)*(ContainerWidth + random.nextInt(ContainerWidth)),
 								   	   0,
-								       k0+(2*world.rand.nextInt(2)-1)*(ContainerWidth + world.rand.nextInt(ContainerWidth))};
+								       k0+(2*random.nextInt(2)-1)*(ContainerWidth + random.nextInt(ContainerWidth))};
 					pt[1]=Building.findSurfaceJ(world,pt[0],pt[2],Building.WORLD_MAX_Y,true,3)+1;
 					if(generate(pt[0], pt[1], pt[2])) 
 						{

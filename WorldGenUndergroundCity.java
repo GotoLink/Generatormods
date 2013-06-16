@@ -19,6 +19,7 @@ package mods.generator;
  */
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
@@ -37,8 +38,8 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 	TemplateWall pws;
 	
 	//****************************************  CONSTRUCTOR - WorldGenUndergroundCity   *************************************************************************************//
-	public WorldGenUndergroundCity (PopulatorWalledCity wc_,World world_, int chunkI_, int chunkK_, int TriesPerChunk_, double ChunkTryProb_) { 
-		super(wc_, world_, chunkI_, chunkK_, TriesPerChunk_, ChunkTryProb_);
+	public WorldGenUndergroundCity (PopulatorWalledCity wc_,World world_, Random random_, int chunkI_, int chunkK_, int TriesPerChunk_, double ChunkTryProb_) { 
+		super(wc_, world_, random_,chunkI_, chunkK_, TriesPerChunk_, ChunkTryProb_);
 		wc=wc_;
 		BacktrackLength=wc.BacktrackLength;
 		chestTries=wc.chestTries;
@@ -141,17 +142,17 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 		//spawn nearby hollows
 		int successes=0;
 		for(int tries=0; tries<(diam>=MAX_DIAM-2*DIAM_INCREMENT ? 10:MAX_CHILDREN); tries++){
-			if(world.rand.nextFloat()<P_CHILDREN){
+			if(random.nextFloat()<P_CHILDREN){
 				float theta;
 				if(diam>=MAX_DIAM-2*DIAM_INCREMENT) 
-					theta=world.rand.nextFloat()*6.283185F;
+					theta=random.nextFloat()*6.283185F;
 				//theta points away from center of mass + noise
 				else theta=(float)Math.atan((cavernMass*i-cavernMass_i)/(cavernMass*k-cavernMass_k)) 
-				                + THETA_SHIFT_SIGMA*world.rand.nextFloat()*(world.rand.nextFloat()-0.5F);
-				float rshift=(float)Building.SPHERE_SHAPE[diam][diam/3] + (float)diam*(HORIZ_SHIFT_SIGMA/2 - HORIZ_SHIFT_SIGMA*world.rand.nextFloat());
+				                + THETA_SHIFT_SIGMA*random.nextFloat()*(random.nextFloat()-0.5F);
+				float rshift=(float)Building.SPHERE_SHAPE[diam][diam/3] + (float)diam*(HORIZ_SHIFT_SIGMA/2 - HORIZ_SHIFT_SIGMA*random.nextFloat());
 				
 				if(hollow(i + (int)(MathHelper.sin(theta)*rshift),
-					   j + world.rand.nextInt(world.rand.nextInt(Z_SHIFT) + 1) - Z_SHIFT/4,
+					   j + random.nextInt(random.nextInt(Z_SHIFT) + 1) - Z_SHIFT/4,
 					   k + (int)(MathHelper.cos(theta)*rshift),
 					   diam-DIAM_INCREMENT))
 					successes++;
@@ -207,16 +208,16 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 		int successes=0;
 		for(int tries=0; tries<pws.StreetDensity * 4; tries++){
 			if(!master.isFlushingGenThreads) suspendGen();
-			int[] hollow=hollows.get(world.rand.nextInt(hollows.size()));
+			int[] hollow=hollows.get(random.nextInt(hollows.size()));
 			
-			int[] pt=new int[]{world.rand.nextInt(hollow[3]),0,world.rand.nextInt(hollow[3])};
+			int[] pt=new int[]{random.nextInt(hollow[3]),0,random.nextInt(hollow[3])};
 			if(Building.CIRCLE_SHAPE[hollow[3]][pt[0]][pt[2]]==0){		
 				pt[0]+=hollow[0];
 				pt[2]+=hollow[2];
 				pt[1]=Building.findSurfaceJ(world, pt[0], pt[2], hollow[1]-(hollow[3]+1)/2,false,Building.IGNORE_WATER)+1;
 				TemplateWall sws=TemplateWall.pickBiomeWeightedWallStyle(pws.streets,world,pt[0],pt[2],world.rand,true);
 				sws.MergeWalls=true;
-				BuildingDoubleWall street=new BuildingDoubleWall(tries,this,sws,world.rand.nextInt(4),Building.R_HAND,pt);
+				BuildingDoubleWall street=new BuildingDoubleWall(tries,this,sws,random.nextInt(4),Building.R_HAND,pt);
 				if(street.plan()) {
 					street.build(LAYOUT_CODE_NOCODE);
 					streets.add(street);

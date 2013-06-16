@@ -1,13 +1,15 @@
 package mods.generator;
 
+import java.util.Random;
+
 import net.minecraft.world.World;
 
 public class WorldGenSingleWall extends WorldGeneratorThread{
     private int[] pt;
     private PopulatorGreatWall gw;
    
-    public WorldGenSingleWall (PopulatorGreatWall gw_, World world_, int[] pt_) {
-            super(gw_, world_, pt_[0]>>4, pt_[2]>>4, 0, 0.0);
+    public WorldGenSingleWall (PopulatorGreatWall gw_, World world_, Random random_, int[] pt_) {
+            super(gw_, world_, random_,pt_[0]>>4, pt_[2]>>4, 0, 0.0);
             setName("WorldGenSingleWallThread");
             pt=pt_;
             gw=gw_;

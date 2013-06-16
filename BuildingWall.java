@@ -61,7 +61,7 @@ public class BuildingWall extends Building
 	public BuildingWall(int ID_, WorldGeneratorThread wgt_,TemplateWall ws_,int dir_,int axXHand_, int maxLength_,boolean endTowers,int i1_,int j1_, int k1_){
 		super(ID_,wgt_,ws_.rules[ws_.template[0][0][ws_.WWidth/2]],dir_,axXHand_, false, new int[]{ws_.WWidth,ws_.WHeight,0}, new int[]{i1_,j1_,k1_});
 		constructorHelper(ws_,maxLength_,i1_,j1_,k1_);
-		pickTowers(world.rand.nextFloat() < ws.CircularProb,endTowers);
+		pickTowers(random.nextFloat() < ws.CircularProb,endTowers);
 		Backtrack=wgt.BacktrackLength;
 		if(maxLength>0){
 			xArray[0]=0;
@@ -72,7 +72,7 @@ public class BuildingWall extends Building
 	public BuildingWall(int ID_, WorldGeneratorThread wgt_,TemplateWall ws_,int dir_,int axXHand_, int maxLength_,boolean endTowers,int[] sourcePt){
 		super(ID_,wgt_,ws_.rules[ws_.template[0][0][ws_.WWidth/2]],dir_,axXHand_, false, new int[]{ws_.WWidth,ws_.WHeight,0}, sourcePt);
 		constructorHelper(ws_,maxLength_,sourcePt[0],sourcePt[1],sourcePt[2]);
-		pickTowers(world.rand.nextFloat() < ws.CircularProb,endTowers);
+		pickTowers(random.nextFloat() < ws.CircularProb,endTowers);
 		Backtrack=wgt.BacktrackLength;
 		if(maxLength>0){
 			xArray[0]=0;
@@ -558,7 +558,7 @@ public class BuildingWall extends Building
 			
 			int clearSide=-bHand*signum(curvature(xArray[nBack], xArray[nMid], xArray[n0], 0),0);
 			if(clearSide==0){
-				if(buildOnL && buildOnR) clearSide=2*world.rand.nextInt(2)-1;
+				if(buildOnL && buildOnR) clearSide=2*random.nextInt(2)-1;
 				else clearSide= buildOnL ? L_HAND : R_HAND;
 			}
 			
@@ -612,11 +612,11 @@ public class BuildingWall extends Building
 			}
 		}
 		else if(template==ws.makeCARuin){
-			byte[][] caRule=ws.CARuinAutomataRules.get(world.rand.nextInt(ws.CARuinAutomataRules.size()));
+			byte[][] caRule=ws.CARuinAutomataRules.get(random.nextInt(ws.CARuinAutomataRules.size()));
 			for(int tries=0; tries < 10; tries++){
 				byte[][] seed = BuildingCellularAutomaton.makeSymmetricSeed(ws.CARuinContainerWidth,0.5F,world.rand);
 				BuildingCellularAutomaton bca=new BuildingCellularAutomaton(wgt,ws.CARuinRule,dir,1,true,ws.CARuinContainerWidth,
-									ws.CARuinMinHeight+world.rand.nextInt(ws.CARuinMaxHeight - ws.CARuinMinHeight+1),ws.CARuinContainerWidth, seed,caRule,null,pt);
+									ws.CARuinMinHeight+random.nextInt(ws.CARuinMaxHeight - ws.CARuinMinHeight+1),ws.CARuinContainerWidth, seed,caRule,null,pt);
 				if(bca.plan(false,12) && bca.queryCanBuild(ybuffer,ws.CARuinContainerWidth<=15)){
 					bca.build(true,true);
 					return true;
@@ -727,7 +727,7 @@ public class BuildingWall extends Building
 									setBlockLocal(x1,z1,y1,0);
 						//fence gate
 						for(int z1=gateHeight-2; z1<gateHeight; z1++)
-							if(world.rand.nextInt(100) < bRule.chance) 
+							if(random.nextInt(100) < bRule.chance) 
 								setBlockLocal(fenceX,z1,y1,fenceBlock);
 					}
 					if(flankTHand!=-bHand ) 

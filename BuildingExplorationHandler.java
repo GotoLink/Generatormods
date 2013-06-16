@@ -277,7 +277,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 		}
 		tick=null;
 		while (tick==null)
-			tick = tickets.get(world.rand.nextInt(tickets.size()));
+			tick = tickets.get(new Random().nextInt(tickets.size()));
 		try{
 			ForgeChunkManager.forceChunk(tick, new ChunkCoordIntPair(chunkI,chunkK));
 			lastExploredChunk.add(new int[]{chunkI,chunkK});

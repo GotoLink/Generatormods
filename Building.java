@@ -85,6 +85,7 @@ public class Building
    
     //**** WORKING VARIABLES ****
     protected World world;
+    protected Random random;
     protected TemplateRule bRule; //main structural blocktype
     public int bWidth, bHeight, bLength;
     public int bID; //Building ID number
@@ -111,6 +112,7 @@ public class Building
         bWidth=dim[0];
         bHeight=dim[1];
         bLength=dim[2];
+        random=wgt.random;
         bHand=axXHand_;
         centerAligned=centerAligned_;
         setPrimaryAx(dir_);
@@ -369,7 +371,7 @@ public class Building
             case SKELETON_SPAWNER_ID: setMobSpawner(pt,1,1); return;
             case SPIDER_SPAWNER_ID: setMobSpawner(pt,1,2); return;
             case CREEPER_SPAWNER_ID: setMobSpawner(pt,1,3); return;
-            case UPRIGHT_SPAWNER_ID: if(world.rand.nextInt(3)==0) setMobSpawner(pt,1,3); else setMobSpawner(pt,2,0); return;
+            case UPRIGHT_SPAWNER_ID: if(random.nextInt(3)==0) setMobSpawner(pt,1,3); else setMobSpawner(pt,2,0); return;
             case EASY_SPAWNER_ID: setMobSpawner(pt,2,0); return;
             case MEDIUM_SPAWNER_ID: setMobSpawner(pt,3,0); return;
             case HARD_SPAWNER_ID: setMobSpawner(pt,4,0); return;
@@ -409,7 +411,7 @@ public class Building
     //&&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setMobSpawner &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
     private final void setMobSpawner(int[] pt, int nTypes, int offset){
         String mob="";
-        int n = world.rand.nextInt(nTypes)+offset;
+        int n = random.nextInt(nTypes)+offset;
         switch(n) {
             case 0: mob="Zombie"; break;
             case 1: mob="Skeleton"; break;
@@ -452,10 +454,10 @@ public class Building
 	        TileEntityChest chest=(TileEntityChest)world.getBlockTileEntity(pt[0],pt[1],pt[2]);
 	        if (wgt.chestTries!=null){
 	         for(int m=0; m<wgt.chestTries[chestType]; m++){
-	                if(world.rand.nextBoolean()){
+	                if(random.nextBoolean()){
                         ItemStack itemstack=getChestItemstack(chestType);
                         if(itemstack != null && chest!=null)
-                                chest.setInventorySlotContents(world.rand.nextInt(chest.getSizeInventory()), itemstack);
+                                chest.setInventorySlotContents(random.nextInt(chest.getSizeInventory()), itemstack);
 	                }
 	            }
 	        }
@@ -463,12 +465,12 @@ public class Building
     }
        
     private ItemStack getChestItemstack(int chestType){
-        if(chestType==TOWER_CHEST && world.rand.nextInt(4)==0){ //for tower chests, chance of returning the tower block
-            return new ItemStack(bRule.primaryBlock[0],world.rand.nextInt(10),bRule.primaryBlock[1]);
+        if(chestType==TOWER_CHEST && random.nextInt(4)==0){ //for tower chests, chance of returning the tower block
+            return new ItemStack(bRule.primaryBlock[0],random.nextInt(10),bRule.primaryBlock[1]);
         }
         int[][] itempool=wgt.chestItems[chestType];
         int idx=pickWeightedOption(world.rand,itempool[3],itempool[0]);
-        return new ItemStack(itempool[1][idx],itempool[4][idx] + world.rand.nextInt(itempool[5][idx]-itempool[4][idx]+1),
+        return new ItemStack(itempool[1][idx],itempool[4][idx] + random.nextInt(itempool[5][idx]-itempool[4][idx]+1),
                                                  itempool[2][idx]);
     }
        

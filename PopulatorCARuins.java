@@ -295,7 +295,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 	//****************************  FUNCTION - generate *************************************************************************************//
 	public final void generate( World world, Random random, int i, int k ) {	
 		if(random.nextFloat() < GlobalFrequency)
-			exploreThreads.add(new WorldGenCARuins(this, world, i, k,TriesPerChunk, GlobalFrequency));		
+			exploreThreads.add(new WorldGenCARuins(this, world, random, i, k,TriesPerChunk, GlobalFrequency));		
 	}
 	@Override
 	public String toString(){

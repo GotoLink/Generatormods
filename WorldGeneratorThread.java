@@ -17,6 +17,8 @@ package mods.generator;
  * It is intended to serially hand back and forth control with a BuildingExplorationHandler (not to run parallel).
  */
 
+import java.util.Random;
+
 import net.minecraft.world.World;
 
 public abstract class WorldGeneratorThread extends Thread
@@ -36,6 +38,7 @@ public abstract class WorldGeneratorThread extends Thread
 	public boolean hasTerminated=false;
 	
 	public World world;
+	public Random random;
 	public int chunkI, chunkK, TriesPerChunk;
 	public double ChunkTryProb;
 	public BuildingExplorationHandler master;
@@ -50,8 +53,9 @@ public abstract class WorldGeneratorThread extends Thread
 	public int BacktrackLength=9;
 	
 	//****************************  CONSTRUCTOR - WorldGeneratorThread *************************************************************************************//
-	public WorldGeneratorThread(BuildingExplorationHandler master_, World world_, int chunkI_, int chunkK_, int TriesPerChunk_, double ChunkTryProb_){
+	public WorldGeneratorThread(BuildingExplorationHandler master_, World world_,Random random_, int chunkI_, int chunkK_, int TriesPerChunk_, double ChunkTryProb_){
 		world=world_;
+		random=random_;
 		chunkI=chunkI_;
 		chunkK=chunkK_;
 		TriesPerChunk=TriesPerChunk_;
@@ -77,13 +81,13 @@ public abstract class WorldGeneratorThread extends Thread
 		int tries=0, j0=0, i0=0, k0=0;
 		try{
 			do{
-				if(tries==0 || world.rand.nextDouble()<ChunkTryProb){
-					i0=chunkI+world.rand.nextInt(16);
-					k0=chunkK+world.rand.nextInt(16);
+				if(tries==0 || random.nextDouble()<ChunkTryProb){
+					i0=chunkI+random.nextInt(16);
+					k0=chunkK+random.nextInt(16);
 					if(spawn_surface){
 						j0=Building.findSurfaceJ(world,i0,k0,Building.WORLD_MAX_Y,true,3)+1;
 					}else{
-						j0=min_spawn_height+world.rand.nextInt(max_spawn_height - min_spawn_height +1);
+						j0=min_spawn_height+random.nextInt(max_spawn_height - min_spawn_height +1);
 					}
 					if(j0>0)
 						success=generate(i0,j0,k0);

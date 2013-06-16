@@ -161,7 +161,7 @@ public class BuildingTower extends Building
 						blockID==UPRIGHT_SPAWNER_ID || blockID==EASY_SPAWNER_ID) 
 					undeadTower=true;
 			ghastTower=roofStyle==ROOF_CRENEL && SpawnerRule.getBlock(world.rand)[0]==GHAST_SPAWNER_ID;
-			if(ghastTower ||  world.rand.nextInt(100)>SpawnerRule.chance)
+			if(ghastTower ||  random.nextInt(100)>SpawnerRule.chance)
 				undeadTower=false;
 		}
 
@@ -217,7 +217,7 @@ public class BuildingTower extends Building
 			int torchX1=winDoorX1 + (winDoorX1==bWidth-2 ? -1:1);
 			int torchX2=winDoorX2 + (winDoorX2==bWidth-2 ? -1:1);
 		
-			boolean floorHasUndeadSpawner=undeadTower && z1>baseHeight-1 && world.rand.nextInt(100)<FLOOR_HAUNTED_CHANCE;
+			boolean floorHasUndeadSpawner=undeadTower && z1>baseHeight-1 && random.nextInt(100)<FLOOR_HAUNTED_CHANCE;
 			
 			if(z1==baseHeight-1 || !floorHasUndeadSpawner){
 				int winH=z1>baseHeight-1 ? 2:3;
@@ -250,7 +250,7 @@ public class BuildingTower extends Building
 							buffer[x1+1][z1+1][y1+1]=HOLE_BLOCK_LIGHTING;
 				}
 			}
-			else if(SpawnerRule!=TemplateRule.RULE_NOT_PROVIDED && world.rand.nextInt(100)<SpawnerRule.chance && !ghastTower){
+			else if(SpawnerRule!=TemplateRule.RULE_NOT_PROVIDED && random.nextInt(100)<SpawnerRule.chance && !ghastTower){
 				int[] spawnerBlock=SpawnerRule.getNonAirBlock(world.rand);
 				
 				if(spawnerBlock[0]!=GHAST_SPAWNER_ID)
@@ -259,9 +259,9 @@ public class BuildingTower extends Building
 			
 			//chests
 			//System.out.println("checking for chest");
-			if(ChestRule!=TemplateRule.RULE_NOT_PROVIDED && world.rand.nextInt(100)<ChestRule.chance)
+			if(ChestRule!=TemplateRule.RULE_NOT_PROVIDED && random.nextInt(100)<ChestRule.chance)
 				buffer[bWidth-2+1][z1+1+1][sideWindowY-1+1]=ChestRule.getNonAirBlock(world.rand);
-			else if(floorHasUndeadSpawner && world.rand.nextInt(100) < HAUNTED_CHEST_CHANCE) //even if no chest rule, can have chests if floorIsHaunted
+			else if(floorHasUndeadSpawner && random.nextInt(100) < HAUNTED_CHEST_CHANCE) //even if no chest rule, can have chests if floorIsHaunted
 				buffer[bWidth-2+1][z1+1+1][sideWindowY-1+1]=z1 < 15 ? TOWER_CHEST_BLOCK : HARD_CHEST_BLOCK;
 
 			if(z1==baseHeight-1) z1++; //ground floor is one block higher
@@ -310,15 +310,15 @@ public class BuildingTower extends Building
 		if(PopulateFurniture){
 			for(int z1=baseHeight;z1<bHeight-2;z1+=4){
 				for(int m=0; m<bLength*bWidth/25; m++){ //scale to floor area
-					if(!undeadTower && world.rand.nextInt(BED_ODDS)==0) 
+					if(!undeadTower && random.nextInt(BED_ODDS)==0) 
 						populateBeds(z1);
-					if(bHeight-baseHeight>8 && world.rand.nextInt(BOOKSHELF_ODDS)==0) 
+					if(bHeight-baseHeight>8 && random.nextInt(BOOKSHELF_ODDS)==0) 
 						populateBookshelves(z1);
-					if(world.rand.nextInt(CAULDRON_ODDS)==0) 
-						populateFurnitureColumn(z1,new int[][]{{CAULDRON_BLOCK_ID,world.rand.nextInt(4)}});
-					if(z1>12 && world.rand.nextInt(BREWING_STAND_ODDS)==0) 
-						populateFurnitureColumn(z1,new int[][]{bRule.primaryBlock,{BREWING_STAND_BLOCK_ID,world.rand.nextInt(2)+1}});
-					if(z1>20 && world.rand.nextInt(ENCHANTMENT_TABLE_ODDS)==0) 
+					if(random.nextInt(CAULDRON_ODDS)==0) 
+						populateFurnitureColumn(z1,new int[][]{{CAULDRON_BLOCK_ID,random.nextInt(4)}});
+					if(z1>12 && random.nextInt(BREWING_STAND_ODDS)==0) 
+						populateFurnitureColumn(z1,new int[][]{bRule.primaryBlock,{BREWING_STAND_BLOCK_ID,random.nextInt(2)+1}});
+					if(z1>20 && random.nextInt(ENCHANTMENT_TABLE_ODDS)==0) 
 						populateFurnitureColumn(z1,new int[][]{{ENCHANTMENT_TABLE_ID,0}});
 				}
 				if(z1==baseHeight) z1++;
@@ -371,9 +371,9 @@ public class BuildingTower extends Building
 	
 	//****************************************  FUNCTIONS  - populators *************************************************************************************//
 	private void populateBeds(int z){
-		int dir=world.rand.nextInt(4);
-		int x1=world.rand.nextInt(bWidth-2)+1;
-		int y1=world.rand.nextInt(bLength-2)+1;
+		int dir=random.nextInt(4);
+		int x1=random.nextInt(bWidth-2)+1;
+		int y1=random.nextInt(bLength-2)+1;
 		int x2 = x1+DIR_TO_X[dir], y2 = y1+DIR_TO_Y[dir];
 		if(	isFloor(x1,z,y1) && !isNextToDoorway(x1,z,y1) 
 		 && isFloor(x2,z,y2) && !isNextToDoorway(x2,z,y2)){
@@ -383,8 +383,8 @@ public class BuildingTower extends Building
 	}
 	
 	private void populateFurnitureColumn(int z, int[][] block){
-		int x1=world.rand.nextInt(bWidth-2)+1;
-		int y1=world.rand.nextInt(bLength-2)+1;
+		int x1=random.nextInt(bWidth-2)+1;
+		int y1=random.nextInt(bLength-2)+1;
 		if(isFloor(x1,z,y1) && !isNextToDoorway(x1,z,y1)){
 			for(int z1=0; z1<block.length; z1++)
 				setBlockLocal(x1,z+z1,y1,block[z1]);
@@ -392,9 +392,9 @@ public class BuildingTower extends Building
 	}
 	
 	private void populateBookshelves(int z){
-		int x1=world.rand.nextInt(bWidth-2)+1;
-		int y1=world.rand.nextInt(bLength-2)+1;
-		int dir=world.rand.nextInt(4);
+		int x1=random.nextInt(bWidth-2)+1;
+		int y1=random.nextInt(bLength-2)+1;
+		int dir=random.nextInt(4);
 		int xinc=DIR_TO_X[dir];
 		int yinc=DIR_TO_Y[dir];
 		
@@ -410,7 +410,7 @@ public class BuildingTower extends Building
 		}
 		
 		for(int m=0;m<2;m++){
-			for(int z1=z;z1<z+1+world.rand.nextInt(3);z1++){
+			for(int z1=z;z1<z+1+random.nextInt(3);z1++){
 				if(getBlockIdLocal(x1,z1,y1)!=0 || !isWallBlock(x1+xinc,z1,y1+yinc)) 
 					break;
 				setBlockLocal(x1,z1,y1,BOOKSHELF_ID);
@@ -425,8 +425,8 @@ public class BuildingTower extends Building
 	
 	private boolean populateGhastSpawner(int z){
 		for(int tries=0; tries < 5; tries++){
-			int x1=world.rand.nextInt(bWidth-2)+1;
-			int y1=world.rand.nextInt(bLength-2)+1;
+			int x1=random.nextInt(bWidth-2)+1;
+			int y1=random.nextInt(bLength-2)+1;
 			if(isFloor(x1,z,y1)){
 				setBlockLocal(x1,z,y1,GHAST_SPAWNER_ID);
 				return true;
@@ -437,10 +437,10 @@ public class BuildingTower extends Building
 	
 	private boolean populatePortal(int z){
 		if(world.provider.isHellWorld){ 
-			if(world.rand.nextInt(NETHER_PORTAL_ODDS)!=0) 
+			if(random.nextInt(NETHER_PORTAL_ODDS)!=0) 
 				return false; 
 		}
-		else if(world.rand.nextInt(SURFACE_PORTAL_ODDS)!=0) 
+		else if(random.nextInt(SURFACE_PORTAL_ODDS)!=0) 
 			return false;
 		boolean hasSupport=false;
 		for(int y1=bLength/2-2; y1<bLength/2+2;y1++){
@@ -720,7 +720,7 @@ public class BuildingTower extends Building
 							neighbors+=support[x][z][y+1];
 						if(y>0 && IS_LOAD_TRASMITER_BLOCK[buffer[x][z][y-1][0]]) 
 							neighbors+=support[x][z][y-1];
-						if(neighbors>world.rand.nextInt(4)) 
+						if(neighbors>random.nextInt(4)) 
 							support[x][z][y]=1;
 					}
 				}}

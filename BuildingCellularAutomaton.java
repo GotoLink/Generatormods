@@ -181,8 +181,8 @@ public class BuildingCellularAutomaton extends Building {
 		
 		if(j0+bHeight>WORLD_MAX_Y-1) j0=WORLD_MAX_Y-bHeight-1; //stay 1 below top to avoid lighting problems
 		if(bury && !hitWater){
-			zGround= caRule[0][2]==ALIVE ? Math.max(0,bHeight-bWidth/3-world.rand.nextInt(bWidth))  
-										 : world.rand.nextInt(3*bHeight/4);
+			zGround= caRule[0][2]==ALIVE ? Math.max(0,bHeight-bWidth/3-random.nextInt(bWidth))  
+										 : random.nextInt(3*bHeight/4);
 			if(j0-zGround < 5) zGround=j0-5;
 			j0-=zGround; //make ruin partially buried
 		}
@@ -254,14 +254,14 @@ public class BuildingCellularAutomaton extends Building {
 								(			  layers[z][x][y-1]!=ALIVE //y-1 empty and..
 									&& (x+1==bWidth || !(layers[z][x+1][y]!=ALIVE && layers[z][x+1][y-1]==ALIVE)) //not obstructing gaps to the sides
 									&& (x-1<0       || !(layers[z][x-1][y]!=ALIVE && layers[z][x-1][y-1]==ALIVE))				 
-								) && world.rand.nextInt(100)<bRule.chance)
+								) && random.nextInt(100)<bRule.chance)
 							)setBlockLocal(x,z,y,stairs[DIR_NORTH]);
 							else
 							if(y-1>=0      && layers[z][x][y-1]==ALIVE && (	y+1==bLength ||
 								(		      layers[z][x][y+1]!=ALIVE 
 										&& (x+1==bWidth || !(layers[z][x+1][y]!=ALIVE && layers[z][x+1][y+1]==ALIVE)) 
 										&& (x-1<0       || !(layers[z][x-1][y]!=ALIVE && layers[z][x-1][y+1]==ALIVE))				 
-								) && world.rand.nextInt(100)<bRule.chance)
+								) && random.nextInt(100)<bRule.chance)
 							)setBlockLocal(x,z,y,stairs[DIR_SOUTH]);
 							
 							else
@@ -269,14 +269,14 @@ public class BuildingCellularAutomaton extends Building {
 								(			 layers[z][x-1][y]!=ALIVE 
 										&& (y+1==bLength|| !(layers[z][x][y+1]!=ALIVE && layers[z][x-1][y+1]==ALIVE))
 										&& (y-1<0       || !(layers[z][x][y-1]!=ALIVE && layers[z][x-1][y-1]==ALIVE))				 
-								) && world.rand.nextInt(100)<bRule.chance)
+								) && random.nextInt(100)<bRule.chance)
 							)setBlockLocal(x,z,y,stairs[DIR_EAST]);
 							else
 							if(x-1>=0     && layers[z][x-1][y]==ALIVE && (	x+1==bWidth ||
 								(		     layers[z][x+1][y]!=ALIVE 
 										&& (y+1==bLength|| !(layers[z][x][y+1]!=ALIVE && layers[z][x+1][y+1]==ALIVE))
 										&& (y-1<0       || !(layers[z][x][y-1]!=ALIVE && layers[z][x+1][y-1]==ALIVE))				 
-								) && world.rand.nextInt(100)<bRule.chance)
+								) && random.nextInt(100)<bRule.chance)
 							)setBlockLocal(x,z,y,stairs[DIR_WEST]);
 						}
 					}
@@ -359,7 +359,7 @@ public class BuildingCellularAutomaton extends Building {
 				populateLadderOrStairway(floors.get(m-1)[0],floors.get(m)[0],true);
 			do{
 				populateFloor(floors.get(m)[0],floors.get(m)[1]);
-			}while(world.rand.nextFloat() < 1.0f - MEAN_SIDE_LENGTH_PER_POPULATE/MathHelper.sqrt_float((float)floors.get(m)[1]));
+			}while(random.nextFloat() < 1.0f - MEAN_SIDE_LENGTH_PER_POPULATE/MathHelper.sqrt_float((float)floors.get(m)[1]));
 		}
 	}
 	
@@ -397,10 +397,10 @@ public class BuildingCellularAutomaton extends Building {
 		
 		BuildingSpiralStaircase bss;
 		for(int tries=0; tries < 8; tries++){
-			int x=world.rand.nextInt(fWidth)+fBB[0][z2],
-			    y=world.rand.nextInt(fLength)+fBB[2][z2];
+			int x=random.nextInt(fWidth)+fBB[0][z2],
+			    y=random.nextInt(fLength)+fBB[2][z2];
 			if(isFloor(x,z2,y)){
-				int dir=world.rand.nextInt(4);
+				int dir=random.nextInt(4);
 				if(buildStairs && (bss=new BuildingSpiralStaircase(wgt, bRule, dir, 1, false, z1-z2+1, getIJKPt(x,z2-1,y))).bottomIsFloor() ){
 					bss.build(0,0);
 				}else if(isFloor(x,z1,y)){
@@ -421,10 +421,10 @@ public class BuildingCellularAutomaton extends Building {
 		if(fWidth <=0 || fLength <= 0) return;
 		
 		//spawners
-		if(world.rand.nextInt(100)<70){
+		if(random.nextInt(100)<70){
 			for(int tries=0; tries < 8; tries++){
-				int x=world.rand.nextInt(fWidth)+fBB[0][z],
-				    y=world.rand.nextInt(fLength)+fBB[2][z];
+				int x=random.nextInt(fWidth)+fBB[0][z],
+				    y=random.nextInt(fLength)+fBB[2][z];
 				if(isFloor(x,z,y)){
 					int[] pt=getIJKPt(x,z,y);
 					int lightVal=world.getSavedLightValue(EnumSkyBlock.Sky, pt[0], pt[1], pt[2]);
@@ -444,14 +444,14 @@ public class BuildingCellularAutomaton extends Building {
 		}
 		
 		//chest
-		if(world.rand.nextInt(100) < (spawnerSelection==null ? 20:70)){
+		if(random.nextInt(100) < (spawnerSelection==null ? 20:70)){
 			for(int tries=0; tries < 8; tries++){
-				int x=world.rand.nextInt(fWidth)+fBB[0][z],
-				    y=world.rand.nextInt(fLength)+fBB[2][z];
+				int x=random.nextInt(fWidth)+fBB[0][z],
+				    y=random.nextInt(fLength)+fBB[2][z];
 				if(isFloor(x,z,y)){
 					setBlockLocal(x,z-1,y,pickCAChestType(z));
 					setBlockLocal(x,z-2,y,bRule);
-					if(world.rand.nextBoolean()){
+					if(random.nextBoolean()){
 						break; //chance of > 1 chest. Expected # of chests is one.
 					}
 				}
@@ -459,10 +459,10 @@ public class BuildingCellularAutomaton extends Building {
 		}
 		
 		//1 TNT trap
-		int s=world.rand.nextInt(1+world.rand.nextInt(5))-2;
+		int s=random.nextInt(1+random.nextInt(5))-2;
 		for(int tries=0; tries<s; tries++){
-			int x=world.rand.nextInt(fWidth)+fBB[0][z],
-		        y=world.rand.nextInt(fLength)+fBB[2][z];
+			int x=random.nextInt(fWidth)+fBB[0][z],
+		        y=random.nextInt(fLength)+fBB[2][z];
 			if(isFloor(x,z,y)){
 				setBlockLocal(x,z,y,STONE_PLATE_ID);
 				setBlockLocal(x,z-1,y,TNT_ID);
@@ -471,10 +471,10 @@ public class BuildingCellularAutomaton extends Building {
 		}
 		
 		//2 TNT trap
-		s=spawnerSelection==null ? world.rand.nextInt(1+world.rand.nextInt(7))-2 : 0;
+		s=spawnerSelection==null ? random.nextInt(1+random.nextInt(7))-2 : 0;
 		for(int tries=0; tries<s; tries++){
-			int x=world.rand.nextInt(fWidth)+fBB[0][z],
-		        y=world.rand.nextInt(fLength)+fBB[2][z];
+			int x=random.nextInt(fWidth)+fBB[0][z],
+		        y=random.nextInt(fLength)+fBB[2][z];
 			if(isFloor(x,z,y) && isFloor(x,z,y=1)){
 				for(int x1=x-1;x1<=x+1;x1++) 
 					for(int y1=y-1;y1<=y+2;y1++)
@@ -488,13 +488,13 @@ public class BuildingCellularAutomaton extends Building {
 		
 		
 		//dispenser trap
-		if(spawnerSelection==null || world.rand.nextBoolean()){
+		if(spawnerSelection==null || random.nextBoolean()){
 			for(int tries=0; tries<10; tries++){
-				int x=world.rand.nextInt(fWidth)+fBB[0][z],
-			        y=world.rand.nextInt(fLength)+fBB[2][z];
-				BuildingDispenserTrap bdt=new BuildingDispenserTrap(wgt, bRule, world.rand.nextInt(4),1, getIJKPt(x,z,y));
+				int x=random.nextInt(fWidth)+fBB[0][z],
+			        y=random.nextInt(fLength)+fBB[2][z];
+				BuildingDispenserTrap bdt=new BuildingDispenserTrap(wgt, bRule, random.nextInt(4),1, getIJKPt(x,z,y));
 				if(bdt.queryCanBuild(2)){
-					bdt.build(world.rand.nextBoolean() ? BuildingDispenserTrap.ARROW_MISSILE : BuildingDispenserTrap.DAMAGE_POTION_MISSILE, true);
+					bdt.build(random.nextBoolean() ? BuildingDispenserTrap.ARROW_MISSILE : BuildingDispenserTrap.DAMAGE_POTION_MISSILE, true);
 					break;
 				}
 			}
@@ -504,11 +504,11 @@ public class BuildingCellularAutomaton extends Building {
 	
 	
 	private int pickCAChestType(int z){
-		if(  Math.abs(zGround-z) > world.rand.nextInt(1 + z>zGround ? (bHeight-zGround):zGround) 
+		if(  Math.abs(zGround-z) > random.nextInt(1 + z>zGround ? (bHeight-zGround):zGround) 
 		 && (z>zGround ? (bHeight-zGround):zGround) > 20)
-			return world.rand.nextBoolean() ? MEDIUM_CHEST_ID : HARD_CHEST_ID;
+			return random.nextBoolean() ? MEDIUM_CHEST_ID : HARD_CHEST_ID;
 		else 
-			return world.rand.nextBoolean() ? EASY_CHEST_ID : MEDIUM_CHEST_ID;
+			return random.nextBoolean() ? EASY_CHEST_ID : MEDIUM_CHEST_ID;
 	}
 	
 	
