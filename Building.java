@@ -963,8 +963,11 @@ public class Building
     public static String metaValueCheck(int blockID, int metadata){
     	if(metadata<0 || metadata >=16) 
     		return "All Minecraft meta values should be between 0 and 15";
-    	String fail = Block.blocksList[blockID].getUnlocalizedName()+" meta value should be between";
-        
+    	String fail;
+		if(Block.blocksList[blockID]!=null)
+    		fail = Block.blocksList[blockID].getUnlocalizedName()+" meta value should be between";
+    	else
+    		return null;
         if(IS_STAIRS_BLOCK[blockID])
         	return metadata < 8 ? null : fail+" 0 and 7";
         switch( blockID ) {                                      
