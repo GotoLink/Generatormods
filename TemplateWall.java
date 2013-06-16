@@ -198,16 +198,18 @@ public class TemplateWall extends TemplateTML{
 	//****************************************  FUNCTION - loadChildTemplates *************************************************************************************//
 	public ArrayList<TemplateTML> loadChildTemplates(String listVarString,HashMap<String,TemplateTML> childTemplateMap){
 		ArrayList<TemplateTML> childTemplates=new ArrayList<TemplateTML>();
-		if(!extraOptions.containsKey(listVarString)) return childTemplates;
+		if(!extraOptions.containsKey(listVarString)) 
+			return childTemplates;
 		String[] names = (((String)extraOptions.get(listVarString)).split("="))[1].split(",");
 		
 		String templateListStr=(String)extraOptions.get(listVarString);
-		if(templateListStr==null) return childTemplates;
-		
+		if(templateListStr==null) 
+			return childTemplates;	
 
 		for(String name : names){
 			name=name.trim();
-			if(name.toUpperCase().equals("NONE")) return new ArrayList<TemplateTML>();
+			if(name.toUpperCase().equals("NONE")) 
+				return new ArrayList<TemplateTML>();
 			if(name.toUpperCase().equals("ALL")){
 				childTemplates.addAll(childTemplateMap.values());
 				break;
@@ -220,12 +222,14 @@ public class TemplateWall extends TemplateTML{
 
 	public ArrayList<TemplateWall> loadChildStyles(String listVarString,HashMap<String,TemplateWall> childTemplateMap){
 		ArrayList<TemplateWall> childTemplates=new ArrayList<TemplateWall>();
-		if(!extraOptions.containsKey(listVarString)) return childTemplates;
+		if(!extraOptions.containsKey(listVarString)) 
+			return childTemplates;
 		String[] names = (((String)extraOptions.get(listVarString)).split("="))[1].split(",");
 		
 		for(String name : names){
 			name=name.trim();
-			if(name.toUpperCase().equals("NONE")) return new ArrayList<TemplateWall>();
+			if(name.toUpperCase().equals("NONE")) 
+				return new ArrayList<TemplateWall>();
 			if(name.toUpperCase().equals("ALL")){
 				childTemplates.addAll(childTemplateMap.values());
 				break;
@@ -274,7 +278,7 @@ public class TemplateWall extends TemplateTML{
 			if(getFileType(f.getName()).equals("tml")){
 				try{
 					TemplateTML t = new TemplateTML(f,explorationHandler).buildLayout();
-					templates.add(t);	
+					templates.add(t);
 				}catch(Exception e){
 					if(e==TemplateTML.ZERO_WEIGHT_EXCEPTION){
 						explorationHandler.lw.println("Did not load "+f.getName()+", weight was zero.");
@@ -298,17 +302,17 @@ public class TemplateWall extends TemplateTML{
 		//load buildings
 		explorationHandler.lw.println("\nLoading building subfolder in "+stylesDirectory+"\\"+BUILDING_DIRECTORY_NAME+"...");
 		HashMap<String,TemplateTML> buildingTemplates=new HashMap<String,TemplateTML>();
+		Iterator<TemplateTML> itr = null;
 		try{
-			Iterator<TemplateTML> itr=loadTemplatesFromDir(new File(stylesDirectory,BUILDING_DIRECTORY_NAME),explorationHandler).iterator();
-			while(itr.hasNext()){
-				TemplateTML t=itr.next();
-				buildingTemplates.put(t.name,t);
-			}
-		} catch(Exception e){
+			itr=loadTemplatesFromDir(new File(stylesDirectory,BUILDING_DIRECTORY_NAME),explorationHandler).iterator();		
+		} catch(NullPointerException e){
 			explorationHandler.lw.println("No buildings folder for "+stylesDirectory.getName()+e.toString());
 		}
-
-		for(int i=0;i<10;i++) {}
+		if(itr!=null)
+		while(itr.hasNext()){
+			TemplateTML t=itr.next();
+			buildingTemplates.put(t.name,t);
+		}
 		
 		//load walls
 		explorationHandler.lw.println("\nLoading wall styles from directory "+stylesDirectory+"...");
