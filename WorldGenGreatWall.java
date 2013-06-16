@@ -18,8 +18,6 @@ package mods.generator;
  * It also checks curviness and length.
  */
 
-import java.util.Random;
-
 import net.minecraft.world.World;
 
 public class WorldGenGreatWall extends WorldGeneratorThread

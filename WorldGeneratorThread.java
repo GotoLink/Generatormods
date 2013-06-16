@@ -17,8 +17,6 @@ package mods.generator;
  * It is intended to serially hand back and forth control with a BuildingExplorationHandler (not to run parallel).
  */
 
-import java.util.Random;
-
 import net.minecraft.world.World;
 
 public abstract class WorldGeneratorThread extends Thread
