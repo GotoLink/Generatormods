@@ -32,11 +32,14 @@ public class BuildingDispenserTrap extends Building{
 		
 		//search along floor for a height 2 wall. If we find it, reset bLength and return true.
 		for(int y=1; y<9; y++){
-			if(isFloor(1,0,y)) continue;
-			if(!isWallBlock(1,-1,y)) return false;
+			if(isFloor(1,0,y)) 
+				continue;
+			if(!isWallBlock(1,-1,y)) 
+				return false;
 			
 			//now must have block at (1,0,y)...
-			if(y<minLength) return false;
+			if(y<minLength) 
+				return false;
 			if(!isWallable(1,1,y)){
 				bLength=y;
 				return true;
@@ -63,7 +66,8 @@ public class BuildingDispenserTrap extends Building{
 				for(int z=0; z<MECHANISM.length; z++){
 					if(MECHANISM[z][3-y][x]==1) 
 						 setBlockLocal(x,z-3,y+bLength,bRule);
-					else setBlockLocal(x,z-3,y+bLength,CODE_TO_BLOCK[MECHANISM[z][3-y][x]]);
+					else 
+						setBlockLocal(x,z-3,y+bLength,CODE_TO_BLOCK[MECHANISM[z][3-y][x]]);
 		}}}
 		
 		for(int y=0; y<bLength;y++){
@@ -81,13 +85,13 @@ public class BuildingDispenserTrap extends Building{
 		
 		ItemStack itemstack= missileType==ARROW_MISSILE ? new ItemStack(Item.arrow.itemID, 30+random.nextInt(10),0)
 		                                                 :new ItemStack(Item.potion.itemID,30+random.nextInt(10),12 | 0x4000);
-		setItemDispenser(1,1,bLength+1,LADDER_DIR_TO_META[DIR_SOUTH],itemstack);
+		setItemDispenser(1,1,bLength+1,DIR_SOUTH,itemstack);
 	}
 	
 	private void setItemDispenser(int x, int z, int y, int metaDir, ItemStack itemstack){
 		int[] pt=getIJKPt(x,z,y);
 		world.setBlock(pt[0], pt[1], pt[2], DISPENSER_ID);
-		world.setBlockMetadataWithNotify(pt[0], pt[1], pt[2], LADDER_DIR_TO_META[orientDirToBDir(LADDER_META_TO_DIR[metaDir])],3);
+		world.setBlockMetadataWithNotify(pt[0], pt[1], pt[2], LADDER_DIR_TO_META[orientDirToBDir(metaDir)],3);
 		try{	
 		    TileEntityDispenser tileentitychest=(TileEntityDispenser)world.getBlockTileEntity(pt[0],pt[1],pt[2]);
 		    if(itemstack != null && tileentitychest!=null)

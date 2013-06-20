@@ -35,9 +35,9 @@ public class CommandBuild extends CommandBase{
 	public void processCommand(ICommandSender var1, String[] coordinate) {
 		if (coordinate.length == 4 || coordinate.length == 3)
         {	
-			notifyAdmins(var1, 0, "/build command used", new Object[]{var1.getCommandSenderName(),coordinate});
-            int posX = Integer.parseInt(coordinate[1+coordinate.length-3]);
-            int posZ = Integer.parseInt(coordinate[2+coordinate.length-3]);
+			notifyAdmins(var1, 0, "/build command used by "+var1.getCommandSenderName(), new Object[]{var1.getCommandSenderName(),coordinate});
+            int posX = parseInt(var1, coordinate[coordinate.length-2]);
+            int posZ = parseInt(var1, coordinate[coordinate.length-1]);
             world=MinecraftServer.getServer().worldServers[coordinate.length == 3? 0 : Integer.parseInt(coordinate[1])];
             
             if ("ruin".equalsIgnoreCase(coordinate[0]))
