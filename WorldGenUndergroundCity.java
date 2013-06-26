@@ -53,15 +53,15 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 		if(pws==null) 
 			return false;
 		willBuild=true;
-		if(!wc.cityIsSeparated(i0,k0,PopulatorWalledCity.CITY_TYPE_UNDERGROUND)) 
+		if(!wc.cityIsSeparated(world,i0,k0,PopulatorWalledCity.CITY_TYPE_UNDERGROUND)) 
 			return false;
 		
 		//make hollows recursively
 		hollow(i0,j0,k0,MAX_DIAM);
 		if(hollows.size()==0) 
 			return false;
-		wc.cityLocations.add(new int[]{i0,k0,PopulatorWalledCity.CITY_TYPE_UNDERGROUND});
-		wc.saveCityLocations();
+		wc.cityLocations.get(world).add(new int[]{i0,k0,PopulatorWalledCity.CITY_TYPE_UNDERGROUND});
+		wc.saveCityLocations(world);
 		wc.logOrPrint("\n***** Building "+pws.name+" city with "+hollows.size()+" hollows at ("+i0+","+j0+","+k0+"). ******\n");
 		
 		ArrayList<BuildingUndergroundEntranceway> entranceways= buildEntranceways();

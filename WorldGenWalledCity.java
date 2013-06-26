@@ -69,7 +69,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		sws=TemplateWall.pickBiomeWeightedWallStyle(ows.streets,world,i0,k0,world.rand,false);
 		if(sws==null) 
 			return false;
-		if(!wc.cityIsSeparated(i0,k0,cityType)) 
+		if(!wc.cityIsSeparated(world,i0,k0,cityType)) 
 			return false;
 		
 		int ID=(random.nextInt(9000)+1000)*100;
@@ -93,7 +93,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		//plan walls[1]
 		walls[0].setCursor(walls[0].bLength-1);
 		walls[1] = new BuildingWall(ID+1,this,ows,dir[1],axXHand, ows.MinL+random.nextInt(ows.MaxL-ows.MinL),false,walls[0].getIJKPt(-1-ows.TowerXOffset,0,1+ows.TowerXOffset)).setTowers(walls[0]).setMinJ(minJ);
-		if(!wc.cityIsSeparated(walls[1].i1,walls[1].k1,cityType)) 
+		if(!wc.cityIsSeparated(world,walls[1].i1,walls[1].k1,cityType)) 
 			return false;
 		walls[1].plan(1,0,BuildingWall.DEFAULT_LOOKAHEAD,false);
 		if(walls[1].bLength<ows.MinL) 
@@ -105,7 +105,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		if(distToTarget<MIN_SIDE_LENGTH) 
 			return false;
 		walls[2] = new BuildingWall(ID+2,this,ows,dir[2],axXHand,distToTarget+2,false,walls[1].getIJKPt(-1-ows.TowerXOffset,0,1+ows.TowerXOffset)).setTowers(walls[0]).setMinJ(minJ);
-		if(!wc.cityIsSeparated(walls[2].i1,walls[2].k1,cityType)) 
+		if(!wc.cityIsSeparated(world,walls[2].i1,walls[2].k1,cityType)) 
 			return false;
 		walls[2].setCursor(0);
 		walls[2].setTarget(walls[2].getIJKPt(0,0,distToTarget));
@@ -121,7 +121,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		if(distToTarget<MIN_SIDE_LENGTH) 
 			return false;
 		walls[3] = new BuildingWall(ID+3,this,ows,dir[3],axXHand,distToTarget+2,false,walls[2].getIJKPt(-1-ows.TowerXOffset,0,1+ows.TowerXOffset)).setTowers(walls[0]).setMinJ(minJ);
-		if(!wc.cityIsSeparated(walls[3].i1,walls[3].k1,cityType)) 
+		if(!wc.cityIsSeparated(world,walls[3].i1,walls[3].k1,cityType)) 
 			return false;
 		walls[0].setCursor(0);
 		walls[3].setCursor(0);
@@ -187,7 +187,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 			
 		//query the exploration handler again to see if we've built nearby cities in the meanwhile
 		for(BuildingWall w : walls){
-			if(!wc.cityIsSeparated(w.i1,w.k1,cityType)){
+			if(!wc.cityIsSeparated(world,w.i1,w.k1,cityType)){
 				wc.logOrPrint("Rejected city "+ID+" nearby city was built during planning!");
 				return false;
 			}
@@ -196,9 +196,8 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		walls[0].setCursor(0);
 		int[] cityCenter=new int[]{(walls[0].i1+walls[1].i1+walls[2].i1+walls[3].i1)/4,0,(walls[0].k1+walls[1].k1+walls[2].k1+walls[3].k1)/4};
 		cityCenter[1]=Building.findSurfaceJ(world, cityCenter[0], cityCenter[1], Building.WORLD_MAX_Y, false, 3);
-		for(int w=0;w<4;w++)
-			wc.cityLocations.add(new int[]{walls[w].i1,walls[w].k1,cityType});//TODO:Improve this
-		wc.saveCityLocations();
+		wc.cityLocations.get(world).add(new int[]{cityCenter[0],cityCenter[2],cityType});
+		wc.saveCityLocations(world);
 
 		//=================================== Build it! =========================================
 		exploreArea(corner1, corner2, true);

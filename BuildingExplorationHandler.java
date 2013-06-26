@@ -62,6 +62,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 	
 	protected final static File BASE_DIRECTORY=getMinecraftBaseDir();
 	protected final static File CONFIG_DIRECTORY=new File(Loader.instance().getConfigDir(),"generatormods");
+	protected final static String LOG_FILE_NAME="generatormods_log.txt";
 	
 	public BuildingExplorationHandler master=null;
 	public float GlobalFrequency=0.025F;
@@ -89,7 +90,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 	public synchronized void updateWorldExplored(World world_) {
 		if (checkNewWorld(world_))
 		{
-			setNewWorld(world_,"Starting to survey dimension "+world_.getWorldInfo().getDimension()+" for "+ this.toString()+" generation...");
+			setNewWorld(world_,"Starting to survey "+world_.provider.getDimensionName()+" for "+ this.toString()+" generation...");
 			
 			if(this==master){
 				//kill zombies
@@ -119,7 +120,14 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 			updateWorldExplored((World)tickData[0]);
 			if(shouldFlushGenThreads)
 				flushGenThreads((World)tickData[0], NO_CALL_CHUNK);
-			runWorldGenThreads();
+			for (int id :AllowedDimensions)
+	        {
+	        	if (((World)tickData[0]).provider.dimensionId==id)
+	        	{
+	        		runWorldGenThreads();
+	        		break;
+	        	}
+	        }
 		}
 	}
 	@Override
@@ -142,9 +150,10 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 	        //if id is in AllowedDimensions list
 	        for (int id :AllowedDimensions)
 	        {
-	        	if ( world.getWorldInfo().getDimension()==id)
+	        	if ( world.provider.dimensionId==id)
 	        	{
-	        		generateSurface(world, random, chunkX, chunkZ);   		
+	        		generateSurface(world, random, chunkX, chunkZ);
+	        		break;
 	        	}
 	        }         
 	    }
@@ -271,7 +280,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 			if(tick!=null)
 				tickets.add(tick);
 			if(tickets.isEmpty()){
-				logOrPrint(this.toString()+"Tried force loading a chunk at "+chunkI+","+chunkK+" but failed");
+				logOrPrint("["+this.toString()+"] Tried force loading a chunk at "+chunkI+","+chunkK+" but failed");
 				return false;
 			}
 		}
@@ -641,7 +650,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
             return false;
         }
     }
-	private static File getWorldSaveDir(World world)
+	protected static File getWorldSaveDir(World world)
     {
         ISaveHandler worldSaver = world.getSaveHandler();       
         if (worldSaver.getChunkLoader(world.provider) instanceof AnvilChunkLoader)
@@ -652,6 +661,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
     }
 	
 	public void logOrPrint(String str) {
-		if (this.logActivated)logger.info(str);	
+		if (this.logActivated)
+			logger.info(str);	
 	}
 }

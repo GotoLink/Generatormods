@@ -26,8 +26,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -46,7 +48,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.TickRegistry;
 import cpw.mods.fml.relauncher.Side;
 
-@Mod(modid = "WalledCityMod", name = "Walled City Generator", version = "0.1.2",dependencies= "after:ExtraBiomes,BiomesOPlenty")
+@Mod(modid = "WalledCityMod", name = "Walled City Generator", version = "0.1.3",dependencies= "after:ExtraBiomes,BiomesOPlenty")
 @NetworkMod(clientSideRequired = false, serverSideRequired = false)
 public class PopulatorWalledCity extends BuildingExplorationHandler{
 	@Instance("WalledCityMod")
@@ -56,7 +58,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	final static int MAX_FOG_HEIGHT=27;
 	public final static int CITY_TYPE_SURFACE=0, CITY_TYPE_NETHER=-1, CITY_TYPE_UNDERGROUND=1;
 	private final static String SETTINGS_FILE_NAME="WalledCitySettings.txt",
-								LOG_FILE_NAME="walled_city_log.txt",
+								CITY_FILE_SAVE="WalledCities.txt",
 								CITY_TEMPLATES_FOLDER_NAME="walledcity",
 								STREET_TEMPLATES_FOLDER_NAME="streets";
 	
@@ -69,22 +71,25 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	
 	//DATA VARIABLES
 	public ArrayList<TemplateWall> cityStyles=null, undergroundCityStyles=new ArrayList<TemplateWall>();
-	public ArrayList<int[]> cityLocations;
+	public Map<World,ArrayList<int[]>> cityLocations;
 	
 	public LinkedList<int[]> citiesBuiltMessages=new LinkedList<int[]>();
 	
-	private File logFile;
+	private File logFile,cityFile;
+	private Map<World,File> cityFiles;
 	@PreInit
 	public void preInit(FMLPreInitializationEvent event) {
 		instance=this;
-		}
+		cityFiles = new HashMap();
+		cityLocations = new HashMap();
+	}
 	
 	//****************************  FUNCTION - loadDataFiles *************************************************************************************//
 	public void loadDataFiles(){
 		try {
 			//read and check values from file
 			logFile=new File(BASE_DIRECTORY,LOG_FILE_NAME);
-			lw= new PrintWriter( new BufferedWriter( new FileWriter(logFile)));
+			lw= new PrintWriter( new BufferedWriter( new FileWriter(logFile,true)));
 			
 			logOrPrint("Loading options and templates for the Walled City Generator.");
 			getGlobalOptions();
@@ -101,8 +106,9 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 			}}
 			
 			lw.println("\nTemplate loading complete.");
-			lw.println("Probability of generation attempt per chunk explored is "+GlobalFrequency+", with "+TriesPerChunk+" tries per chunk.");
-			if(GlobalFrequency <0.000001 && UndergroundGlobalFrequency<0.000001) errFlag=true;
+			lw.println("Probability of city generation attempt per chunk explored is "+GlobalFrequency+", with "+TriesPerChunk+" tries per chunk.");
+			if(GlobalFrequency <0.000001 && UndergroundGlobalFrequency<0.000001) 
+				errFlag=true;
 		} catch( Exception e ) {
 			errFlag=true;
 			lw.println( "There was a problem loading the walled city mod: "+e.getMessage() );
@@ -114,30 +120,47 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	}
 	
 	//****************************  FUNCTION - cityIsSeparated *************************************************************************************//
-	public boolean cityIsSeparated(int i, int k, int cityType){
-		if(cityLocations!=null) 
-			for(int [] location : cityLocations){
+	public boolean cityIsSeparated(World world, int i, int k, int cityType){
+		if(cityLocations.containsKey(world)) 
+		{
+			for(int [] location : cityLocations.get(world)){
 				if( location[2]==cityType && Math.abs(location[0]-i) + Math.abs(location[1]-k) 
 						                     < (cityType==CITY_TYPE_UNDERGROUND ? UndergroundMinCitySeparation : MinCitySeparation )){
 					return false;
 				}
 			}
+		}
 		return true;
+	}
+	public static ArrayList<int[]> getCityLocs(File city){
+		ArrayList<int[]> cityLocs = new ArrayList<int[]>();
+		BufferedReader br = null;
+		try{
+			br=new BufferedReader( new FileReader(city));
+			for(String read=br.readLine(); read!=null; read=br.readLine()){
+				String[] split=read.split(",");
+				if(split.length==3){
+					cityLocs.add(new int[]{Integer.parseInt(split[0]),Integer.parseInt(split[1]),Integer.parseInt(split[2])});
+				}
+			}
+		}catch(IOException e) {System.err.println(e.getMessage()); }
+		finally{ try{ if(br!=null) br.close();} catch(IOException e) {} }
+		return cityLocs;
 	}
 	
 	//****************************  FUNCTION - saveCityLocations *************************************************************************************//
-	public void saveCityLocations(){
+	public void saveCityLocations(World world){
 		PrintWriter pw=null;
-		World world=MinecraftServer.getServer().worldServerForDimension(0);
 		try{
-			pw=new PrintWriter( new BufferedWriter( new FileWriter(logFile)));
-			pw.println("City locations in World named:"+world.getWorldInfo().getWorldName());		
-			for(int[] location : cityLocations){
+			pw=new PrintWriter( new BufferedWriter( new FileWriter(cityFiles.get(world),true)));
+			if(new BufferedReader( new FileReader(cityFiles.get(world))).readLine()==null)
+				pw.println("City locations in "+world.provider.getDimensionName()+" of : "+world.getWorldInfo().getWorldName());		
+			for(int[] location : cityLocations.get(world)){
 				pw.println(new StringBuilder(Integer.toString(location[0]))
 								.append(",").append(Integer.toString(location[1]))
 								.append(",").append(Integer.toString(location[2])));
 			}
-		}catch(IOException e) {System.out.println(e.getMessage()); }
+		}catch(IOException e) {logOrPrint(e.getMessage()); }
 		finally{ if(pw!=null) pw.close(); }
 	}
 
@@ -146,61 +169,57 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	public synchronized void updateWorldExplored(World world_) {
 		if (checkNewWorld(world_))
 		{
-			setNewWorld(world_,"Starting to survey dimension "+world_.getWorldInfo().getDimension()+" for city generation...");		
+			setNewWorld(world_,"Starting to survey "+world_.provider.getDimensionName()+" for city generation...");		
 	
 			if(this==master){
 				//kill zombies
-				for(WorldGeneratorThread wgt: exploreThreads) killZombie(wgt);
+				for(WorldGeneratorThread wgt: exploreThreads) 
+					killZombie(wgt);
 				exploreThreads=new LinkedList<WorldGeneratorThread>();
 			} else {
 				master.updateWorldExplored(world_);
 				exploreThreads=master.exploreThreads;
 			}
-			
-			//clear city locations, read in saved locations if they exist
-			cityLocations=new ArrayList<int[]>();
-			if(logFile.exists()){
-				cityLocations=new ArrayList<int[]>();
-				BufferedReader br = null;
-				try{
-					br=new BufferedReader( new FileReader(logFile));
-					for(String read=br.readLine(); read!=null; read=br.readLine()){
-						String[] split=read.split(",");
-						if(split.length==3){
-							cityLocations.add(new int[]{Integer.parseInt(split[0]),Integer.parseInt(split[1]),Integer.parseInt(split[2])});
-						}
-					}
-				}catch(IOException e) {System.err.println(e.getMessage()); }
-				finally{ try{ if(br!=null) br.close();} catch(IOException e) {} }
-		   }
+		}
+		cityFile=new File(getWorldSaveDir(world_),world_.provider.getDimensionName()+CITY_FILE_SAVE);
+		if( cityFiles.isEmpty() || !cityFiles.containsKey(world_))
+			cityFiles.put(world_, cityFile);
+		try {
+			if(!cityFile.createNewFile()){
+				if(!cityLocations.containsKey(world_))
+					cityLocations.put(world_, getCityLocs(cityFile));
+			}
+		} catch (IOException e) {
+			logOrPrint(e.getMessage());
 		}
 	}
 	
 	//****************************  FUNCTION - isGeneratorStillValid *************************************************************************************//
 	public boolean isGeneratorStillValid(WorldGeneratorThread wgt){
-		return cityIsSeparated(wgt.chunkI,wgt.chunkK,wgt.spawn_surface ? CITY_TYPE_SURFACE : CITY_TYPE_UNDERGROUND);
+		return cityIsSeparated(wgt.world,wgt.chunkI,wgt.chunkK,wgt.spawn_surface ? CITY_TYPE_SURFACE : CITY_TYPE_UNDERGROUND);
 	}
 	
 	
 	//****************************  FUNCTION - chatCityBuilt *************************************************************************************//
 	
 	public void chatBuildingCity(String chatString, String logString){
-		if(logString!=null) logOrPrint(logString);
-		if(!CityBuiltMessage) return;
+		if(logString!=null) 
+			logOrPrint(logString);
+		if(!CityBuiltMessage) 
+			return;
 		List playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
-		if(playerList!=null ){			
-			//FMLClientHandler.instance().getClient().ingameGUI.getChatGUI().printChatMessage(chatString);
+		if(playerList!=null ){
 			for (int index = 0; index < playerList.size(); ++index)
 	        {
 	            EntityPlayerMP player = (EntityPlayerMP)playerList.get(index);
 	            player.playerNetServerHandler.sendPacketToPlayer(new Packet3Chat(chatString));
-	            //player.addChatMessage(chatString);
 	        }
 		}
 	}
 	
 	public void chatCityBuilt(int[] args){
-		if(!CityBuiltMessage) return;
+		if(!CityBuiltMessage)
+			return;
 		List playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
 		if(playerList==null){
 			citiesBuiltMessages.add(args);
@@ -232,10 +251,10 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 			while(citiesBuiltMessages.size()>0) 
 				chatCityBuilt(citiesBuiltMessages.remove());
 		
-		if(cityStyles.size() > 0 && cityIsSeparated(i,k,CITY_TYPE_SURFACE) && random.nextFloat() < GlobalFrequency){		
+		if(cityStyles.size() > 0 && cityIsSeparated(world,i,k,CITY_TYPE_SURFACE) && random.nextFloat() < GlobalFrequency){		
 			exploreThreads.add(new WorldGenWalledCity(this, world, random, i, k,TriesPerChunk, GlobalFrequency));
 		}
-		if(undergroundCityStyles.size() > 0 && cityIsSeparated(i,k,CITY_TYPE_UNDERGROUND) && random.nextFloat() < UndergroundGlobalFrequency){
+		if(undergroundCityStyles.size() > 0 && cityIsSeparated(world,i,k,CITY_TYPE_UNDERGROUND) && random.nextFloat() < UndergroundGlobalFrequency){
 			WorldGeneratorThread wgt=new WorldGenUndergroundCity(this, world, random, i, k,1, UndergroundGlobalFrequency);
 			int maxSpawnHeight=Building.findSurfaceJ(world,i,k,Building.WORLD_MAX_Y,false,Building.IGNORE_WATER)- WorldGenUndergroundCity.MAX_DIAM/2 - 5; //44 at sea level
 			int minSpawnHeight=MAX_FOG_HEIGHT+WorldGenUndergroundCity.MAX_DIAM/2 - 8; //34, a pretty thin margin. Too thin for underocean cities?
@@ -253,7 +272,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 			BufferedReader br = null;
 			try{
 				br=new BufferedReader( new FileReader(settingsFile) );  
-				lw.println("Getting global options...");    
+				lw.println("Getting global options for "+this.toString()+"...");    
 		
 				for(String read=br.readLine(); read!=null; read=br.readLine()){
 		

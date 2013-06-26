@@ -39,7 +39,7 @@ import cpw.mods.fml.relauncher.Side;
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-@Mod(modid = "CARuins", name = "Cellular Automata Generator", version = "0.1.2",dependencies= "after:ExtraBiomes,BiomesOPlenty")
+@Mod(modid = "CARuins", name = "Cellular Automata Generator", version = "0.1.3",dependencies= "after:ExtraBiomes,BiomesOPlenty")
 @NetworkMod(clientSideRequired = false, serverSideRequired = false)
 public class PopulatorCARuins extends BuildingExplorationHandler{
 	@Instance("CARuins")
@@ -90,7 +90,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 	}
 	private final static String[] SPAWNER_RULE_NAMES=new String[]{"MediumLightNarrowFloorSpawnerRule","MediumLightWideFloorSpawnerRule","LowLightSpawnerRule"};
 	
-	private final static String SETTINGS_FILE_NAME="CARuinsSettings.txt",LOG_FILE_NAME="caruins_log.txt";
+	private final static String SETTINGS_FILE_NAME="CARuinsSettings.txt";
 
 	public final static String[][] DEFAULT_CA_RULES=new String[][]{
 		//3-rule
@@ -144,13 +144,14 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 	public final void loadDataFiles(){
 		try {
 			//read and check values from file
-			lw= new PrintWriter( new BufferedWriter( new FileWriter(new File(BASE_DIRECTORY,LOG_FILE_NAME)) ));
+			lw= new PrintWriter( new BufferedWriter( new FileWriter(new File(BASE_DIRECTORY,LOG_FILE_NAME),true)));
 			
 			logOrPrint("Loading options for the Cellular Automata Generator");
 			getGlobalOptions();
 
-			lw.println("Probability of generation attempt per chunk explored is "+GlobalFrequency+", with "+TriesPerChunk+" tries per chunk.");
-			if(GlobalFrequency <0.000001 || caRules==null || caRules.size()==0) errFlag=true;
+			lw.println("Probability of ruin generation attempt per chunk explored is "+GlobalFrequency+", with "+TriesPerChunk+" tries per chunk.");
+			if(GlobalFrequency <0.000001 || caRules==null || caRules.size()==0) 
+				errFlag=true;
 		} catch( Exception e ) {
 			errFlag=true;
 			logOrPrint( "There was a problem loading the Cellular Automata Generator: "+ e.getMessage() );
@@ -169,7 +170,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 			BufferedReader br = null;
 			try{
 				br=new BufferedReader( new FileReader(settingsFile) );
-				lw.println("Getting global options...");    
+				lw.println("Getting global options for "+this.toString()+" ...");    
 	
 				for(String read=br.readLine(); read!=null; read=br.readLine()){
 					readGlobalOptions(lw,read);

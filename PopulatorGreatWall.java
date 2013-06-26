@@ -42,14 +42,13 @@ import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.TickRegistry;
 import cpw.mods.fml.relauncher.Side;
 
-@Mod(modid = "GreatWallMod", name = "Great Wall Mod", version = "0.1.2",dependencies= "after:ExtraBiomes,BiomesOPlenty")
+@Mod(modid = "GreatWallMod", name = "Great Wall Mod", version = "0.1.3",dependencies= "after:ExtraBiomes,BiomesOPlenty")
 @NetworkMod(clientSideRequired = false, serverSideRequired = false)
 public class PopulatorGreatWall extends BuildingExplorationHandler{
 	@Instance("GreatWallMod")
 	public static PopulatorGreatWall instance;
 	private final static int MAX_EXPLORATION_DISTANCE=10, HIGH_DENSITY_MAX_EXPLORATION_DISTANCE=12;
 	private final static String SETTINGS_FILE_NAME="GreatWallSettings.txt",
-								LOG_FILE_NAME="great_wall_log.txt",
 								CITY_TEMPLATES_FOLDER_NAME="greatwall";
 
 	//USER MODIFIABLE PARAMETERS, values below are defaults
@@ -69,7 +68,7 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 	public final void loadDataFiles(){
 		try {
 			//read and check values from file
-			lw= new PrintWriter( new BufferedWriter( new FileWriter(new File(BASE_DIRECTORY,LOG_FILE_NAME)) ));
+			lw= new PrintWriter( new BufferedWriter( new FileWriter(new File(BASE_DIRECTORY,LOG_FILE_NAME),true)));
 			logOrPrint("Loading options and templates for the Great Wall Mod.");
 			getGlobalOptions();
 			
@@ -77,8 +76,9 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 			wallStyles=TemplateWall.loadWallStylesFromDir(stylesDirectory,this);
 
 			lw.println("\nTemplate loading complete.");
-			lw.println("Probability of generation attempt per chunk explored is "+GlobalFrequency+", with "+TriesPerChunk+" tries per chunk.");
-			if(GlobalFrequency <0.000001) errFlag=true;
+			lw.println("Probability of wall generation attempt per chunk explored is "+GlobalFrequency+", with "+TriesPerChunk+" tries per chunk.");
+			if(GlobalFrequency <0.000001) 
+				errFlag=true;
 		} catch( Exception e ) {
 			errFlag=true;
 			logOrPrint( "There was a problem loading the great wall mod: "+ e.getMessage() );
@@ -102,7 +102,7 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 			BufferedReader br = null;
 			try{
 				br=new BufferedReader( new FileReader(settingsFile) );
-				lw.println("Getting global options...");    
+				lw.println("Getting global options for "+this.toString()+" ...");    
 	
 				for(String read=br.readLine(); read!=null; read=br.readLine()){
 					readGlobalOptions(lw,read);				
@@ -146,7 +146,6 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 	public String toString(){
 		return "GreatWallMod";
 	}
-	
 
 	@PostInit
 	public void modsLoaded(FMLPostInitializationEvent event)
