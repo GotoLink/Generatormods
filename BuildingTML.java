@@ -1,4 +1,4 @@
-package mods.generator;
+package assets.generator;
 /*
  *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
  *  Copyright (C) 2011 by formivore
@@ -29,15 +29,18 @@ public class BuildingTML extends Building
 	
 	//****************************************  FUNCTION - queryCanBuild *************************************************************************************//
 	   public boolean queryCanBuild(int ybuffer) throws InterruptedException{
-		   if(j0<=0) return false;
+		   if(j0<=0) 
+			   return false;
 		   
 	    	if(!( queryExplorationHandlerForChunk(0,bLength-1) && queryExplorationHandlerForChunk(bWidth-1,0) && queryExplorationHandlerForChunk(bWidth-1,bLength-1) )){
 				return false;
 			}
 	    	
 	    	//Don't build if it would require leveling greater than tmlt.leveling
-	    	for(int y=0 ;y<bLength;y++) for(int x=0 ;x<bWidth;x++)
-	    		if(j0 - getSurfaceIJKPt(x,y,j0-1,true,3)[1] > tmlt.leveling + 1) return false;
+	    	for(int y=0 ;y<bLength;y++) 
+	    		for(int x=0 ;x<bWidth;x++)
+	    			if(j0 - getSurfaceIJKPt(x,y,j0-1,true,3)[1] > tmlt.leveling + 1) 
+	    				return false;
 	    	
 	    	//check to see if we are underwater
 	    	if(tmlt.waterHeight!=TemplateTML.NO_WATER_CHECK){
@@ -55,9 +58,11 @@ public class BuildingTML extends Building
 	    		
 		    	if(wgt.layoutIsClear(this, tmlt.templateLayout,layoutCode)){
 		    		wgt.setLayoutCode(this,tmlt.templateLayout,WorldGeneratorThread.LAYOUT_CODE_TEMPLATE);
-		    	} else return false;
+		    	} else 
+		    		return false;
 	    	}else{
-	    		if(isObstructedFrame(0,ybuffer)) return false;
+	    		if(isObstructedFrame(0,ybuffer)) 
+	    			return false;
 	    	}
 			return true;
 	    }
@@ -85,8 +90,8 @@ public class BuildingTML extends Building
 			for(int y=0;y<bLength;y++) 
 				for(int x=0;x<bWidth;x++) 
 				{
-					if(!queryExplorationHandlerForChunk(x,y))
-						break;
+					/*if(!queryExplorationHandlerForChunk(x,y))
+						break;*/
 					setBlockLocal(x,z,y,0);
 				}
 
@@ -95,8 +100,8 @@ public class BuildingTML extends Building
 			for(int y=0;y<bLength;y++) 
 				for(int x=0;x<bWidth;x++)
 				{
-					if(!queryExplorationHandlerForChunk(x,y))
-						break;
+					/*if(!queryExplorationHandlerForChunk(x,y))
+						break;*/
 					setBlockLocal(x,z,y,tmlt.rules[tmlt.template[z][y][x]]);
 				}
 

@@ -1,4 +1,4 @@
-package mods.generator;
+package assets.generator;
 /*
  *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
  *  Copyright (C) 2011 by formivore
@@ -617,7 +617,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
     {
         if (FMLCommonHandler.instance().getSide() == Side.CLIENT)
         {
-            return FMLClientHandler.instance().getClient().getMinecraftDir();
+            return FMLClientHandler.instance().getClient().getMinecraft().mcDataDir;
         }
             
         return FMLCommonHandler.instance().getMinecraftServerInstance().getFile("");

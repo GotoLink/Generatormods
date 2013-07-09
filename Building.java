@@ -1,4 +1,4 @@
-package mods.generator;
+package assets.generator;
 
 /*
  *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
@@ -258,16 +258,18 @@ public class Building
         	emptyIfChest(pt);
         if(IS_DELAY_BLOCK[block[0]]) 
         	delayedBuildQueue.offer(new int[]{pt[0],pt[1],pt[2],block[0],rotateMetadata(block[0],block[1])});
-        else if(randLightingHash[(x & 0x7) | (y & 0x38) | (z & 0x1c0)])
+        else if(randLightingHash[(x & 0x7) | (y & 0x38) | (z & 0x1c0)]){
         	if(block[1]==0)
         		world.setBlock(pt[0],pt[1],pt[2],block[0]);
         	else
-        		world.setBlock(pt[0],pt[1],pt[2],block[0],rotateMetadata(block[0],block[1]),2);
-        else 
+        		world.setBlock(pt[0],pt[1],pt[2],block[0],rotateMetadata(block[0],block[1]),3);
+        }
+        else {
         	if(block[1]==0)
         		setBlockNoLighting(world,pt[0],pt[1],pt[2],block[0]);
         	else
         		setBlockAndMetaNoLighting(world,pt[0],pt[1],pt[2],block[0],rotateMetadata(block[0],block[1]));
+        }
     }
    
     protected final void setBlockLocal(int x, int z, int y, TemplateRule rule){
@@ -276,15 +278,19 @@ public class Building
      
     //allows control of lighting. Also will build even if replacing air with air.
     protected final void setBlockWithLightingLocal(int x, int z, int y, int blockID, int metadata, boolean lighting){
-        if(blockID>=SPECIAL_BLOCKID_START) { 
-        	setSpecialBlockLocal(x,z,y,blockID,metadata); return; }
+        if(blockID>=SPECIAL_BLOCKID_START) 
+        { 
+        	setSpecialBlockLocal(x,z,y,blockID,metadata); 
+        	return;
+        }
        
         int[] pt=getIJKPt(x,z,y);
-        if(blockID!=CHEST_ID) emptyIfChest(pt);
+        if(blockID!=CHEST_ID) 
+        	emptyIfChest(pt);
         if(IS_DELAY_BLOCK[blockID]) 
         	delayedBuildQueue.offer(new int[]{pt[0],pt[1],pt[2],blockID,rotateMetadata(blockID,metadata)});
         else if(lighting)
-            world.setBlock(pt[0],pt[1],pt[2],blockID,rotateMetadata(blockID,metadata),2);
+            world.setBlock(pt[0],pt[1],pt[2],blockID,rotateMetadata(blockID,metadata),3);
         else 
         	setBlockAndMetaNoLighting(world,pt[0],pt[1],pt[2],blockID,rotateMetadata(blockID,metadata));
     }
@@ -295,7 +301,7 @@ public class Building
            
             //if stairs are running into ground. replace them with a solid block
             if(IS_STAIRS_BLOCK[block[3]]){
-                int adjId=world.getBlockId(block[0]-DIR_TO_I[STAIRS_META_TO_DIR[block[4]<4?block[4]:(block[4]-4)]],block[1],block[2]-DIR_TO_K[STAIRS_META_TO_DIR[block[4]<4?block[4]:(block[4]-4)]]);
+                int adjId=world.getBlockId(block[0]-DIR_TO_I[STAIRS_META_TO_DIR[block[4]%4]],block[1],block[2]-DIR_TO_K[STAIRS_META_TO_DIR[block[4]%4]]);
                 int aboveID=world.getBlockId(block[0],block[1]+1,block[2]);
                 if(IS_ARTIFICAL_BLOCK[adjId] || IS_ARTIFICAL_BLOCK[aboveID]){
                     block[3]=stairToSolidBlock(block[3]);
@@ -335,15 +341,16 @@ public class Building
            
             else if(block[3]==PAINTING_SPECIAL_ID) 
             	setPainting(block, block[4]);           
-            else if(Block.blocksList[block[3]] instanceof BlockTorch)
+            else if(block[3]==TORCH_ID){
                 if(Block.torchWood.canPlaceBlockAt(world,block[0],block[1],block[2]))
-                	world.setBlock(block[0],block[1],block[2],block[3],block[4],3);//force lighting update
-            else if(Block.blocksList[block[3]] instanceof BlockGlowStone)
-            	world.setBlock(block[0],block[1],block[2],block[3],block[4],3);//force lighting update
+                    world.setBlock(block[0],block[1],block[2],block[3],block[4],3);//force lighting update
+            }
+            else if(block[3]==GLOWSTONE_ID)
+        	    world.setBlock(block[0],block[1],block[2],block[3],block[4],3);//force lighting update
             else if(randLightingHash[(block[0] & 0x7) | (block[1] & 0x38) | (block[2] & 0x1c0)])
-            	world.setBlock(block[0],block[1],block[2],block[3],block[4],3);
+        	    world.setBlock(block[0],block[1],block[2],block[3],block[4],3);
             else 
-            	setBlockAndMetaNoLighting(world,block[0],block[1],block[2],block[3],block[4]);
+        	    setBlockAndMetaNoLighting(world,block[0],block[1],block[2],block[3],block[4]);
         }
     }
  
@@ -351,7 +358,8 @@ public class Building
  
   //&&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setSpecialBlockLocal &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
     protected final void setSpecialBlockLocal(int x, int z, int y, int blockID, int metadata){
-        if(blockID==PRESERVE_ID) return; // preserve existing world block
+        if(blockID==PRESERVE_ID) 
+        	return; // preserve existing world block
        
         int[] pt=getIJKPt(x,z,y);
        
@@ -445,7 +453,7 @@ public class Building
         world.setBlock(pt[0],pt[1],pt[2],MOB_SPAWNER_ID);
         TileEntityMobSpawner tileentitymobspawner=( TileEntityMobSpawner)world.getBlockTileEntity(pt[0],pt[1],pt[2]);
         if(tileentitymobspawner!=null) 
-        	tileentitymobspawner.func_98049_a().setMobID(mob);//set mobID in MobSpawnerBaseLogic
+        	tileentitymobspawner.getSpawnerLogic().setMobID(mob);//set mobID in MobSpawnerBaseLogic
     }
    
   //&&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setLootChest &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
@@ -481,11 +489,11 @@ public class Building
             world.setBlockAndMetadata(pt[0],pt[1],pt[2],post ? SIGN_POST_ID : WALL_SIGN_ID,sDir);
            
             TileEntitySign tileentitysign=(TileEntitySign)world.getBlockTileEntity(pt[0],pt[1],pt[2]);
-            if(tileentitysign==null) return;
+            if(tileentitysign==null) 
+            	return;
            
-            for(int m=0;m<Math.min(lines.length, 4);m++){
-                            
-                            tileentitysign.signText[m]=lines[m];
+            for(int m=0;m<Math.min(lines.length, 4);m++){   
+                tileentitysign.signText[m]=lines[m];
         }*/
     }
        
@@ -503,7 +511,7 @@ public class Building
         else if(dir==DIR_WEST) pt[0]++; 
         else pt[0]--;
                    
-            EntityPainting entitypainting = new EntityPainting(world,pt[0],pt[1],pt[2],PAINTING_DIR_TO_FACEDIR[dir]);
+        EntityPainting entitypainting = new EntityPainting(world,pt[0],pt[1],pt[2],PAINTING_DIR_TO_FACEDIR[dir]);
     if(!world.isRemote && entitypainting.onValidSurface() )
         world.spawnEntityInWorld(entitypainting);*/
    
@@ -515,7 +523,8 @@ public class Building
     }
          
     protected final boolean isWallableIJK(int pt[]){
-        if(pt==null) return false;
+        if(pt==null) 
+        	return false;
         return IS_WALLABLE[world.getBlockId(pt[0], pt[1], pt[2])];
     }
          
@@ -768,11 +777,10 @@ public class Building
         	if(metadata>=8)// >=8:the top half of the door
         		return metadata;
         	if(metadata >= 4 ) {
-                // >=4:the door has swung counterclockwise around its hinge
+                // >=4:the door is open
                 tempdata+=4;
-                metadata -= 4;
             }
-        	return DOOR_DIR_TO_META[orientDirToBDir(DOOR_META_TO_DIR[metadata])] + tempdata;
+        	return DOOR_DIR_TO_META[orientDirToBDir(DOOR_META_TO_DIR[metadata%4])] + tempdata;
         }
         switch( blockID ) {
       
@@ -782,17 +790,14 @@ public class Building
                         tempdata += 8;
                         metadata -= 8;
                 }
-                // now see if it's a floor switch
-                if( blockID == LEVER_ID && ( metadata == 5 || metadata == 6 || metadata == 7) ) {
-                    // we'll leave this as-is
-                    return metadata + tempdata;
-                }          
-                return BUTTON_DIR_TO_META[orientDirToBDir(BUTTON_META_TO_DIR[metadata])] + tempdata;
+                if(metadata==0 || (blockID == LEVER_ID && metadata >= 5))
+                	return metadata+tempdata;
+                return BUTTON_DIR_TO_META[orientDirToBDir(STAIRS_META_TO_DIR[metadata-1])] + tempdata;
         case TORCH_ID: case REDSTONE_TORCH_OFF_ID: case REDSTONE_TORCH_ON_ID:
-        	if(metadata >= 5){
+        	if(metadata ==0 || metadata >= 5){
         		return metadata;
         	}
-        	return BUTTON_DIR_TO_META[orientDirToBDir(BUTTON_META_TO_DIR[metadata])];
+        	return BUTTON_DIR_TO_META[orientDirToBDir(STAIRS_META_TO_DIR[metadata-1])];
         case LADDER_ID: case DISPENSER_ID: case FURNACE_ID: case BURNING_FURNACE_ID: 
         	case WALL_SIGN_ID: case PISTON_ID: case PISTON_EXTENSION_ID:
         	case CHEST_ID: case HOPPER_ID: case DROPPER_ID:
@@ -803,9 +808,9 @@ public class Building
                         metadata -= 8;
                     }
                 }
-                if(metadata==0 || metadata==1) 
+                if(metadata<=1) 
                 	return metadata + tempdata;
-                return LADDER_DIR_TO_META[orientDirToBDir(LADDER_META_TO_DIR[metadata])] + tempdata;                    
+                return LADDER_DIR_TO_META[orientDirToBDir(LADDER_META_TO_DIR[metadata-2])] + tempdata;                    
         case RAILS_ID: case POWERED_RAIL_ID: case DETECTOR_RAIL_ID: case ACTIVATORRAIL_ID:
                 switch( bDir ) {
                 case DIR_NORTH:
@@ -866,27 +871,25 @@ public class Building
                         if( metadata == 9 ) { return bHand==1 ? 8:9; }
                 }
                 break;
-        case TRAP_DOOR_ID:
-            while( metadata >= 4){
-                tempdata += 4;
-                metadata -= 4;
-            }
-            return TRAPDOOR_DIR_TO_META[orientDirToBDir(TRAPDOOR_META_TO_DIR[metadata])] + tempdata;
-        
+            
         case BED_BLOCK_ID: case FENCE_GATE_ID: case TRIPWIRE_SOURCE_ID:       
         case PUMPKIN_ID: case JACK_O_LANTERN_ID: case DIODE_BLOCK_OFF_ID: case DIODE_BLOCK_ON_ID:
                 while( metadata >= 4 ) 
                 {
                     tempdata += 4;
-                    metadata -= 4;
                 }
-                return BED_DIR_TO_META[orientDirToBDir(BED_META_TO_DIR[metadata])] + tempdata;
+                if(blockID==TRAP_DOOR_ID)
+                	return TRAPDOOR_DIR_TO_META[orientDirToBDir(TRAPDOOR_META_TO_DIR[metadata%4])] + tempdata;
+                else
+                	return BED_DIR_TO_META[orientDirToBDir(BED_META_TO_DIR[metadata%4])] + tempdata;
        
         case VINES_ID:
-                if(metadata==0) return 0;
+                if(metadata==0) 
+                	return 0;
                 else if(metadata==1 || metadata==2 || metadata==4 || metadata==8)
-                        return VINES_DIR_TO_META[(bDir+VINES_META_TO_DIR[metadata]) % 4];
-                else return 1; //default case since vine do not have to have correct metadata
+                    return VINES_DIR_TO_META[(bDir+VINES_META_TO_DIR[metadata]) % 4];
+                else 
+                	return 1; //default case since vine do not have to have correct metadata
         
         case SIGN_POST_ID:
                 // sign posts
@@ -983,27 +986,18 @@ public class Building
             case RAILS_ID:
             	return metadata < 10 ? null : fail+" 0 and 9";                      
             case STONE_BUTTON_ID: case WOOD_BUTTON_ID:
-                if(metadata > 8)
-                	return metadata-8>0 && metadata-8 < 5 ? null : fail+" 1 and 4 or 9 and 12";
-                else 
-                	return metadata>0 && metadata < 5 ? null : fail+" 1 and 4 or 9 and 12";
+            	return metadata%8>0 && metadata%8 < 5 ? null : fail+" 1 and 4 or 9 and 12";
             case LADDER_ID: case DISPENSER_ID: case FURNACE_ID: case BURNING_FURNACE_ID:
             case WALL_SIGN_ID: case PAINTING_SPECIAL_ID: case PISTON_ID: case PISTON_EXTENSION_ID:
             case CHEST_ID: case HOPPER_ID: case DROPPER_ID:
-            case POWERED_RAIL_ID: case DETECTOR_RAIL_ID: case ACTIVATORRAIL_ID:
-                if(metadata >= 8) 
-                	return metadata-8 < 6 ? null : fail+" 0 and 5 or 8 and 13";
-                else
-                	return metadata < 6 ? null : fail+" 0 and 5 or 8 and 13";                             
+            case POWERED_RAIL_ID: case DETECTOR_RAIL_ID: case ACTIVATORRAIL_ID: 
+            	return metadata%8 < 6 ? null : fail+" 0 and 5 or 8 and 13";                             
             case PUMPKIN_ID: case JACK_O_LANTERN_ID:
                 return metadata < 5 ? null : fail+" 0 and 4";
             case FENCE_GATE_ID: 
                 return metadata < 8 ? null : fail+" 0 and 7";
             case WOOD_SLAB_ID: case BED_BLOCK_ID:
-            	if(metadata >= 8) 
-            		return metadata-8 < 4 ?  null : fail+" 0 and 3 or 8 and 11";
-            	else
-            		return metadata < 4 ?  null : fail+" 0 and 3 or 8 and 11";
+            		return metadata%8 < 4 ?  null : fail+" 0 and 3 or 8 and 11";
             case TORCH_ID: case REDSTONE_TORCH_OFF_ID: case REDSTONE_TORCH_ON_ID:
             	return metadata > 0 && metadata <7 ? null : fail+" 1 and 6";
         }
@@ -1060,9 +1054,8 @@ public class Building
     
     //maps block metadata to a dir
     public final static int[]       BED_META_TO_DIR=new int[]       {       DIR_SOUTH,DIR_WEST,DIR_NORTH,DIR_EAST},
-    								BUTTON_META_TO_DIR=new int[] 	{0, DIR_EAST,DIR_WEST,DIR_SOUTH,DIR_NORTH},
-            						STAIRS_META_TO_DIR=new int[]    {       DIR_EAST,DIR_WEST,DIR_SOUTH,DIR_NORTH},
-                                    LADDER_META_TO_DIR=new int[]    {0,0,   DIR_NORTH,DIR_SOUTH,DIR_WEST,DIR_EAST},
+    								STAIRS_META_TO_DIR=new int[]    {       DIR_EAST,DIR_WEST,DIR_SOUTH,DIR_NORTH},
+                                    LADDER_META_TO_DIR=new int[]    {		DIR_NORTH,DIR_SOUTH,DIR_WEST,DIR_EAST},
                                     TRAPDOOR_META_TO_DIR=new int[]  {       DIR_SOUTH,DIR_NORTH,DIR_EAST,DIR_WEST},
                                     VINES_META_TO_DIR=new int[]     {0,     DIR_SOUTH,DIR_WEST,0,DIR_NORTH,0,0,0,DIR_EAST},
                                     DOOR_META_TO_DIR=new int[]      {       DIR_WEST,DIR_NORTH,DIR_EAST,DIR_SOUTH};
@@ -1108,18 +1101,19 @@ public class Building
     							IS_FLOWING_BLOCK=new boolean[4096],
     							IS_ORE_BLOCK=new boolean[4096],
     							IS_STAIRS_BLOCK=new boolean[4096],
-    							IS_DOOR_BLOCK=new boolean[4096];
+    							IS_DOOR_BLOCK=new boolean[4096],
+    							IS_LIGHT_BLOCK=new boolean[4096];
 
     static{
         for(int blockID=0;blockID<IS_ARTIFICAL_BLOCK.length;blockID++){
         	Block block = Block.blocksList[blockID];
+        	//note lava is considered to NOT be a liquid, and is therefore not wallable. This is so we can build cities on the lava surface.
+            IS_WATER_BLOCK[blockID]= blockID==WATER_ID || blockID==STATIONARY_WATER_ID || blockID==ICE_ID;
         	if(block!=null)
         	{
         		IS_STAIRS_BLOCK[blockID]= block instanceof BlockStairs;
         		IS_DOOR_BLOCK[blockID]= block instanceof BlockDoor;   
-                //note lava is considered to NOT be a liquid, and is therefore not wallable. This is so we can build cities on the lava surface.
-                IS_WATER_BLOCK[blockID]= blockID==WATER_ID || blockID==STATIONARY_WATER_ID || blockID==ICE_ID;
-               
+                
                 IS_FLOWING_BLOCK[blockID]=block instanceof BlockFlowing || IS_WATER_BLOCK[blockID] || blockID==STATIONARY_LAVA_ID || blockID==LAVA_ID || block instanceof BlockSand || block instanceof BlockGravel;
                
                 IS_WALLABLE[blockID]= IS_WATER_BLOCK[blockID]
@@ -1136,9 +1130,10 @@ public class Building
                    || block instanceof BlockGravel || block instanceof BlockSand || block instanceof BlockNetherrack
                    || block instanceof BlockSoulSand || block instanceof BlockMycelium);
                
+                IS_LIGHT_BLOCK[blockID]=block instanceof BlockTorch|| block instanceof BlockGlowStone;
                 IS_DELAY_BLOCK[blockID]=/*IS_STAIRS_BLOCK[blockID] ||*/ IS_FLOWING_BLOCK[blockID]
-                   || block instanceof BlockTorch || block instanceof BlockLever || block instanceof BlockSign 
-                   || block instanceof BlockFire || block instanceof BlockButton || block instanceof BlockGlowStone 
+                   || IS_LIGHT_BLOCK[blockID] || block instanceof BlockLever || block instanceof BlockSign 
+                   || block instanceof BlockFire || block instanceof BlockButton  
                    || block instanceof BlockVine || block instanceof BlockRedstoneWire
                    || block instanceof BlockDispenser || block instanceof BlockFurnace;
                

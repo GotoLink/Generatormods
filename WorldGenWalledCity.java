@@ -1,4 +1,4 @@
-package mods.generator;
+package assets.generator;
 /*
  *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
  *  Copyright (C) 2011 by formivore
@@ -55,7 +55,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		BacktrackLength=wc.BacktrackLength;
 		chestTries=wc.chestTries;
 		chestItems=wc.chestItems;
-		cityType=world_.getWorldInfo().getDimension();
+		cityType=world_.provider.dimensionId;
 		setName("WorldGenWalledCityThread");
 		
 	}

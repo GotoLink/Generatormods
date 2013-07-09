@@ -1,4 +1,4 @@
-package mods.generator;
+package assets.generator;
 
 import cpw.mods.fml.common.FMLLog;
 

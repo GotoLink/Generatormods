@@ -1,4 +1,4 @@
-package mods.generator;
+package assets.generator;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -109,7 +109,7 @@ public class BuildingDispenserTrap extends Building{
 		{REDSTONE_WIRE_ID,0},
 		{REDSTONE_TORCH_ON_ID,BUTTON_DIR_TO_META[DIR_NORTH]},
 		{REDSTONE_TORCH_OFF_ID,BUTTON_DIR_TO_META[DIR_SOUTH]},
-		{REDSTONE_TORCH_ON_ID,BUTTON_DIR_TO_META[DIR_SOUTH]}
+		{REDSTONE_TORCH_ON_ID,5}
 	};
 	
 	private static int[][][] MECHANISM= new int[][][]{

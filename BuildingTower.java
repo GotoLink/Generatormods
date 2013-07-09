@@ -1,4 +1,4 @@
-package mods.generator;
+package assets.generator;
 
 /*
  *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
@@ -286,23 +286,23 @@ public class BuildingTower extends Building
 			for(int y1=1;y1<buffer[0][0].length-1;y1++){
 				if(!circular || circle_shape[x1-1][y1-1]>=0){
 					for(int z1=0; z1<Math.min(bHeight,zLim); z1++){
-						if(queryExplorationHandlerForChunk(x1-1,y1-1))
+						//if(queryExplorationHandlerForChunk(x1-1,y1-1))
 								setBlockLocal(x1-1,z1-1,y1-1,buffer[x1][z1][y1]);		
 		}}}}
 		//build roof
 		for(int x1=0;x1<buffer.length;x1++){
 			for(int y1=0;y1<buffer[0][0].length;y1++){
 				for(int z1=bHeight; z1<zLim; z1++){
-					if(queryExplorationHandlerForChunk(x1-1,y1-1))
+					//if(queryExplorationHandlerForChunk(x1-1,y1-1))
 						setBlockLocal(x1-1,z1-1,y1-1,buffer[x1][z1][y1]);		
 		}}}
 
 
 		//*** prettify any stairs outside entrance/exit ***
 		for(int x1=1; x1<bWidth-1;x1++){
-			if(isStairBlock(x1,baseHeight, -1) && queryExplorationHandlerForChunk(x1,-2) && getBlockIdLocal(x1, baseHeight, -2)==bRule.primaryBlock[0])  
+			if(isStairBlock(x1,baseHeight, -1)/* && queryExplorationHandlerForChunk(x1,-2)*/ && getBlockIdLocal(x1, baseHeight, -2)==bRule.primaryBlock[0])  
 				setBlockLocal(x1, baseHeight, -1,bRule.primaryBlock[0]);
-			if(isStairBlock(x1, baseHeight, bLength) && queryExplorationHandlerForChunk(x1,bLength+1) && getBlockIdLocal(x1, baseHeight, bLength+1)==bRule.primaryBlock[0])   
+			if(isStairBlock(x1, baseHeight, bLength) /*&& queryExplorationHandlerForChunk(x1,bLength+1)*/ && getBlockIdLocal(x1, baseHeight, bLength+1)==bRule.primaryBlock[0])   
 				setBlockLocal(x1, baseHeight, bLength,bRule.primaryBlock[0]);
 		}
 		
@@ -356,7 +356,7 @@ public class BuildingTower extends Building
 							? (yFace > 0 ? SOUTH_FACE_DOOR_META : NORTH_FACE_DOOR_META ) 
 							: (xFace > 0 ? WEST_FACE_DOOR_META : EAST_FACE_DOOR_META);
 			buffer[x+1][z+1][y+1]=new int[]{WOODEN_DOOR_ID,metadata};
-			buffer[x+1][z+1+1][y+1]=new int[]{WOODEN_DOOR_ID,metadata+8};
+			buffer[x+1][z+1+1][y+1]=new int[]{WOODEN_DOOR_ID,random.nextBoolean()?8:9};
 			if(isFloor(x+xFace,z-1,y+yFace) && x+xFace+1>=0 && x+xFace+1<buffer.length && y+yFace+1>=0 && y+yFace+1<buffer[0][0].length){
 				buffer[x+xFace+1][z-1+1][y+yFace+1]=blockToStepMeta(bRule.primaryBlock);//build a step-up
 			}

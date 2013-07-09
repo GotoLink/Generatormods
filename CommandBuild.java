@@ -1,4 +1,4 @@
-package mods.generator;
+package assets.generator;
 
 import java.util.List;
 import java.util.Random;

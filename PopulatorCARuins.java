@@ -1,4 +1,4 @@
-package mods.generator;
+package assets.generator;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -8,17 +8,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Random;
 
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeChunkManager;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
-import cpw.mods.fml.common.Mod.PostInit;
-import cpw.mods.fml.common.Mod.PreInit;
-import cpw.mods.fml.common.Mod.ServerStarting;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
@@ -132,10 +129,10 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 	ArrayList<byte[][]> caRules=null;
 	int[][] caRulesWeightsAndIndex=null;
 	
-	@PreInit
+	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {	instance=this;	}
 	
-	@ServerStarting
+	@EventHandler
 	public void serverStarting(FMLServerStartingEvent event){
 		event.registerServerCommand(new CommandBuild());
 	}
@@ -303,7 +300,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 		return "CARuins";
 	}
 	
-	@PostInit
+	@EventHandler
 	public void modsLoaded(FMLPostInitializationEvent event)
 	{		
 		if(!dataFilesLoaded)

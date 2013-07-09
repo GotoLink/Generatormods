@@ -1,4 +1,4 @@
-package mods.generator;
+package assets.generator;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLog;

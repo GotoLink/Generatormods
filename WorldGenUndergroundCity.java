@@ -1,4 +1,4 @@
-package mods.generator;
+package assets.generator;
 /*
  *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
  *  Copyright (C) 2011 by formivore
@@ -110,8 +110,7 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 						for(int z2=z1+1; z2<=z1+3; z2++)
 							if( Building.IS_FLOWING_BLOCK[world.getBlockId(i+offset+x1, j+z2, k+offset+y1)])
 							{
-								world.setBlock(i+offset+x1, j+z1+1, k+offset+y1,Building.STONE_ID);
-								break;
+								world.setBlock(i+offset+x1, j+z2, k+offset+y1,Building.STONE_ID);
 							}
 			}}}
 			

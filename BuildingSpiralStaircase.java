@@ -1,4 +1,4 @@
-package mods.generator;
+package assets.generator;
 /*
  *  Source code for the Walled City Generator and CARuins Mods for the game Minecraft
  *  Copyright (C) 2011 by formivore

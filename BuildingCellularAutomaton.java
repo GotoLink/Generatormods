@@ -1,4 +1,4 @@
-package mods.generator;
+package assets.generator;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -232,8 +232,8 @@ public class BuildingCellularAutomaton extends Building {
 				for(int y=0; y<bLength; y++){
 					//if(fBB[0][z]<=x && x<=fBB[1][z] && fBB[2][z]<=y && y<=fBB[3][z])
 					//	setBlockLocal(x,z,y,GLASS_ID);
-					if(!queryExplorationHandlerForChunk(x,y))
-						break;
+					/*if(!queryExplorationHandlerForChunk(x,y))
+						break;*/
 					if(layers[z][x][y]==ALIVE)
 						setBlockLocal(x,z,y,bRule);			
 					else if(z>0 && layers[z-1][x][y]==ALIVE){ //if a floor block
@@ -286,7 +286,7 @@ public class BuildingCellularAutomaton extends Building {
 			//now clear a hole surrounding the central floor volume
 			for(int y=0; y<bLength; y++)
 				for(int x=holeLimits[y][0]+1; x<=holeLimits[y][1]-1; x++)
-					if(layers[z][x][y]!=ALIVE && queryExplorationHandlerForChunk(x,y) && !IS_ARTIFICAL_BLOCK[getBlockIdLocal(x,z,y)])
+					if(layers[z][x][y]!=ALIVE /*&& queryExplorationHandlerForChunk(x,y)*/ && !IS_ARTIFICAL_BLOCK[getBlockIdLocal(x,z,y)])
 						setBlockLocal(x,z,y,0);
 			
 			//then gradually taper hole limits...
