@@ -130,9 +130,6 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 	int[][] caRulesWeightsAndIndex=null;
 	
 	@EventHandler
-	public void preInit(FMLPreInitializationEvent event) {	instance=this;	}
-	
-	@EventHandler
 	public void serverStarting(FMLServerStartingEvent event){
 		event.registerServerCommand(new CommandBuild());
 	}

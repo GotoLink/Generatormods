@@ -79,7 +79,6 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	private Map<World,File> cityFiles;
 	@PreInit
 	public void preInit(FMLPreInitializationEvent event) {
-		instance=this;
 		cityFiles = new HashMap();
 		cityLocations = new HashMap();
 	}

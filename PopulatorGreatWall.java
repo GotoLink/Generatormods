@@ -60,8 +60,6 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 	public ArrayList<TemplateWall> wallStyles=null;
 	public int[] placedCoords=null;
 	public World placedWorld=null;
-	@PreInit
-	public void preInit(FMLPreInitializationEvent event) {	instance=this;}
 	
 	
 	//****************************  FUNCTION - loadDataFiles *************************************************************************************//
