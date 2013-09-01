@@ -25,7 +25,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,9 +37,9 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeChunkManager;
 import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.Mod.PostInit;
-import cpw.mods.fml.common.Mod.PreInit;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
@@ -77,7 +76,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	
 	private File logFile,cityFile;
 	private Map<World,File> cityFiles;
-	@PreInit
+	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		cityFiles = new HashMap();
 		cityLocations = new HashMap();
@@ -152,13 +151,17 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 		PrintWriter pw=null;
 		try{
 			pw=new PrintWriter( new BufferedWriter( new FileWriter(cityFiles.get(world),true)));
-			if(new BufferedReader( new FileReader(cityFiles.get(world))).readLine()==null)
-				pw.println("City locations in "+world.provider.getDimensionName()+" of : "+world.getWorldInfo().getWorldName());		
-			for(int[] location : cityLocations.get(world)){
+			BufferedReader br = new BufferedReader( new FileReader(cityFiles.get(world)));
+			if(br.readLine()==null)
+			{
+				pw.println("City locations in "+world.provider.getDimensionName()+" of : "+world.getWorldInfo().getWorldName());
+			}
+			br.close();
+			int[] location = cityLocations.get(world).get(cityLocations.get(world).size()-1);
 				pw.println(new StringBuilder(Integer.toString(location[0]))
 								.append(",").append(Integer.toString(location[1]))
 								.append(",").append(Integer.toString(location[2])));
-			}
+			
 		}catch(IOException e) {logOrPrint(e.getMessage()); }
 		finally{ if(pw!=null) pw.close(); }
 	}

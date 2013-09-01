@@ -206,7 +206,8 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 		//fills hollows with roads/buildings
 		int successes=0;
 		for(int tries=0; tries<pws.StreetDensity * 4; tries++){
-			if(!master.isFlushingGenThreads) suspendGen();
+			if(!master.isFlushingGenThreads) 
+				suspendGen();
 			int[] hollow=hollows.get(random.nextInt(hollows.size()));
 			
 			int[] pt=new int[]{random.nextInt(hollow[3]),0,random.nextInt(hollow[3])};

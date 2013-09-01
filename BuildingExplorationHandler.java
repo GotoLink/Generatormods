@@ -24,9 +24,9 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Random;
 import java.util.logging.Logger;
 
@@ -37,6 +37,7 @@ import net.minecraft.server.ThreadMinecraftServer;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldProviderEnd;
+import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.chunk.storage.AnvilChunkLoader;
 import net.minecraft.world.storage.ISaveHandler;
@@ -67,7 +68,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 	public BuildingExplorationHandler master=null;
 	public float GlobalFrequency=0.025F;
 	public int TriesPerChunk=1;
-	protected boolean isCreatingDefaultChunks=false, shouldFlushGenThreads=false,
+	protected boolean isCreatingDefaultChunks=false,
 			isFlushingGenThreads=false, isAboutToFlushGenThreads=false;
 	protected boolean errFlag=false, dataFilesLoaded=false;
 	protected boolean logActivated=false,chatMessage=false;
@@ -79,7 +80,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 	public int[] flushCallChunk=NO_CALL_CHUNK, AllowedDimensions=new int[]{-1,0};
 	public PrintWriter lw=null;
 	private List<World> currentWorld=new ArrayList<World>();
-	private List<Ticket> tickets=new ArrayList<Ticket>();
+	private List<Ticket> tickets=new LinkedList<Ticket>();
  	int[] chestTries=new int[]{4,6,6,6};
 	int[][][] chestItems=new int[][][]{null,null,null,null};
 	
@@ -115,16 +116,15 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 	//****************************  FORGE WORLD TICK *************************************************************************************//
 	@Override
 	public void tickEnd(EnumSet<TickType> type, Object... tickData){
-		if(tickData[0] instanceof World && this==master)
+		if(tickData[0] instanceof WorldServer && this==master)
 		{
 			updateWorldExplored((World)tickData[0]);
-			if(shouldFlushGenThreads)
-				flushGenThreads((World)tickData[0], NO_CALL_CHUNK);
+			flushGenThreads((World)tickData[0], NO_CALL_CHUNK);
 			for (int id :AllowedDimensions)
 	        {
 	        	if (((World)tickData[0]).provider.dimensionId==id)
 	        	{
-	        		runWorldGenThreads();
+	        		runWorldGenThreads((World)tickData[0]);
 	        		break;
 	        	}
 	        }
@@ -201,10 +201,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 		chunksExploredThisTick=0;
 		chunksExploredFromStart=0;
 		List<EntityPlayerMP> playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
-		if(playerList==null) 
-		{ 
-			isCreatingDefaultChunks=true;
-		}
+		isCreatingDefaultChunks=playerList==null;
 		logOrPrint(newWorldStr);
 	}
 	
@@ -317,27 +314,26 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 		//Must make sure that a)There is only one call to flushGenThreads on the stack at a time
 		//                    b)flushGenThreads is only called from the main Minecraft thread.
 		//This check is not at the beginning of function because we want to announce we are about to flush no matter what.
-		if(!isFlushingGenThreads && Thread.currentThread() instanceof ThreadMinecraftServer/*WorldGeneratorThread*/) 
-				//return;
+		if(isFlushingGenThreads ||!(Thread.currentThread() instanceof ThreadMinecraftServer)) 
+			return;
 		
 		if(chunksExploredFromStart>= (isCreatingDefaultChunks ? CHUNKS_AT_WORLD_START-1 : 2*CHUNKS_AT_WORLD_START))
 		{
-			
 			flushCallChunk=callChunk;
 			if(exploreThreads.size() > 0) 
 			{
-				shouldFlushGenThreads=true;
 				isFlushingGenThreads=true;
 			}			
 		}
 	}
 	
 	//****************************  FUNCTION - runWorldGenThreads *************************************************************************************//
-	protected void runWorldGenThreads(){
-		ListIterator<WorldGeneratorThread> itr=(ListIterator<WorldGeneratorThread>)((LinkedList<WorldGeneratorThread>)exploreThreads.clone()).listIterator();
+	protected void runWorldGenThreads(World world){
+		Iterator<WorldGeneratorThread> itr= ((List<WorldGeneratorThread>) exploreThreads.clone()).listIterator();
 		
 		while(itr.hasNext() && (isFlushingGenThreads  || chunksExploredThisTick < MAX_CHUNKS_PER_TICK)){
 			WorldGeneratorThread wgt=itr.next();
+			if(wgt.world.equals(world))
 			synchronized(this){
 				if(!wgt.hasStarted) 
 					wgt.start();
@@ -356,17 +352,14 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 		itr=exploreThreads.listIterator();
 		while(itr.hasNext()){
 			WorldGeneratorThread wgt=itr.next();
-			if(wgt.hasStarted){
-				if(!wgt.isAlive()) itr.remove();
-			}else if(!isGeneratorStillValid(wgt))
-				itr.remove();
+			if((wgt.hasStarted && !wgt.isAlive()) ||!isGeneratorStillValid(wgt))
+					itr.remove();
 		}
 		
 		if(exploreThreads.size()==0) {
 			if(chunksExploredFromStart > 10) 
 				logOrPrint("Explored "+chunksExploredFromStart+" chunks in last wave.");
 			chunksExploredFromStart=0;
-			shouldFlushGenThreads=false;
 			isFlushingGenThreads=false;
 			isCreatingDefaultChunks=false;
 			isAboutToFlushGenThreads=false;
@@ -378,21 +371,21 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 	
 	//TODO: Use this ?
 	//****************************  FUNCTION - doQueuedLighting *************************************************************************************//
-	/*
-	public void queueLighting(int[] pt){
+	
+	/*public void queueLighting(int[] pt){
 		lightingList.add(pt);
 	}
 	
-	public void doQueuedLighting(){
+	public void doQueuedLighting(World world){
 		//if(lightingList.size()>100 ) logOrPrint("Doing "+lightingList.size()+" queued lighting commands.");
 		lightingList=new LinkedList<int[]>();
 		while(lightingList.size()>0){
 			int[] pt=lightingList.remove();
-			world.scheduleLightingUpdate(EnumSkyBlock.Sky,pt[0],pt[1],pt[2],pt[3],pt[4],pt[5]);
-			world.scheduleLightingUpdate(EnumSkyBlock.Block,pt[0],pt[1],pt[2],pt[3],pt[4],pt[5]);
+			world.updateLightByType(EnumSkyBlock.Sky,pt[0],pt[1],pt[2]);
+			world.updateLightByType(EnumSkyBlock.Block,pt[0],pt[1],pt[2]);
 		}
-	}
-	*/
+	}*/
+	
 	
 	//****************************  FUNCTION - chestContentsList *************************************************************************************//
 	public void readChestItemsList(PrintWriter lw, String line, BufferedReader br) throws IOException{

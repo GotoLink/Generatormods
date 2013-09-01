@@ -214,8 +214,11 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		
 		//layout
 		layout=new int[Math.abs(corner1[0]-corner2[0])][Math.abs(corner1[2]-corner2[2])];
-		for(int x=0;x<layout.length;x++) for(int y=0;y<layout[0].length;y++) layout[x][y]=LAYOUT_CODE_EMPTY;
-		for(BuildingWall w : walls) w.setLayoutCode(LAYOUT_CODE_WALL);
+		for(int x=0;x<layout.length;x++) 
+			for(int y=0;y<layout[0].length;y++) 
+				layout[x][y]=LAYOUT_CODE_EMPTY;
+		for(BuildingWall w : walls) 
+			w.setLayoutCode(LAYOUT_CODE_WALL);
 
 		int gateFlankingTowers=0;
 		for(BuildingWall w : walls){
@@ -304,7 +307,8 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 
 		int streetsBuilt=0;
 		for(int tries=0;tries<maxStreetCount; tries++){
-			if(tries % 5==0 && !master.isFlushingGenThreads) suspendGen();
+			if(tries % 5==0 && !master.isFlushingGenThreads) 
+				suspendGen();
 			int[] pt=randInteriorPoint();
 			if(pt!=null){
 				pt[1]++;//want block above surface block
@@ -330,7 +334,8 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		for(BuildingDoubleWall avenue : crossAvenues)
 			avenue.buildTowers(true,true,false,cityIsDense, true);
 		for(BuildingDoubleWall street : plannedStreets){
-			if(!master.isFlushingGenThreads) suspendGen();
+			if(!master.isFlushingGenThreads) 
+				suspendGen();
 			street.buildTowers(true,true,sws.MakeGatehouseTowers,cityIsDense, false);
 		}
 			
