@@ -77,7 +77,8 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 	protected int chunksExploredThisTick=0,chunksExploredFromStart=0;
 	private List<int[]> lastExploredChunk=new ArrayList<int[]>();	
 	protected LinkedList<WorldGeneratorThread> exploreThreads=new LinkedList<WorldGeneratorThread>();
-	public int[] flushCallChunk=NO_CALL_CHUNK, AllowedDimensions=new int[]{-1,0};
+	public int[] flushCallChunk=NO_CALL_CHUNK;
+	List<Integer> AllowedDimensions=new ArrayList();
 	public PrintWriter lw=null;
 	private List<World> currentWorld=new ArrayList<World>();
 	private List<Ticket> tickets=new LinkedList<Ticket>();
@@ -89,7 +90,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 	
 	//****************************  FUNCTION - updateWorldExplored *************************************************************************************//
 	public synchronized void updateWorldExplored(World world_) {
-		if (checkNewWorld(world_))
+		if (checkNewWorld(world_) && AllowedDimensions.contains(world_.provider.dimensionId))
 		{
 			setNewWorld(world_,"Starting to survey "+world_.provider.getDimensionName()+" for "+ this.toString()+" generation...");
 			
@@ -120,14 +121,11 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 		{
 			updateWorldExplored((World)tickData[0]);
 			flushGenThreads((World)tickData[0], NO_CALL_CHUNK);
-			for (int id :AllowedDimensions)
-	        {
-	        	if (((World)tickData[0]).provider.dimensionId==id)
+	        	if (AllowedDimensions.contains(((World)tickData[0]).provider.dimensionId))
 	        	{
 	        		runWorldGenThreads((World)tickData[0]);
 	        		break;
 	        	}
-	        }
 		}
 	}
 	@Override
@@ -148,14 +146,10 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
     	{   //if structures are enabled
 	        //can generate in any world except in The End,
 	        //if id is in AllowedDimensions list
-	        for (int id :AllowedDimensions)
+			if (AllowedDimensions.contains(world.provider.dimensionId))
 	        {
-	        	if ( world.provider.dimensionId==id)
-	        	{
-	        		generateSurface(world, random, chunkX, chunkZ);
-	        		break;
-	        	}
-	        }         
+        		generateSurface(world, random, chunkX, chunkZ);
+	        }          
 	    }
     }
 	//**************************** FORGE CHUNK LOADING CALLBACK ****************************************************************************//
@@ -476,7 +470,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 		pw.println("<-TriesPerChunk allows multiple attempts per chunk. Only change from 1 if you want very dense generation!->");
 		pw.println("TriesPerChunk:"+TriesPerChunk);
 		pw.println("<-AllowedDimensions allows structures in corresponding dimension, by dimension ID. Default is Nether(-1) and OverWorld(0)->");
-		pw.println("AllowedDimensions:"+Arrays.toString(AllowedDimensions).replace("[", "").replace("]", "").trim());
+		pw.println("AllowedDimensions:"+(AllowedDimensions.isEmpty()?"-1,0":Arrays.toString(AllowedDimensions).replace("[", "").replace("]", "").trim()));
 		pw.println("<-LogActivated controls information stored into forge logs. Set to true if you want to report an issue with complete forge logs.->");
 		pw.println("LogActivated:"+logActivated);
 		pw.println("<-ChatMessage controls lag warnings.->");
@@ -500,7 +494,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 	protected void readGlobalOptions(PrintWriter lw, String read) {
 		if(read.startsWith( "GlobalFrequency" )) GlobalFrequency = readFloatParam(lw,GlobalFrequency,":",read);
 		if(read.startsWith( "TriesPerChunk" )) TriesPerChunk = readIntParam(lw,TriesPerChunk,":",read);
-		if(read.startsWith( "AllowedDimensions" )) AllowedDimensions = readIntList(lw,AllowedDimensions,":",read);
+		if(read.startsWith( "AllowedDimensions" )) AllowedDimensions = Arrays.asList(readIntList(lw,new Integer[]{-1,0},":",read));
 		if(read.startsWith( "LogActivated" )) logActivated = readBooleanParam(lw,logActivated,":",read);					
 		if(read.startsWith( "ChatMessage" )) chatMessage = readBooleanParam(lw,chatMessage,":",read);
 	}
@@ -577,14 +571,13 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator,ITic
 	}
 
 	
-	public static int[] readIntList(PrintWriter lw,int[] defaultVals,String splitString,  String read){
+	public static Integer[] readIntList(PrintWriter lw,Integer[] defaultVals,String splitString,  String read){
 		try{
 			String[] check = (read.split(splitString)[1]).split(",");
-			int[] newVals=new int[check.length];
+			int[] newVals=new Integer[check.length];
 
 			for(int i=0;i<check.length;i++){
-				int val=Integer.parseInt(check[i].trim());
-				newVals[i]=val;
+				newVals[i]=Integer.valueOf(Integer.parseInt(check[i].trim()));
 			}
 			return newVals;
 

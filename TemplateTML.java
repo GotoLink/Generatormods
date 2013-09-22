@@ -125,7 +125,7 @@ public class TemplateTML
 				rulesArrayList.add( new TemplateRule(parts[1],true) );
 			}
 			else if(line.startsWith( "dimensions" )){
-				int[] dim=BuildingExplorationHandler.readIntList(lw,null,"=",line);
+				Integer[] dim=BuildingExplorationHandler.readIntList(lw,null,"=",line);
 				if(dim==null || dim.length!=3)
 					throw new Exception( "Bad dimension input!"+line );
 				height = dim[0];
