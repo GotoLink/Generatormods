@@ -38,40 +38,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockButton;
-import net.minecraft.block.BlockDirt;
-import net.minecraft.block.BlockDispenser;
-import net.minecraft.block.BlockDoor;
-import net.minecraft.block.BlockFire;
-import net.minecraft.block.BlockFlowing;
-import net.minecraft.block.BlockFurnace;
-import net.minecraft.block.BlockGlowStone;
-import net.minecraft.block.BlockGrass;
-import net.minecraft.block.BlockGravel;
-import net.minecraft.block.BlockLever;
-import net.minecraft.block.BlockLog;
-import net.minecraft.block.BlockMelon;
-import net.minecraft.block.BlockMushroomCap;
-import net.minecraft.block.BlockMycelium;
-import net.minecraft.block.BlockNetherrack;
-import net.minecraft.block.BlockOre;
-import net.minecraft.block.BlockPumpkin;
-import net.minecraft.block.BlockRedstoneWire;
-import net.minecraft.block.BlockSand;
-import net.minecraft.block.BlockSign;
-import net.minecraft.block.BlockSnow;
-import net.minecraft.block.BlockSoulSand;
-import net.minecraft.block.BlockStairs;
-import net.minecraft.block.BlockTorch;
-import net.minecraft.block.BlockVine;
-import net.minecraft.block.BlockWeb;
+import net.minecraft.block.*;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.tileentity.TileEntityMobSpawner;
+import net.minecraft.village.VillageDoorInfo;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.IShearable;
 
@@ -224,10 +197,6 @@ public class Building
         return yI*(pt[0]-i0) + yK*(pt[2]-k0);
     }
    
-    protected final boolean queryExplorationHandlerForChunk(int x, int y) throws InterruptedException{
-    	return wgt.master.queryExplorationHandlerForChunk(world, getI(x,y)>>4, getK(x,y)>>4, wgt);
-    }
-   
     protected final int getBlockIdLocal(int x, int z, int y){
         return world.getBlockId(i0+yI*y+xI*x,j0+z,k0+yK*y+xK*x);
     }
@@ -244,7 +213,11 @@ public class Building
     protected final void setBlockLocal(int x, int z, int y, int blockID, int metadata){
     	setBlockLocal(x,z,y,new int[]{blockID, metadata});
     }
-   
+
+    protected final void setBlockLocal(int x, int z, int y, TemplateRule rule){
+        setBlockLocal(x,z,y,rule.getBlock(random));
+    }
+    
     protected final void setBlockLocal(int x, int z, int y, int[] block){
         if(block[0]>=SPECIAL_BLOCKID_START) 
         { 
@@ -262,7 +235,7 @@ public class Building
         	if(block[1]==0)
         		world.setBlock(pt[0],pt[1],pt[2],block[0]);
         	else
-        		world.setBlock(pt[0],pt[1],pt[2],block[0],rotateMetadata(block[0],block[1]),3);
+        		world.setBlock(pt[0],pt[1],pt[2],block[0],rotateMetadata(block[0],block[1]),2);
         }
         else {
         	if(block[1]==0)
@@ -270,10 +243,6 @@ public class Building
         	else
         		setBlockAndMetaNoLighting(world,pt[0],pt[1],pt[2],block[0],rotateMetadata(block[0],block[1]));
         }
-    }
-   
-    protected final void setBlockLocal(int x, int z, int y, TemplateRule rule){
-        setBlockLocal(x,z,y,rule.getBlock(random));
     }
      
     //allows control of lighting. Also will build even if replacing air with air.
@@ -412,7 +381,7 @@ public class Building
             case WITHERBOSS_SPAWNER_ID: setMobSpawner(pt,1,24); return;
             case BAT_SPAWNER_ID: setMobSpawner(pt,1,25); return;
             case WITCH_SPAWNER_ID: setMobSpawner(pt,1,26); return;
-            default:world.setBlock(pt[0],pt[1],pt[2],blockID,metadata,3);return;
+            default:world.setBlock(pt[0],pt[1],pt[2],blockID,metadata,2);return;
         }
     }
    
@@ -453,7 +422,7 @@ public class Building
         world.setBlock(pt[0],pt[1],pt[2],MOB_SPAWNER_ID);
         TileEntityMobSpawner tileentitymobspawner=( TileEntityMobSpawner)world.getBlockTileEntity(pt[0],pt[1],pt[2]);
         if(tileentitymobspawner!=null) 
-        	tileentitymobspawner.getSpawnerLogic().setMobID(mob);//set mobID in MobSpawnerBaseLogic
+        	tileentitymobspawner.getSpawnerLogic().setMobID(mob);
     }
    
   //&&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setLootChest &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
@@ -484,7 +453,7 @@ public class Building
        
     //&&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setSignOrPost &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
     public void setSignOrPost(int x2,int z2,int y2,boolean post,int sDir,String[] lines){
-    	wgt.master.logOrPrint("trying to set a sign, but method is not yet working");
+    	wgt.master.logOrPrint("trying to set a sign, but method is not yet working","WARNING");
     	/*  int[] pt=getIJKPt(x2,z2,y2);
             world.setBlockAndMetadata(pt[0],pt[1],pt[2],post ? SIGN_POST_ID : WALL_SIGN_ID,sDir);
            
@@ -500,7 +469,7 @@ public class Building
     //&&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setPainting &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
    //FIXME
     public void setPainting(int[] pt, int metadata){
-   		wgt.master.logOrPrint("trying to set a painting, but method is not yet working");
+    	wgt.master.logOrPrint("trying to set a painting, but method is not yet working","WARNING");
         //painting uses same orientation meta as ladders.
         //Have to adjust ijk since unlike ladders the entity exists at the block it is hung on.
         /*int dir=orientDirToBDir(LADDER_META_TO_DIR[metadata]);
@@ -516,7 +485,59 @@ public class Building
         world.spawnEntityInWorld(entitypainting);*/
    
     }
-   
+    //TODO:To use for city doors
+    private void addDoorToNewListIfAppropriate(int id, int par1, int par2, int par3)
+    {
+    	if(!((PopulatorWalledCity)this.wgt.master).cityDoors.containsKey(id)){
+    		((PopulatorWalledCity)this.wgt.master).cityDoors.put(id, new ArrayList());
+    	}
+        int l = ((BlockDoor)Block.doorWood).getDoorOrientation(this.world, par1, par2, par3);
+        int i1;
+        if (l != 0 && l != 2)
+        {
+            i1 = 0;
+            for (int j1 = -5; j1 < 0; ++j1)
+            {
+                if (this.world.canBlockSeeTheSky(par1, par2, par3 + j1))
+                {
+                    --i1;
+                }
+            }
+            for (int j1 = 1; j1 <= 5; ++j1)
+            {
+                if (this.world.canBlockSeeTheSky(par1, par2, par3 + j1))
+                {
+                    ++i1;
+                }
+            }
+            if (i1 != 0)
+            {
+                ((PopulatorWalledCity)this.wgt.master).cityDoors.get(id).add(new VillageDoorInfo(par1, par2, par3, 0, i1 > 0 ? -2 : 2, 0));
+            }
+        }
+        else
+        {
+            i1 = 0;
+            for (int j1 = -5; j1 < 0; ++j1)
+            {
+                if (this.world.canBlockSeeTheSky(par1 + j1, par2, par3))
+                {
+                    --i1;
+                }
+            }
+            for (int j1 = 1; j1 <= 5; ++j1)
+            {
+                if (this.world.canBlockSeeTheSky(par1 + j1, par2, par3))
+                {
+                    ++i1;
+                }
+            }
+            if (i1 != 0)
+            {
+            	((PopulatorWalledCity)this.wgt.master).cityDoors.get(id).add(new VillageDoorInfo(par1, par2, par3, i1 > 0 ? -2 : 2, 0, 0));
+            }
+        }
+    }
   //******************** LOCAL COORDINATE FUNCTIONS - BLOCK TEST FUNCTIONS *************************************************************************************************************//
     protected final boolean isWallable(int x, int z, int y){
         return IS_WALLABLE[world.getBlockId(i0+yI*y+xI*x,j0+z,k0+yK*y+xK*x)];
@@ -1287,16 +1308,6 @@ public class Building
             for(int m=0; m<randLightingHash.length; m++)
                     randLightingHash[m]=rand.nextInt(LIGHTING_INVERSE_DENSITY)==0;
     }
-      
-    public static String[] BIOME_NAMES=new String[BiomeGenBase.biomeList.length+1];
-    static{
-    	BIOME_NAMES[0]="Underground";      	
-      for (int i = 0; i < BIOME_NAMES.length-1; i++)
-        {
-    	  if (BiomeGenBase.biomeList[i]!=null)  	  
-          BIOME_NAMES[i+1]=BiomeGenBase.biomeList[i].biomeName;   	  
-        }
-    }
         
     //TODO:Extend chest_type_labels as config option
     public static String[] CHEST_TYPE_LABELS=new String[]{"CHEST_EASY","CHEST_MEDIUM","CHEST_HARD","CHEST_TOWER"};
@@ -1382,4 +1393,3 @@ public class Building
 
         };
 }
-
