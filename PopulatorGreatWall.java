@@ -20,36 +20,25 @@ package assets.generator;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Random;
 
 import net.minecraft.world.World;
-import net.minecraftforge.common.ForgeChunkManager;
-import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
-import cpw.mods.fml.common.Mod.PostInit;
-import cpw.mods.fml.common.Mod.PreInit;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.registry.GameRegistry;
-import cpw.mods.fml.common.registry.TickRegistry;
-import cpw.mods.fml.relauncher.Side;
 
-@Mod(modid = "GreatWallMod", name = "Great Wall Mod", version = "0.1.3",dependencies= "after:ExtraBiomes,BiomesOPlenty")
-@NetworkMod(clientSideRequired = false, serverSideRequired = false)
+@Mod(modid = "GreatWallMod", name = "Great Wall Mod", version = "0.1.4",dependencies= "after:ExtraBiomes,BiomesOPlenty")
 public class PopulatorGreatWall extends BuildingExplorationHandler{
 	@Instance("GreatWallMod")
 	public static PopulatorGreatWall instance;
-	private final static int MAX_EXPLORATION_DISTANCE=10, HIGH_DENSITY_MAX_EXPLORATION_DISTANCE=12;
-	private final static String SETTINGS_FILE_NAME="GreatWallSettings.txt",
-								CITY_TEMPLATES_FOLDER_NAME="greatwall";
 
 	//USER MODIFIABLE PARAMETERS, values below are defaults
 	public float CurveBias=0.5F;
@@ -61,28 +50,32 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 	public int[] placedCoords=null;
 	public World placedWorld=null;
 	
+	@EventHandler
+	public void preInit(FMLPreInitializationEvent event) {
+		logger = event.getModLog();
+		settingsFileName="GreatWallSettings.txt";
+		templateFolderName="greatwall";
+	}
 	
 	//****************************  FUNCTION - loadDataFiles *************************************************************************************//
 	public final void loadDataFiles(){
 		try {
+			initializeLogging("Loading options and templates for the Great Wall Mod.");
 			//read and check values from file
-			lw= new PrintWriter( new BufferedWriter( new FileWriter(new File(BASE_DIRECTORY,LOG_FILE_NAME),true)));
-			logOrPrint("Loading options and templates for the Great Wall Mod.");
 			getGlobalOptions();
 			
-			File stylesDirectory=new File(CONFIG_DIRECTORY,CITY_TEMPLATES_FOLDER_NAME);
+			File stylesDirectory=new File(CONFIG_DIRECTORY,templateFolderName);
 			wallStyles=TemplateWall.loadWallStylesFromDir(stylesDirectory,this);
 
-			lw.println("\nTemplate loading complete.");
-			lw.println("Probability of wall generation attempt per chunk explored is "+GlobalFrequency+", with "+TriesPerChunk+" tries per chunk.");
-			if(GlobalFrequency <0.000001) 
-				errFlag=true;
+			finalizeLoading(true,"wall");
 		} catch( Exception e ) {
 			errFlag=true;
-			logOrPrint( "There was a problem loading the great wall mod: "+ e.getMessage() );
-			lw.println( "There was a problem loading the great wall mod: "+ e.getMessage() );
+			logOrPrint( "There was a problem loading the great wall mod: "+ e.getMessage(),"SEVERE");
+			lw.println( "There was a problem loading the great wall mod: "+ e.getMessage());
 			e.printStackTrace();
 		}finally{ if(lw!=null) lw.close(); }
+		if(GlobalFrequency <0.000001) 
+			errFlag=true;
 		dataFilesLoaded=true;
 	}
 	
@@ -90,86 +83,52 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 	
 	public final void generate( World world, Random random, int i, int k ) {	
 		if(random.nextFloat() < GlobalFrequency)
-			exploreThreads.add(new WorldGenGreatWall(this,world, random, i, k,TriesPerChunk, GlobalFrequency));		
+			(new WorldGenGreatWall(this,world, random, i, k,TriesPerChunk, GlobalFrequency)).run();		
 	}
 
 	//****************************  FUNCTION - getGlobalOptions  *************************************************************************************//
-	private final void getGlobalOptions(){
-		File settingsFile=new File(CONFIG_DIRECTORY,SETTINGS_FILE_NAME);
-		if(settingsFile.exists()){
-			BufferedReader br = null;
-			try{
-				br=new BufferedReader( new FileReader(settingsFile) );
-				lw.println("Getting global options for "+this.toString()+" ...");    
-	
-				for(String read=br.readLine(); read!=null; read=br.readLine()){
-					readGlobalOptions(lw,read);				
-					if(read.startsWith( "CurveBias" )) CurveBias = readFloatParam(lw,CurveBias,":",read);
-					if(read.startsWith( "LengthBiasNorm" )) LengthBiasNorm = readIntParam(lw,LengthBiasNorm,":",read);
-					if(read.startsWith( "BacktrackLength" )) BacktrackLength = readIntParam(lw,BacktrackLength,":",read);
-					readChestItemsList(lw,read,br);					
-				}
-				
-				if(TriesPerChunk > MAX_TRIES_PER_CHUNK) TriesPerChunk = MAX_TRIES_PER_CHUNK;
-				if(CurveBias<0.0) CurveBias=0.0F;
-				if(CurveBias>1.0) CurveBias=1.0F;
-			}catch(IOException e) { lw.println(e.getMessage()); }
-			finally{ try{ if(br!=null) br.close();} catch(IOException e) {} }
-		}
-		else{
-			copyDefaultChestItems();
-			PrintWriter pw=null;
-			try{
-				pw=new PrintWriter( new BufferedWriter( new FileWriter(settingsFile) ) );
-				printGlobalOptions(pw,true);
-				pw.println();
-				pw.println("<-BacktrackLength - length of backtracking for wall planning if a dead end is hit->");
-				pw.println("<-CurveBias - strength of the bias towards curvier walls. Value should be between 0.0 and 1.0.->");
-				pw.println("<-LengthBiasNorm - wall length at which there is no penalty for generation>");
-				pw.println("BacktrackLength:"+BacktrackLength);
-				pw.println("CurveBias:"+CurveBias);
-				pw.println("LengthBiasNorm:"+LengthBiasNorm);
-				pw.println();
-				printDefaultChestItems(pw);
-				//printDefaultBiomes(pw);		
+	public void loadGlobalOptions(BufferedReader br){
+		try{   
+			for(String read=br.readLine(); read!=null; read=br.readLine()){
+				readGlobalOptions(lw,read);				
+				if(read.startsWith( "CurveBias" )) CurveBias = readFloatParam(lw,CurveBias,":",read);
+				if(read.startsWith( "LengthBiasNorm" )) LengthBiasNorm = readIntParam(lw,LengthBiasNorm,":",read);
+				if(read.startsWith( "BacktrackLength" )) BacktrackLength = readIntParam(lw,BacktrackLength,":",read);
+				readChestItemsList(lw,read,br);					
 			}
-			catch(Exception e) { lw.println(e.getMessage()); }
-			finally{ if(pw!=null) pw.close(); }
 			
-			//reduce max exploration distance for infinite cities to improve performance
-			if(GlobalFrequency > 0.05) max_exploration_distance=HIGH_DENSITY_MAX_EXPLORATION_DISTANCE;
-		}	
+			if(TriesPerChunk > MAX_TRIES_PER_CHUNK) TriesPerChunk = MAX_TRIES_PER_CHUNK;
+			if(CurveBias<0.0) CurveBias=0.0F;
+			if(CurveBias>1.0) CurveBias=1.0F;
+		}catch(IOException e) { lw.println(e.getMessage()); }
+		finally{ try{ if(br!=null) br.close();} catch(IOException e) {}}
+	}
+	public void writeGlobalOptions(PrintWriter pw){
+		printGlobalOptions(pw,true);
+		pw.println();
+		pw.println("<-BacktrackLength - length of backtracking for wall planning if a dead end is hit->");
+		pw.println("<-CurveBias - strength of the bias towards curvier walls. Value should be between 0.0 and 1.0.->");
+		pw.println("<-LengthBiasNorm - wall length at which there is no penalty for generation>");
+		pw.println("BacktrackLength:"+BacktrackLength);
+		pw.println("CurveBias:"+CurveBias);
+		pw.println("LengthBiasNorm:"+LengthBiasNorm);
+		pw.println();
+		printDefaultChestItems(pw);
+		if(pw!=null) 
+			pw.close();
 	}
 	@Override
 	public String toString(){
 		return "GreatWallMod";
 	}
 
-	@PostInit
+	@EventHandler
 	public void modsLoaded(FMLPostInitializationEvent event)
 	{		
 		if(!dataFilesLoaded)
 			loadDataFiles();
 		if(!errFlag){
-				//see if the walled city mod is loaded. If it is, make it load its templates (if not already loaded) and then combine explorers.
-			if (Loader.isModLoaded("WalledCityMod")){
-				PopulatorWalledCity wcm= PopulatorWalledCity.instance;
-				if(!wcm.dataFilesLoaded)  
-					wcm.loadDataFiles();
-				if(!wcm.errFlag){
-					master=wcm.master;
-					if(master!=null)
-						logOrPrint("Combining chunk explorers for "+this.toString()+" and "+master.toString()+".");
-				}
-			}
-			if(master==null) 
-			{
-				master=this;
-				GameRegistry.registerWorldGenerator(this);
-				TickRegistry.registerTickHandler(master, Side.SERVER);
-				ForgeChunkManager.setForcedChunkLoadingCallback(this, master);
-			}
-			max_exploration_distance=MAX_EXPLORATION_DISTANCE;
+			GameRegistry.registerWorldGenerator(this);
 		}		
 	}
 }
