@@ -20,8 +20,10 @@ package assets.generator;
 import java.util.Random;
 
 import net.minecraft.world.World;
+import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraft.world.gen.feature.WorldGenerator;
 
-public abstract class WorldGeneratorThread extends Thread
+public abstract class WorldGeneratorThread
 {
 	public final static int LAYOUT_CODE_NOCODE=-1;
 	public final static int LAYOUT_CODE_EMPTY=0,LAYOUT_CODE_WALL=1, LAYOUT_CODE_AVENUE=2, LAYOUT_CODE_STREET=3, LAYOUT_CODE_TOWER=4, LAYOUT_CODE_TEMPLATE=5;
@@ -33,40 +35,35 @@ public abstract class WorldGeneratorThread extends Thread
 																	   		{0,0,0,0,0,0},  //present tower	
 																	   		{0,0,0,0,0,0}}; //present template
 	public final static char[] LAYOUT_CODE_TO_CHAR=new char[]{' ','#','=','-','@','&'};
-	public volatile boolean threadSuspended=false;
-	public boolean hasStarted=false;
-	public boolean hasTerminated=false;
-	
+	public BuildingExplorationHandler master;
 	public World world;
 	public Random random;
-	public int chunkI, chunkK, TriesPerChunk;
-	public double ChunkTryProb;
-	public BuildingExplorationHandler master;
+	public int chunkI, chunkK, triesPerChunk;
+	public double chunkTryProb;
 	private int min_spawn_height=0, max_spawn_height=127;
 	public boolean spawn_surface=true;
-	public boolean willBuild=false;
-	
-	//All WorldGeneratorThreads will have these, even if not used.
 	int[] chestTries=null;
 	int[][][] chestItems=null;
 	//public int ConcaveSmoothingScale=10, ConvexSmoothingScale=20, 
-	public int BacktrackLength=9;
+	//All WorldGeneratorThreads will have these, even if not used.
+	public int backtrackLength=9;
 	
 	//****************************  CONSTRUCTOR - WorldGeneratorThread *************************************************************************************//
-	public WorldGeneratorThread(BuildingExplorationHandler master_, World world_,Random random_, int chunkI_, int chunkK_, int TriesPerChunk_, double ChunkTryProb_){
-		world=world_;
-		random=random_;
-		chunkI=chunkI_;
-		chunkK=chunkK_;
-		TriesPerChunk=TriesPerChunk_;
-		ChunkTryProb=ChunkTryProb_;
-		master=master_;
+	public WorldGeneratorThread(BuildingExplorationHandler master,World world,Random random, int chunkI, int chunkK, int TriesPerChunk, double ChunkTryProb){
+		this.master=master;
+		this.chestTries=master.chestTries;
+		this.chestItems=master.chestItems;
+		this.world=world;
+		this.random=random;
+		this.chunkI=chunkI;
+		this.chunkK=chunkK;
+		this.triesPerChunk=TriesPerChunk;
+		this.chunkTryProb=ChunkTryProb;
 		max_spawn_height=Building.WORLD_MAX_Y;
-		
 	}
 	
 	//****************************  FUNCTION - abstract and stub functions  *************************************************************************************//
-	public abstract boolean generate(int i0,int j0,int k0) throws InterruptedException;
+	public abstract boolean generate(int i0,int j0,int k0);
 	
 	public boolean isLayoutGenerator(){ return false; }
 	public boolean layoutIsClear(int[] pt1, int[] pt2, int layoutCode){ return true; }
@@ -76,32 +73,22 @@ public abstract class WorldGeneratorThread extends Thread
 	
 	//****************************  FUNCTION - run *************************************************************************************//
 	public void run(){
-		hasStarted=true;
 		boolean success=false;
 		int tries=0, j0=0, i0=0, k0=0;
-		try{
-			do{
-				if(tries==0 || random.nextDouble()<ChunkTryProb){
-					i0=chunkI+random.nextInt(16);
-					k0=chunkK+random.nextInt(16);
-					if(spawn_surface){
-						j0=Building.findSurfaceJ(world,i0,k0,Building.WORLD_MAX_Y,true,3)+1;
-					}else{
-						j0=min_spawn_height+random.nextInt(max_spawn_height - min_spawn_height +1);
-					}
-					if(j0>0)
-						success=generate(i0,j0,k0);
+		do{
+			if(tries==0 || this.random.nextDouble()<chunkTryProb){
+				i0=chunkI+this.random.nextInt(16);
+				k0=chunkK+this.random.nextInt(16);
+				if(spawn_surface){
+					j0=Building.findSurfaceJ(this.world,i0,k0,Building.WORLD_MAX_Y,true,3)+1;
+				}else{
+					j0=min_spawn_height+this.random.nextInt(max_spawn_height - min_spawn_height +1);
 				}
-				tries++;
-			}while(!success && tries<TriesPerChunk && j0!=Building.HIT_WATER);
-		} catch(InterruptedException e){
-		}
-		
-		synchronized(master){
-			hasTerminated=true;
-			threadSuspended=true;
-			master.notifyAll();
-		}
+				if(j0>0 && world.getBiomeGenForCoordsBody(i0, k0)!=BiomeGenBase.ocean)
+					success=generate(i0,j0,k0);
+			}
+			tries++;
+		}while(!success && tries<triesPerChunk && j0!=Building.HIT_WATER);
 	}
 
 	//****************************  FUNCTION - setSpawnHeight *************************************************************************************//
@@ -109,28 +96,5 @@ public abstract class WorldGeneratorThread extends Thread
 		min_spawn_height=min_spawn_height_;
 		max_spawn_height=max_spawn_height_;
 		spawn_surface=spawn_surface_;
-	}
-	
-	//****************************  FUNCTION - exploreArea *************************************************************************************//
-	public boolean exploreArea(int[] pt1, int[] pt2, boolean ignoreTerminate) throws InterruptedException{
-		int incI=Building.signum(pt2[0]-pt1[0],0), incK=Building.signum(pt2[2]-pt1[2],0);
-		for(int chunkI=pt1[0]>>4; ((pt2[0]>>4)-chunkI)*incI > 0; chunkI+=incI)
-			for(int chunkK=pt1[2]>>4; ((pt2[2]>>4)-chunkK)*incK > 0; chunkK+=incK)				
-				if(!master.queryExplorationHandlerForChunk(world, chunkI, chunkK, this) && !ignoreTerminate)
-					return false;
-		return true;
-	}
-	
-	//****************************  FUNCTION - suspendGen *************************************************************************************//
-	public void suspendGen() throws InterruptedException{
-		threadSuspended=true;
-            synchronized(this) {
-                while (threadSuspended){
-                	synchronized(master){
-                		master.notifyAll();
-                	}
-                	wait();
-                }
-            }
 	}
 }
