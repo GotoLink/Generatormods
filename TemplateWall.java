@@ -21,6 +21,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 import net.minecraft.world.World;
@@ -39,8 +40,8 @@ public class TemplateWall extends TemplateTML{
 	//USER MODIFIABLE PARAMETERS, values below are defaults
 	public int[] Biomes=ALL_BIOMES;
 	public boolean underground=false;
-	public ArrayList<TemplateTML> buildings=null;
-	public ArrayList<TemplateWall> streets=null;
+	public List<TemplateTML> buildings=null;
+	public List<TemplateWall> streets=null;
 	public int[][] buildingWeights;
 	public int StreetDensity=6;
 	public boolean LevelInterior=true;
@@ -96,7 +97,7 @@ public class TemplateWall extends TemplateTML{
 	public void readTowerParameters() throws Exception{
 		float mobProb=0.0F, pigZombieProb=0.0F, endermanProb=0.0F, caveSpiderProb=0.0F; //deprecated, for backwards compatability
 		
-		if(extraOptions.containsKey("biomes")) Biomes=BuildingExplorationHandler.readNamedCheckList(lw,Biomes,"=",(String)extraOptions.get("biomes"),Building.BIOME_NAMES,"ALL");
+		if(extraOptions.containsKey("biomes")) Biomes=BuildingExplorationHandler.readNamedCheckList(lw,Biomes,"=",(String)extraOptions.get("biomes"),BuildingExplorationHandler.BIOME_NAMES,"ALL");
 		if(extraOptions.containsKey("street_density")) StreetDensity=BuildingExplorationHandler.readIntParam(lw,StreetDensity,"=",(String)extraOptions.get("street_density"));
 		if(extraOptions.containsKey("level_interior")) LevelInterior=BuildingExplorationHandler.readIntParam(lw,1,"=",(String)extraOptions.get("level_interior")) == 1;
 		if(extraOptions.containsKey("walk_height")) WalkHeight=BuildingExplorationHandler.readIntParam(lw,WalkHeight,"=",(String)extraOptions.get("walk_height"));
@@ -342,9 +343,9 @@ public class TemplateWall extends TemplateTML{
 	}
 	
 	
-	public static TemplateWall pickBiomeWeightedWallStyle(ArrayList<TemplateWall> styles,World world, int i, int k, Random random, boolean ignoreBiomes){
+	public static TemplateWall pickBiomeWeightedWallStyle(List<TemplateWall> styles,World world, int i, int k, Random random, boolean ignoreBiomes){
 		
-		int biome=world.getBiomeGenForCoords(i,k).biomeID+1;
+		int biome=world.getBiomeGenForCoordsBody(i,k).biomeID+1;
 		if((biome < 0 || biome > BiomeGenBase.biomeList.length) && !ignoreBiomes) return null;
 	  	int sum=0;
 	  	for(TemplateWall ws : styles){
@@ -365,7 +366,7 @@ public class TemplateWall extends TemplateTML{
 	
 
 	//****************************************  FUNCTION - loadStreets *************************************************************************************//
-	public static void loadStreets(ArrayList<TemplateWall> cityStyles,File streetsDirectory, BuildingExplorationHandler explorationHandler) throws Exception{
+	public static void loadStreets(List<TemplateWall> cityStyles,File streetsDirectory, BuildingExplorationHandler explorationHandler) throws Exception{
 		//streets, don't print error if directory DNE
 		HashMap<String,TemplateWall> streetTemplateMap=new HashMap<String,TemplateWall>();
 		Iterator<TemplateWall> itr;

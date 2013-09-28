@@ -1,6 +1,5 @@
 package assets.generator;
 
-import cpw.mods.fml.common.FMLLog;
 
 /*
  *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
@@ -34,7 +33,7 @@ public class BuildingDoubleWall extends Building
 
 	//****************************  FUNCTION - plan  *************************************************************************************//
 	
-	public boolean plan() throws InterruptedException{
+	public boolean plan(){
 
 		//Plan out a pair of walls in opposite directions from given start coordinates.
 		//Start planning from position 1 (pos 0 is fixed).
@@ -63,9 +62,9 @@ public class BuildingDoubleWall extends Building
 		for(int m=0;m<b;m++) { tempx[m]=wall2.xArray[b-m-1]; tempz[m]=wall2.zArray[b-m-1];}
 		for(int m=0;m<a;m++) { tempx[m+b]=wall1.xArray[m];  tempz[m+b]=wall1.zArray[m]; }
 
-		if(BuildingWall.DEBUG) FMLLog.getLogger().info("\nSMOOTHING X");
+		if(BuildingWall.DEBUG) System.out.println("\nSMOOTHING X");
 		BuildingWall.smooth(tempx,0,a+b-1,ws.LateralSmoothingScale,ws.LateralSmoothingScale,true);
-		if(BuildingWall.DEBUG) FMLLog.getLogger().info("\nSMOOTHING Z");
+		if(BuildingWall.DEBUG) System.out.println("\nSMOOTHING Z");
 		BuildingWall.smooth(tempz,0,a+b-1,ws.ConcaveDownSmoothingScale,ws.ConcaveUpSmoothingScale,true);
 		for(int m=0;m<b;m++) { wall2.xArray[b-m-1]=tempx[m]; wall2.zArray[b-m-1]=tempz[m];}
 		for(int m=0;m<a;m++) { wall1.xArray[m]=tempx[m+b]; wall1.zArray[m]=tempz[m+b]; }
@@ -84,19 +83,9 @@ public class BuildingDoubleWall extends Building
 	}
 	
 	public void buildTowers(boolean lSideTowers,boolean rSideTowers, boolean gatehouseTowers,
-			boolean overlapTowers,boolean isAvenue) throws InterruptedException{
+			boolean overlapTowers,boolean isAvenue){
 		wall1.makeBuildings(lSideTowers,rSideTowers,gatehouseTowers,overlapTowers, isAvenue);
 		wall2.makeBuildings(lSideTowers,rSideTowers,gatehouseTowers,overlapTowers, isAvenue);
 	}
 
 }
-
-
-
-
-
-
-
-
-
-

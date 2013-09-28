@@ -6,25 +6,20 @@ import net.minecraft.world.World;
 
 public class WorldGenCARuins extends WorldGeneratorThread{
 	
-private PopulatorCARuins ca;
-private BuildingCellularAutomaton bca;
-private byte[][] caRule=null, seed;
-private int[][] caRulesWeightsAndIndex;
-private int MinHeight, MaxHeight;
-private float GlobalFrequency, SymmetricSeedDensity;
-private int ContainerWidth, ContainerLength, seedCode;
-private int[] seedTypeWeights;
-private final static int[] SEED_TYPE_CODES=new int[]{0,1,2,3};
-private int MinHeightBeforeOscillation;
-private boolean SmoothWithStairs, MakeFloors;
-private TemplateRule[] blockRules, blockRule;
+	private byte[][] caRule=null, seed;
+	private int[][] caRulesWeightsAndIndex;
+	private int MinHeight, MaxHeight;
+	private float GlobalFrequency, SymmetricSeedDensity;
+	private int ContainerWidth, ContainerLength, seedCode;
+	private int[] seedTypeWeights;
+	private final static int[] SEED_TYPE_CODES=new int[]{0,1,2,3};
+	private int MinHeightBeforeOscillation;
+	private boolean SmoothWithStairs, MakeFloors;
+	private TemplateRule[] blockRules, blockRule;
 
 //****************************************  CONSTRUCTOR - WorldGenCARuins  *************************************************************************************//
-	public WorldGenCARuins(PopulatorCARuins ca_, World world_, Random random_, int chunkI_, int chunkK_, int TriesPerChunk_, double ChunkTryProb_) {
-		super(ca_, world_, random_, chunkI_, chunkK_, TriesPerChunk_, ChunkTryProb_);
-		ca=ca_;
-		chestTries=ca.chestTries;
-		chestItems=ca.chestItems;
+	public WorldGenCARuins(PopulatorCARuins ca, World world, Random random, int chunkI, int chunkK, int triesPerChunk, double chunkTryProb) {
+		super(ca,world, random, chunkI, chunkK, triesPerChunk, chunkTryProb);
 		caRulesWeightsAndIndex=ca.caRulesWeightsAndIndex;
 		MinHeight=ca.MinHeight; MaxHeight=ca.MaxHeight;
 		GlobalFrequency=ca.GlobalFrequency; SymmetricSeedDensity=ca.SymmetricSeedDensity;
@@ -33,15 +28,14 @@ private TemplateRule[] blockRules, blockRule;
 		MinHeightBeforeOscillation=ca.MinHeightBeforeOscillation;
 		SmoothWithStairs=ca.SmoothWithStairs; MakeFloors=ca.MakeFloors;
 		blockRules=ca.blockRules;
-		setName("WorldGenAutomata");
 	}
 	//****************************************  FUNCTION - generate  *************************************************************************************//
-	public boolean generate(int i0, int j0, int k0) throws InterruptedException {
+	public boolean generate(int i0, int j0, int k0) {
 		
 		int th=MinHeight+random.nextInt(MaxHeight-MinHeight+1);
 		
 		if(caRule==null) //if we haven't picked in an earlier generate call 
-			caRule=ca.caRules.get(Building.pickWeightedOption(world.rand, caRulesWeightsAndIndex[0], caRulesWeightsAndIndex[1]));
+			caRule=((PopulatorCARuins)master).caRules.get(Building.pickWeightedOption(world.rand, caRulesWeightsAndIndex[0], caRulesWeightsAndIndex[1]));
 		if(caRule==null) 
 			return false;
 		
@@ -52,7 +46,7 @@ private TemplateRule[] blockRules, blockRule;
 					  : seedCode==2 ? BuildingCellularAutomaton.makeCircularSeed(Math.min(ContainerWidth,ContainerLength),world.rand)
 					  : 			  BuildingCellularAutomaton.makeCruciformSeed(Math.min(ContainerWidth,ContainerLength),world.rand);
 		
-		TemplateRule blockRule=blockRules[world.getBiomeGenForCoords(i0,k0).biomeID+1];
+		TemplateRule blockRule=blockRules[world.getBiomeGenForCoordsBody(i0,k0).biomeID+1];
 		//can use this to test out new Building classes
 		/*
 		BuildingSpiralStaircase bss=new BuildingSpiralStaircase(this,blockRule,random.nextInt(4),2*random.nextInt(2)-1,false,-(random.nextInt(10)+1),new int[]{i0,j0,k0});
@@ -72,8 +66,9 @@ private TemplateRule[] blockRules, blockRule;
 								       k0+(2*random.nextInt(2)-1)*(ContainerWidth + random.nextInt(ContainerWidth))};
 					pt[1]=Building.findSurfaceJ(world,pt[0],pt[2],Building.WORLD_MAX_Y,true,3)+1;
 					if(generate(pt[0], pt[1], pt[2])) 
-						{
-						break;}
+					{
+						break;
+					}
 				}
 			}
 			return true;

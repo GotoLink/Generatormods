@@ -32,9 +32,17 @@ public class BuildingWall extends Building
 	public final static int NO_GATEWAY=-1, NO_MIN_J=-1;
 	private final static int MIN_GATEWAY_ROAD_LENGTH=20;
 	
-	//failCode values
-	private final static int NO_FAIL=0, FAIL_OBSTRUCTED=1, FAIL_UNDERWATER=2, FAIL_TOO_STEEP_DOWN=3, FAIL_TOO_STEEP_UP=4,
-	                         FAIL_HIT_WALL=5,FAIL_CANNOT_EXPLORE=6,FAIL_HIT_TARGET=7, FAIL_MAX_LENGTH=8;
+	public enum FailType{
+		NOTHING,
+		OBSTRUCTED,
+		UNDERWATER,
+		TOOSTEEPDOWN,
+		TOOSTEEPUP,
+		HITWALL,
+		CANNOTEXPLORE,
+		HITTARGET,
+		MAXLENGTH
+	}
 
 	//**** WORKING VARIABLES **** 
 	public int i1,j1,k1;
@@ -49,7 +57,7 @@ public class BuildingWall extends Building
 	public int x_targ, z_targ, y_targ;
 	public int minJ=NO_MIN_J;
 	private boolean hitMaxDepth=false;
-	public int failCode=NO_FAIL;
+	public FailType failCode=FailType.NOTHING;
 	public TemplateTML endBTemplate=null; //either a template or DEFAULT_TOWER
 	public int endBLength=0; //length of end tower
 	private int halfStairValue=2; //metavalue of half step based on bRule
@@ -62,7 +70,7 @@ public class BuildingWall extends Building
 		super(ID_,wgt_,ws_.rules[ws_.template[0][0][ws_.WWidth/2]],dir_,axXHand_, false, new int[]{ws_.WWidth,ws_.WHeight,0}, new int[]{i1_,j1_,k1_});
 		constructorHelper(ws_,maxLength_,i1_,j1_,k1_);
 		pickTowers(random.nextFloat() < ws.CircularProb,endTowers);
-		Backtrack=wgt.BacktrackLength;
+		Backtrack=wgt.backtrackLength;
 		if(maxLength>0){
 			xArray[0]=0;
 			zArray[0]=0;
@@ -73,7 +81,7 @@ public class BuildingWall extends Building
 		super(ID_,wgt_,ws_.rules[ws_.template[0][0][ws_.WWidth/2]],dir_,axXHand_, false, new int[]{ws_.WWidth,ws_.WHeight,0}, sourcePt);
 		constructorHelper(ws_,maxLength_,sourcePt[0],sourcePt[1],sourcePt[2]);
 		pickTowers(random.nextFloat() < ws.CircularProb,endTowers);
-		Backtrack=wgt.BacktrackLength;
+		Backtrack=wgt.backtrackLength;
 		if(maxLength>0){
 			xArray[0]=0;
 			zArray[0]=0;
@@ -119,10 +127,8 @@ public class BuildingWall extends Building
 			}
 		}
 	}
-
 	
 	//****************************************  FUNCTION  - setTowers *************************************************************************************//
-
 	public BuildingWall setTowers(BuildingWall bw){
 		circular=bw.circular;
 		roofStyle=bw.roofStyle;
@@ -137,7 +143,6 @@ public class BuildingWall extends Building
 		minJ=minJ_;
 		return this;
 	}
-	
 
 	//****************************************  FUNCTION  - setCursor  *************************************************************************************//
 	//Sets building class cursor to wall origin
@@ -196,8 +201,11 @@ public class BuildingWall extends Building
 	//hitMaxDepth true if planning was terminated due to depth==MAX_BACKTRACK_DEPTH.
 	//failString contains termination rationale.
 	
-	public int plan(int startN, int depth, int lookahead, boolean stopAtWall) throws InterruptedException {
-		if(startN<1 || startN >=maxLength) {System.err.println("Error, bad start length at BuildingWall.plan:"+startN+"."); return 0; }
+	public int plan(int startN, int depth, int lookahead, boolean stopAtWall){
+		if(startN<1 || startN >=maxLength) {
+			System.err.println("Error, bad start length at BuildingWall.plan:"+startN+"."); 
+			return 0; 
+		}
 		int fails=0;
 		setOriginLocal(i1,j1,k1,xArray[startN-1],zArray[startN-1],startN);
 		bLength=startN;
@@ -209,12 +217,7 @@ public class BuildingWall extends Building
 
 		while(true){
 			int gradx=0,gradz=0;
-			failCode=NO_FAIL;
-			//query the exploration handler to see if we have reached limit, if so then terminate
-			if(!(queryExplorationHandlerForChunk(-1,0) && queryExplorationHandlerForChunk(bWidth,0))) {
-				failCode=FAIL_CANNOT_EXPLORE;
-				break; 
-			}
+			failCode=FailType.NOTHING;
 			for(int x1=-1; x1<=bWidth;x1++){
 				for(int z1=-SEARCHDOWN; z1<=searchUp; z1++){
 					int blockId=getBlockIdLocal(x1, z1, 0);
@@ -227,19 +230,19 @@ public class BuildingWall extends Building
 
 					//hit another wall, want to ignore sandstone that appears naturally in deserts
 					if((stopAtWall || z1 < -2) && isArtificialWallBlock(x1,z1,0))
-						failCode=FAIL_HIT_WALL;
+						failCode=FailType.HITWALL;
 				}
 				if(IS_WATER_BLOCK[getBlockIdLocal(x1,ws.waterHeight+1,0)])
-					failCode=FAIL_UNDERWATER;
-				if(!isWallable(x1,obstructionHeight,0) && failCode==NO_FAIL)
-					failCode=FAIL_OBSTRUCTED;
+					failCode=FailType.UNDERWATER;
+				if(!isWallable(x1,obstructionHeight,0) && failCode==FailType.NOTHING)
+					failCode=FailType.OBSTRUCTED;
 				
 			}
 
 			gradz=(gradz+(bWidth+2)/2)/(bWidth+2)-SEARCHDOWN;
-			if(failCode==FAIL_HIT_WALL) gradz=0;
-			if(failCode==NO_FAIL && gradz < -1) failCode=FAIL_TOO_STEEP_DOWN;
-			if(failCode==NO_FAIL && gradz > 4) failCode=FAIL_TOO_STEEP_UP;
+			if(failCode==FailType.HITWALL) gradz=0;
+			if(failCode==FailType.NOTHING && gradz < -1) failCode=FailType.TOOSTEEPDOWN;
+			if(failCode==FailType.NOTHING && gradz > 4) failCode=FailType.TOOSTEEPUP;
 			
 			gradz=signum(gradz, 0);
 			if(minJ!=NO_MIN_J && zArray[bLength-1]+gradz+j1 < minJ) gradz=0; //don't go below minJ
@@ -257,18 +260,18 @@ public class BuildingWall extends Building
 
 
 			//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   TERMINATION / BACKTRACKING   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-			if(failCode==NO_FAIL) fails=0;
+			if(failCode==FailType.NOTHING) fails=0;
 			else fails++;
 
 			if(target && bLength > y_targ){
-				failCode=FAIL_HIT_TARGET;
+				failCode=FailType.HITTARGET;
 				break;
 			}
 			else if(bLength>=maxLength){
-				failCode=FAIL_MAX_LENGTH;
+				failCode=FailType.MAXLENGTH;
 				break;
 			}
-			else if(failCode==FAIL_HIT_WALL || failCode==FAIL_UNDERWATER){
+			else if(failCode==FailType.HITWALL || failCode==FailType.UNDERWATER){
 				bLength-=fails;
 				break;
 			}
@@ -491,9 +494,13 @@ public class BuildingWall extends Building
 	//****************************************  FUNCTION - clearTrees *************************************************************************************//
 	private void clearTrees(){
 		for(int x1=0; x1<bWidth;x1++)
-			for(int z1=bHeight+OVERHEAD_CLEARENCE; z1<bHeight+OVERHEAD_TREE_CLEARENCE; z1++)
-				if(Block.blocksList[getBlockIdLocal(x1, z1, 0)] instanceof BlockLog || Block.blocksList[getBlockIdLocal(x1, z1, 0)] instanceof IShearable || getBlockIdLocal(x1, z1, 0)==SNOW_ID )
-					setBlockLocal(x1, z1, 0, 0); //kill trees aggressively
+			for(int z1=bHeight+OVERHEAD_CLEARENCE; z1<bHeight+OVERHEAD_TREE_CLEARENCE; z1++){
+				Block block = Block.blocksList[getBlockIdLocal(x1, z1, 0)];
+				if(block!=null){
+					if(block instanceof BlockLog || block instanceof IShearable || block.blockID==Block.snow.blockID)
+						setBlockLocal(x1, z1, 0, 0); //kill trees aggressively
+				}
+			}
 	}
 
 	//****************************************  FUNCTION - mergeWallLayer *************************************************************************************//
@@ -527,7 +534,7 @@ public class BuildingWall extends Building
 
 
 	//****************************************  FUNCTION - makeBuildings *************************************************************************************//
-	public void makeBuildings(boolean buildOnL,boolean buildOnR, boolean makeGatehouseTowers, boolean overlapTowers, boolean isAvenue) throws InterruptedException{
+	public void makeBuildings(boolean buildOnL,boolean buildOnR, boolean makeGatehouseTowers, boolean overlapTowers, boolean isAvenue){
 		if(ws==null){
 			System.err.println("Tried to build towers but wall style was null!");
 			return;
@@ -598,7 +605,7 @@ public class BuildingWall extends Building
 	}
 	
 	//****************************************  FUNCTION - makeBuildings *************************************************************************************//
-	private boolean makeBuilding(TemplateTML template,int tw, int ybuffer, boolean overlapTowers, int dir, int[] pt) throws InterruptedException{
+	private boolean makeBuilding(TemplateTML template,int tw, int ybuffer, boolean overlapTowers, int dir, int[] pt){
 		if(template==ws.makeDefaultTower){
 			int maxBL = bDir==dir ? endBLength 
 							      : circular ? tw: ws.pickTWidth(circular,world.rand);
@@ -643,11 +650,6 @@ public class BuildingWall extends Building
 		return false;
 	}
 
-
-
-
-
-
 	//****************************  FUNCTION  - buildGateway  *************************************************************************************//
 	//Builds a gateway and road on one side of gateway. Call after build() and before buildTowers().
 	//
@@ -664,7 +666,7 @@ public class BuildingWall extends Building
 	//y-position where gateway was build or -1 if no gateways was built
 	//
 	public BuildingWall[] buildGateway(int[] scanWindow, int scanStart, int gateHeight,int gateWidth,TemplateWall rs,int flankTHand,
-			int XMaxLen,int[] XTarget,int XHand, int antiXMaxLen, int[] antiXTarget, int antiXHand) throws InterruptedException {
+			int XMaxLen,int[] XTarget,int XHand, int antiXMaxLen, int[] antiXTarget, int antiXHand) {
 		BuildingWall[] avenues=null;
 		if(rs!=null) gateWidth=rs.WWidth;
 		if(scanStart < scanWindow[0]) scanStart=scanWindow[0];
@@ -792,7 +794,6 @@ public class BuildingWall extends Building
 		return null;
 	}
 	
-
 	//=====================================================  HELPER FUNCTIONS ==========================================================================================================//   
 
 	//****************************************  FUNCTION  - curvature  *************************************************************************************//
@@ -813,16 +814,16 @@ public class BuildingWall extends Building
 	//****************************************  FUNCTION  - failString  *************************************************************************************//
 	public String failString(){
 		switch(failCode) {
-		case FAIL_OBSTRUCTED: return  "Obstructed.";
-		case FAIL_UNDERWATER: return "Underwater.";
-		case FAIL_TOO_STEEP_DOWN: return "Too Steep Down.";
-		case FAIL_TOO_STEEP_UP: return "Too Steep Up.";
-		case FAIL_HIT_WALL: return "Hit Wall";
-		case FAIL_CANNOT_EXPLORE: return "Could not explore";
-		case FAIL_HIT_TARGET: return "Hit Target";
-		case FAIL_MAX_LENGTH: return "Max length ("+maxLength+") reached.";
+		case OBSTRUCTED: return  "Obstructed.";
+		case UNDERWATER: return "Underwater.";
+		case TOOSTEEPDOWN: return "Too Steep Down.";
+		case TOOSTEEPUP: return "Too Steep Up.";
+		case HITWALL: return "Hit Wall";
+		case CANNOTEXPLORE: return "Could not explore";
+		case HITTARGET: return "Hit Target";
+		case MAXLENGTH: return "Max length ("+maxLength+") reached.";
+		case NOTHING: default: return "No Fail.";
 		}
-		return "No Fail.";
 	}
 
 
@@ -836,24 +837,23 @@ public class BuildingWall extends Building
 	public void printWall(int start){
 		if(DEBUG){
 			System.out.println("Printing "+IDString()+" wall from n="+start+" to n="+(bLength-1));
-		
-		for(int m=start; m<bLength; m++) {
-			if(m %10==0) System.out.print("|");
-			if(m %100==0) System.out.print("||");
-			 System.out.print(xArray[m]+",");
-			if(m>0 && Math.abs(xArray[m]-xArray[m-1])>1 )
-				 System.out.print("(ERROR: X-slope>1 at n="+m+")");
-
-		}
-		 System.out.print("\n");
-		for(int m=start; m<bLength; m++) {
-			if(m %10==0) System.out.print("|");
-			if(m %100==0) System.out.print("||");
-			 System.out.print(zArray[m]+",");
-			if(m>0 && Math.abs(zArray[m]-zArray[m-1])>1 )
-				 System.out.print("(ERROR: Z-slope>1 at n="+m+")");
-		}
-		System.out.println("\n");
+			for(int m=start; m<bLength; m++) {
+				if(m %10==0) System.out.print("|");
+				if(m %100==0) System.out.print("||");
+				 System.out.print(xArray[m]+",");
+				if(m>0 && Math.abs(xArray[m]-xArray[m-1])>1 )
+					 System.out.print("(ERROR: X-slope>1 at n="+m+")");
+	
+			}
+			System.out.print("\n");
+			for(int m=start; m<bLength; m++) {
+				if(m %10==0) System.out.print("|");
+				if(m %100==0) System.out.print("||");
+				 System.out.print(zArray[m]+",");
+				if(m>0 && Math.abs(zArray[m]-zArray[m-1])>1 )
+					 System.out.print("(ERROR: Z-slope>1 at n="+m+")");
+			}
+			System.out.println("\n");
 		}
 	}
 
@@ -909,4 +909,3 @@ public class BuildingWall extends Building
 	}
 
 }
-

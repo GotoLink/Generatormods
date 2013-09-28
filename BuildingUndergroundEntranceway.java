@@ -32,11 +32,8 @@ public class BuildingUndergroundEntranceway extends Building{
 	}
 	
 	//****************************************  FUNCTION - build *************************************************************************************//
-	public boolean build() throws InterruptedException{
+	public boolean build(){
 		for(; bLength<WORLD_MAX_Y-j0; bLength++){
-			if(!(queryExplorationHandlerForChunk(-1,0) && queryExplorationHandlerForChunk(PASSAGE_WIDTH,0))) 
-				return false;
-			
 			if(IS_WATER_BLOCK[getBlockIdLocal(0,bLength+PASSAGE_HEIGHT,bLength)]) 
 				return false;
 			

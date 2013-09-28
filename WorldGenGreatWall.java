@@ -25,30 +25,22 @@ import net.minecraft.world.World;
 public class WorldGenGreatWall extends WorldGeneratorThread
 {
 	//private final static boolean DEBUG=false;
-
-	//**** WORKING VARIABLES **** 
-	private PopulatorGreatWall gw;
 	
 	//****************************  CONSTRUCTOR - WorldGenGreatWall *************************************************************************************//
-	public WorldGenGreatWall (PopulatorGreatWall gw_, World world_, Random random_, int chunkI_, int chunkK_, int TriesPerChunk_, double ChunkTryProb_) { 
-		super(gw_, world_, random_,chunkI_, chunkK_, TriesPerChunk_, ChunkTryProb_);//got the "master" thingy out
-		gw=gw_;
-		BacktrackLength=gw.BacktrackLength;
-		chestTries=gw.chestTries;
-		chestItems=gw.chestItems;
-		setName("WorldGenGreatWallThread");
+	public WorldGenGreatWall (PopulatorGreatWall gw, World world, Random random, int chunkI, int chunkK, int triesPerChunk, double chunkTryProb) { 
+		super(gw,world, random,chunkI, chunkK, triesPerChunk, chunkTryProb);
 	}
 
 	//****************************  FUNCTION - generate  *************************************************************************************//
-	public boolean generate(int i0, int j0, int k0) throws InterruptedException{
-		TemplateWall ws=TemplateWall.pickBiomeWeightedWallStyle(gw.wallStyles,world,i0,k0,world.rand,false);
+	public boolean generate(int i0, int j0, int k0){
+		TemplateWall ws=TemplateWall.pickBiomeWeightedWallStyle(((PopulatorGreatWall)master).wallStyles,world,i0,k0,world.rand,false);
 		if(ws==null) return false;
 				
 		BuildingDoubleWall dw=new BuildingDoubleWall(10*(random.nextInt(9000)+1000),this,ws,random.nextInt(4),1,new int[] {i0,j0,k0});
 		if(!dw.plan()) return false;
 
 		//calculate the integrated curvature
-		if(gw.CurveBias>0.01){
+		if(((PopulatorGreatWall)master).CurveBias>0.01){
 			//Perform a probabilistic test
 			//Test formula considers both length and curvature, bias is towards longer and curvier walls.
 			double curviness=0;
@@ -67,10 +59,10 @@ public class WorldGenGreatWall extends WorldGeneratorThread
 				plotpwall(0.5)
 			 */
 
-			double p=1.0/(1.0+Math.exp(-30.0*(curviness-(gw.CurveBias/5.0))));
+			double p=1.0/(1.0+Math.exp(-30.0*(curviness-(((PopulatorGreatWall)master).CurveBias/5.0))));
 						
 			if(random.nextFloat() > p && curviness!=0){
-				gw.logOrPrint("Rejected great wall, curviness="+curviness+", length="+(dw.wall1.bLength+dw.wall1.bLength - 1)+", P="+p);
+				master.logOrPrint("Rejected great wall, curviness="+curviness+", length="+(dw.wall1.bLength+dw.wall1.bLength - 1)+", P="+p,"INFO");
 				return false;
 			}
 		}
@@ -81,13 +73,3 @@ public class WorldGenGreatWall extends WorldGeneratorThread
 	}
 
 }
-
-
-
-
-
-
-
-
-
-

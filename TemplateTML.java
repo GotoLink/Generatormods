@@ -25,6 +25,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 public class TemplateTML
@@ -205,11 +206,11 @@ public class TemplateTML
 	}
 
 	//****************************  FUNCTION - buildWeightsAndIndex *************************************************************************************//
-	public static int[][] buildWeightsAndIndex(ArrayList<TemplateTML> templates) throws Exception {
-		int[][] weightsAndIndex=new int[2][templates.size()];
+	public static int[][] buildWeightsAndIndex(List<TemplateTML> buildings) throws Exception {
+		int[][] weightsAndIndex=new int[2][buildings.size()];
 		int sum=0;
 		TemplateTML temp;
-		Iterator<TemplateTML> itr = templates.iterator();
+		Iterator<TemplateTML> itr = buildings.iterator();
 		for(int m=0;itr.hasNext();m++){ 
 			temp=itr.next();
 			weightsAndIndex[0][m]=temp.weight;
@@ -223,15 +224,14 @@ public class TemplateTML
 
 	//****************************  FUNCTION - printTemplate*************************************************************************************//
 	public void printTemplate(){
-		explorationHandler.logOrPrint("TEMPLATE - " + name);
+		explorationHandler.logOrPrint("TEMPLATE - " + name,"CONFIG");
 		for(int z=0;z<height;z++){
 			for(int y=0;y<length;y++){
 				for(int x=0;x<width;x++){
-					explorationHandler.logOrPrint(template[z][x][length-y-1]+",");
+					explorationHandler.logOrPrint(template[z][x][length-y-1]+",","CONFIG");
 				}
 			}
-			explorationHandler.logOrPrint("endlayer\n");
-			}
+			explorationHandler.logOrPrint("endlayer\n","CONFIG");
+		}
 	}
-
 }

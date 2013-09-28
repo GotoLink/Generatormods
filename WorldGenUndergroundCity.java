@@ -19,52 +19,46 @@ package assets.generator;
  */
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
 public class WorldGenUndergroundCity extends WorldGeneratorThread{
-	private PopulatorWalledCity wc;
 	private final static float P_CHILDREN=0.80F;
 	private final static int MAX_CHILDREN=3;
 	public final static int MIN_DIAM=11, MAX_DIAM=30;
 	private final static int DIAM_INCREMENT=3,Z_SHIFT=12;
 	private final static float HORIZ_SHIFT_SIGMA=0.2F, THETA_SHIFT_SIGMA=5.0F;
 	
-	private ArrayList<int[]> hollows=new ArrayList<int[]>();
-	private ArrayList<BuildingDoubleWall> streets=new ArrayList<BuildingDoubleWall>();
+	private List<int[]> hollows=new ArrayList<int[]>();
+	private List<BuildingDoubleWall> streets=new ArrayList<BuildingDoubleWall>();
 	private double cavernMass=0.0, cavernMass_i=0.0, cavernMass_k=0.0;
 	TemplateWall pws;
 	
 	//****************************************  CONSTRUCTOR - WorldGenUndergroundCity   *************************************************************************************//
-	public WorldGenUndergroundCity (PopulatorWalledCity wc_,World world_, Random random_, int chunkI_, int chunkK_, int TriesPerChunk_, double ChunkTryProb_) { 
-		super(wc_, world_, random_,chunkI_, chunkK_, TriesPerChunk_, ChunkTryProb_);
-		wc=wc_;
-		BacktrackLength=wc.BacktrackLength;
-		chestTries=wc.chestTries;
-		chestItems=wc.chestItems;
-		setName("WorldGenCavernThread");
+	public WorldGenUndergroundCity (PopulatorWalledCity wc,World world, Random random, int chunkI, int chunkK, int triesPerChunk, double chunkTryProb) { 
+		super(wc,world, random, chunkI, chunkK, triesPerChunk, chunkTryProb);
 	}
 	
 	//****************************  FUNCTION - generate*************************************************************************************//
-	public boolean generate(int i0,int j0,int k0) throws InterruptedException{
-		pws=TemplateWall.pickBiomeWeightedWallStyle(wc.undergroundCityStyles,world,i0,k0,world.rand,true);
+	public boolean generate(int i0,int j0,int k0){
+		pws=TemplateWall.pickBiomeWeightedWallStyle(((PopulatorWalledCity)master).undergroundCityStyles,world,i0,k0,world.rand,true);
 		if(pws==null) 
 			return false;
-		willBuild=true;
-		if(!wc.cityIsSeparated(world,i0,k0,PopulatorWalledCity.CITY_TYPE_UNDERGROUND)) 
+		if(!((PopulatorWalledCity)master).cityIsSeparated(world,i0,k0,PopulatorWalledCity.CITY_TYPE_UNDERGROUND)) 
 			return false;
 		
 		//make hollows recursively
 		hollow(i0,j0,k0,MAX_DIAM);
 		if(hollows.size()==0) 
 			return false;
-		wc.cityLocations.get(world).add(new int[]{i0,k0,PopulatorWalledCity.CITY_TYPE_UNDERGROUND});
-		wc.saveCityLocations(world);
-		wc.logOrPrint("\n***** Building "+pws.name+" city with "+hollows.size()+" hollows at ("+i0+","+j0+","+k0+"). ******\n");
+		((PopulatorWalledCity)master).cityLocations.get(world).add(new int[]{i0,k0,PopulatorWalledCity.CITY_TYPE_UNDERGROUND});
+		((PopulatorWalledCity)master).saveCityLocations(world);
+		master.logOrPrint("\n***** Building "+pws.name+" city with "+hollows.size()+" hollows at ("+i0+","+j0+","+k0+"). ******\n","FINER");
 		
-		ArrayList<BuildingUndergroundEntranceway> entranceways= buildEntranceways();
+		List<BuildingUndergroundEntranceway> entranceways= buildEntranceways();
 		
 		//build streets, towers
 		fillHollows();
@@ -74,8 +68,6 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 				entranceway.street.makeBuildings(true,true,false,false,false);
 		}}
 		for(BuildingDoubleWall street : streets) {
-			if(!master.isFlushingGenThreads) 
-				suspendGen();
 			street.buildTowers(true,true,false,pws.StreetDensity > TemplateWall.MAX_STREET_DENSITY/2,false);
 		}
 
@@ -84,16 +76,12 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 	
 	//****************************  FUNCTION - hollow *************************************************************************************//
 	//hollows out a nearly spherical void as part of the cavern structure
-	private boolean hollow(int i,int j,int k,int diam) throws InterruptedException{
+	private boolean hollow(int i,int j,int k,int diam){
 		if(diam < MIN_DIAM) return false;
 		if(j-diam/2<10 || j+diam/2 > Building.findSurfaceJ(world, i+diam/2, k+diam/2, Building.WORLD_MAX_Y, false,Building.IGNORE_WATER) - 3) return false;
-		if(!exploreArea(new int[]{i,0,k}, new int[]{i+diam,0,k+diam}, false)){
-			wc.logOrPrint("Could not explore new chunks while generating underground city at ("+i+","+k+"). Terminating this hollow.");
-			return false;
-		}
 		hollows.add(new int[]{i,j,k,diam,0});
 		
-		if(diam==MAX_DIAM) wc.chatBuildingCity("** Building underground city... **",null);
+		if(diam==MAX_DIAM) ((PopulatorWalledCity)master).chatBuildingCity("** Building underground city... **",null);
 		
 		for(int z1=0; z1<(diam+1)/2; z1++){
 			//top half
@@ -163,13 +151,13 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 	}
 	
 	//****************************  FUNCTION - buildEntranceways *************************************************************************************//
-	private ArrayList<BuildingUndergroundEntranceway> buildEntranceways() throws InterruptedException{
+	private List<BuildingUndergroundEntranceway> buildEntranceways(){
 		if(!pws.MakeUndergroundEntranceways) 
 			return new ArrayList<BuildingUndergroundEntranceway>();
 		
 		int[] center=new int[]{(int)(cavernMass_i/cavernMass),Building.WORLD_MAX_Y+1,(int)(cavernMass_k/cavernMass)}; 
 		int[] pole=new int[]{center[0]+100,center[1],center[2]};
-		ArrayList<BuildingUndergroundEntranceway> entranceways = new ArrayList<BuildingUndergroundEntranceway>();
+		List<BuildingUndergroundEntranceway> entranceways = new ArrayList<BuildingUndergroundEntranceway>();
 
 		for(int attempts=0; attempts<Math.min(20, hollows.size()); attempts++){
 			int[] hollow=getFarthestHollowFromPt(pole);
@@ -190,7 +178,7 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 			BuildingUndergroundEntranceway entranceway=new BuildingUndergroundEntranceway(attempts,this,pws,axDir,pt);
 			if(separated && entranceway.build()){
 				entranceways.add(entranceway);
-				wc.chatBuildingCity("Built an underground entranceway at ("+ hollow[0]+","+ hollow[1]+","+ hollow[2]+").",null);
+				((PopulatorWalledCity)master).chatBuildingCity("Built an underground entranceway at ("+ hollow[0]+","+ hollow[1]+","+ hollow[2]+").",null);
 			}
 			pole[0]=center[0]+(center[2]-hollow[2])/2; //new pole is midpoint of old center and hollow, rotated by 90 degrees.
 			pole[2]=center[2]+(hollow[0]-center[0])/2;
@@ -202,12 +190,10 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 	
 	
 	//****************************  FUNCTION - fillHollows *************************************************************************************//
-	private void fillHollows() throws InterruptedException{
+	private void fillHollows(){
 		//fills hollows with roads/buildings
 		int successes=0;
 		for(int tries=0; tries<pws.StreetDensity * 4; tries++){
-			if(!master.isFlushingGenThreads) 
-				suspendGen();
 			int[] hollow=hollows.get(random.nextInt(hollows.size()));
 			
 			int[] pt=new int[]{random.nextInt(hollow[3]),0,random.nextInt(hollow[3])};

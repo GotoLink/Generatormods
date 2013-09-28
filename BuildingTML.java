@@ -28,14 +28,9 @@ public class BuildingTML extends Building
 	}
 	
 	//****************************************  FUNCTION - queryCanBuild *************************************************************************************//
-	   public boolean queryCanBuild(int ybuffer) throws InterruptedException{
+	   public boolean queryCanBuild(int ybuffer){
 		   if(j0<=0) 
 			   return false;
-		   
-	    	if(!( queryExplorationHandlerForChunk(0,bLength-1) && queryExplorationHandlerForChunk(bWidth-1,0) && queryExplorationHandlerForChunk(bWidth-1,bLength-1) )){
-				return false;
-			}
-	    	
 	    	//Don't build if it would require leveling greater than tmlt.leveling
 	    	for(int y=0 ;y<bLength;y++) 
 	    		for(int x=0 ;x<bWidth;x++)
@@ -68,7 +63,7 @@ public class BuildingTML extends Building
 	    }
 
 	//****************************************  FUNCTION - build *************************************************************************************//
-	public void build() throws InterruptedException {
+	public void build() {
 				
 		tmlt.setFixedRules(world.rand);
 		
@@ -77,8 +72,6 @@ public class BuildingTML extends Building
 		for(int y=0;y<bLength;y++) 
 			for(int x=0;x<bWidth;x++)
 			{
-				if(!queryExplorationHandlerForChunk(x,y))
-					break;
 				if(base!=null) 
 					buildDown(x,-1,y,tmlt.rules[base[y][x]],tmlt.leveling,0,0);
 				else 
@@ -123,6 +116,4 @@ public class BuildingTML extends Building
     	return false;
     }
     */
-
-
 }

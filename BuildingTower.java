@@ -92,15 +92,10 @@ public class BuildingTower extends Building
 	}
 
 	//****************************************  FUNCTION - queryCanBuild *************************************************************************************//
-	public boolean queryCanBuild(int ybuffer, boolean overlapTowers) throws InterruptedException{
+	public boolean queryCanBuild(int ybuffer, boolean overlapTowers){
 		int rooftopJ=j0 + bHeight + (roofStyle==ROOF_CONE ? minHorizDim : minHorizDim/2)+2; 
 		if(rooftopJ > WORLD_MAX_Y) bHeight-= rooftopJ - WORLD_MAX_Y;
 		if(bHeight < baseHeight + 4){
-			return false;
-		}
-		if(!( queryExplorationHandlerForChunk(0,bLength-1) 
-		   && queryExplorationHandlerForChunk(bWidth-1,0) 
-		   && queryExplorationHandlerForChunk(bWidth-1,bLength-1) )) {
 			return false;
 		}
 		
@@ -147,7 +142,7 @@ public class BuildingTower extends Building
 	//RETURNS:
 	//true if tower was built (dependency: buildOver).
 	//
-	public void build(int doorOffset1, int doorOffset2,boolean hanging) throws InterruptedException {
+	public void build(int doorOffset1, int doorOffset2,boolean hanging) {
 		
 		//check against spawner chance to see if haunted. 
 		//If hasUndeadSpawner =>	Don't make torches anywhere in tower.
@@ -286,23 +281,21 @@ public class BuildingTower extends Building
 			for(int y1=1;y1<buffer[0][0].length-1;y1++){
 				if(!circular || circle_shape[x1-1][y1-1]>=0){
 					for(int z1=0; z1<Math.min(bHeight,zLim); z1++){
-						//if(queryExplorationHandlerForChunk(x1-1,y1-1))
 								setBlockLocal(x1-1,z1-1,y1-1,buffer[x1][z1][y1]);		
 		}}}}
 		//build roof
 		for(int x1=0;x1<buffer.length;x1++){
 			for(int y1=0;y1<buffer[0][0].length;y1++){
 				for(int z1=bHeight; z1<zLim; z1++){
-					//if(queryExplorationHandlerForChunk(x1-1,y1-1))
 						setBlockLocal(x1-1,z1-1,y1-1,buffer[x1][z1][y1]);		
 		}}}
 
 
 		//*** prettify any stairs outside entrance/exit ***
 		for(int x1=1; x1<bWidth-1;x1++){
-			if(isStairBlock(x1,baseHeight, -1)/* && queryExplorationHandlerForChunk(x1,-2)*/ && getBlockIdLocal(x1, baseHeight, -2)==bRule.primaryBlock[0])  
+			if(isStairBlock(x1,baseHeight, -1) && getBlockIdLocal(x1, baseHeight, -2)==bRule.primaryBlock[0])  
 				setBlockLocal(x1, baseHeight, -1,bRule.primaryBlock[0]);
-			if(isStairBlock(x1, baseHeight, bLength) /*&& queryExplorationHandlerForChunk(x1,bLength+1)*/ && getBlockIdLocal(x1, baseHeight, bLength+1)==bRule.primaryBlock[0])   
+			if(isStairBlock(x1, baseHeight, bLength) && getBlockIdLocal(x1, baseHeight, bLength+1)==bRule.primaryBlock[0])   
 				setBlockLocal(x1, baseHeight, bLength,bRule.primaryBlock[0]);
 		}
 		
@@ -675,7 +668,6 @@ public class BuildingTower extends Building
 
 	}
 	
-	
 	//****************************************  FUNCTION  - buildXYRotated *************************************************************************************//
 	public void buildXYRotated(int p, int q, int r, int[] block, boolean rotated){
 		if(rotated) buffer[r][q][p]=block;
@@ -736,9 +728,5 @@ public class BuildingTower extends Building
 		}
 		return zLim;
 	}
-	
-	
  
 }
-
-

@@ -38,7 +38,6 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 	//private final static int[] DIR_GROUP_TO_DIR_CODE=new int[]{Building.DIR_NORTH,Building.DIR_EAST,Building.DIR_SOUTH,Building.DIR_WEST};
 
 	//**** WORKING VARIABLES **** 
-	private PopulatorWalledCity wc;
 	private TemplateWall ows, sws;
 	private BuildingWall[] walls;
 	private int axXHand;
@@ -49,27 +48,21 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 	public int[][] layout;
 
 	//****************************************  CONSTRUCTOR - WorldGenWalledCity  *************************************************************************************//
-	public WorldGenWalledCity (PopulatorWalledCity wc_,World world_, Random random_,int chunkI_, int chunkK_, int TriesPerChunk_, double ChunkTryProb_) { 
-		super(wc_, world_, random_,chunkI_, chunkK_, TriesPerChunk_, ChunkTryProb_);
-		wc=wc_;
-		BacktrackLength=wc.BacktrackLength;
-		chestTries=wc.chestTries;
-		chestItems=wc.chestItems;
-		cityType=world_.provider.dimensionId;
-		setName("WorldGenWalledCityThread");
-		
+	public WorldGenWalledCity (PopulatorWalledCity wc,World world, Random random,int chunkI, int chunkK, int triesPerChunk, double chunkTryProb) { 
+		super(wc,world, random,chunkI, chunkK, triesPerChunk, chunkTryProb);
+		cityType=world.provider.dimensionId;
 	}
 	
 	//****************************************  FUNCTION - generate  *************************************************************************************//
 	
-	public boolean generate(int i0,int j0,int k0) throws InterruptedException{
-		ows=TemplateWall.pickBiomeWeightedWallStyle(wc.cityStyles,world,i0,k0,world.rand,false);
+	public boolean generate(int i0,int j0,int k0){
+		ows=TemplateWall.pickBiomeWeightedWallStyle(((PopulatorWalledCity)master).cityStyles,world,i0,k0,world.rand,false);
 		if(ows==null) 
 			return false;
 		sws=TemplateWall.pickBiomeWeightedWallStyle(ows.streets,world,i0,k0,world.rand,false);
 		if(sws==null) 
 			return false;
-		if(!wc.cityIsSeparated(world,i0,k0,cityType)) 
+		if(!((PopulatorWalledCity)master).cityIsSeparated(world,i0,k0,cityType)) 
 			return false;
 		
 		int ID=(random.nextInt(9000)+1000)*100;
@@ -93,7 +86,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		//plan walls[1]
 		walls[0].setCursor(walls[0].bLength-1);
 		walls[1] = new BuildingWall(ID+1,this,ows,dir[1],axXHand, ows.MinL+random.nextInt(ows.MaxL-ows.MinL),false,walls[0].getIJKPt(-1-ows.TowerXOffset,0,1+ows.TowerXOffset)).setTowers(walls[0]).setMinJ(minJ);
-		if(!wc.cityIsSeparated(world,walls[1].i1,walls[1].k1,cityType)) 
+		if(!((PopulatorWalledCity)master).cityIsSeparated(world,walls[1].i1,walls[1].k1,cityType)) 
 			return false;
 		walls[1].plan(1,0,BuildingWall.DEFAULT_LOOKAHEAD,false);
 		if(walls[1].bLength<ows.MinL) 
@@ -105,7 +98,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		if(distToTarget<MIN_SIDE_LENGTH) 
 			return false;
 		walls[2] = new BuildingWall(ID+2,this,ows,dir[2],axXHand,distToTarget+2,false,walls[1].getIJKPt(-1-ows.TowerXOffset,0,1+ows.TowerXOffset)).setTowers(walls[0]).setMinJ(minJ);
-		if(!wc.cityIsSeparated(world,walls[2].i1,walls[2].k1,cityType)) 
+		if(!((PopulatorWalledCity)master).cityIsSeparated(world,walls[2].i1,walls[2].k1,cityType)) 
 			return false;
 		walls[2].setCursor(0);
 		walls[2].setTarget(walls[2].getIJKPt(0,0,distToTarget));
@@ -121,7 +114,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		if(distToTarget<MIN_SIDE_LENGTH) 
 			return false;
 		walls[3] = new BuildingWall(ID+3,this,ows,dir[3],axXHand,distToTarget+2,false,walls[2].getIJKPt(-1-ows.TowerXOffset,0,1+ows.TowerXOffset)).setTowers(walls[0]).setMinJ(minJ);
-		if(!wc.cityIsSeparated(world,walls[3].i1,walls[3].k1,cityType)) 
+		if(!((PopulatorWalledCity)master).cityIsSeparated(world,walls[3].i1,walls[3].k1,cityType)) 
 			return false;
 		walls[0].setCursor(0);
 		walls[3].setCursor(0);
@@ -159,7 +152,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		jmean/=(Lmean*4);
 		for(BuildingWall w : walls){
 			if(Math.abs(w.j1 - jmean) > w.bLength/JMEAN_DEVIATION_SLOPE) {
-				wc.logOrPrint("Rejected city "+ID+", height at corner differed from mean by "+(Math.abs(w.j1 - jmean))+".");
+				master.logOrPrint("Rejected city "+ID+", height at corner differed from mean by "+(Math.abs(w.j1 - jmean))+".","INFO");
 				return false;
 			}
 		}
@@ -174,21 +167,21 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 					int j2=Building.findSurfaceJ(world,i2,k2,Building.WORLD_MAX_Y,true,3);
 					cityArea++;
 					if(j2==Building.HIT_WATER) waterArea++;
-					if(wc.RejectOnPreexistingArtifacts && ows.LevelInterior && Building.IS_ARTIFICAL_BLOCK[world.getBlockId(i2,j2,k2)]){
-						wc.logOrPrint("Rejected "+ows.name+" city "+ID+", found previous construction in city zone!");
+					if(((PopulatorWalledCity)master).RejectOnPreexistingArtifacts && ows.LevelInterior && Building.IS_ARTIFICAL_BLOCK[world.getBlockId(i2,j2,k2)]){
+						master.logOrPrint("Rejected "+ows.name+" city "+ID+", found previous construction in city zone!","WARNING");
 						return false;
 					}
 				}
 		}}
 		if(!ows.LevelInterior && (float)waterArea/(float)cityArea > MAX_WATER_PERCENTAGE){
-			wc.logOrPrint("Rejected "+ows.name+" city "+ID+", too much water! City area was " +(100.0f*(float)waterArea/(float)cityArea)+"% water!");
+			master.logOrPrint("Rejected "+ows.name+" city "+ID+", too much water! City area was " +(100.0f*(float)waterArea/(float)cityArea)+"% water!","INFO");
 			return false;
 		}
 			
 		//query the exploration handler again to see if we've built nearby cities in the meanwhile
 		for(BuildingWall w : walls){
-			if(!wc.cityIsSeparated(world,w.i1,w.k1,cityType)){
-				wc.logOrPrint("Rejected city "+ID+" nearby city was built during planning!");
+			if(!((PopulatorWalledCity)master).cityIsSeparated(world,w.i1,w.k1,cityType)){
+				master.logOrPrint("Rejected city "+ID+" nearby city was built during planning!","WARNING");
 				return false;
 			}
 		}
@@ -196,16 +189,12 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		walls[0].setCursor(0);
 		int[] cityCenter=new int[]{(walls[0].i1+walls[1].i1+walls[2].i1+walls[3].i1)/4,0,(walls[0].k1+walls[1].k1+walls[2].k1+walls[3].k1)/4};
 		cityCenter[1]=Building.findSurfaceJ(world, cityCenter[0], cityCenter[1], Building.WORLD_MAX_Y, false, 3);
-		wc.cityLocations.get(world).add(new int[]{cityCenter[0],cityCenter[2],cityType});
-		wc.saveCityLocations(world);
+		((PopulatorWalledCity)master).cityLocations.get(world).add(new int[]{cityCenter[0],cityCenter[2],cityType});
+		((PopulatorWalledCity)master).saveCityLocations(world);
 
 		//=================================== Build it! =========================================
-		exploreArea(corner1, corner2, true);
-		willBuild=true;
-		if(!master.isFlushingGenThreads) 
-			suspendGen();
 		
-		wc.chatBuildingCity("** Building city... **","\n***** Building "+ows.name+" city"+", ID="+ID+" in "+world.getBiomeGenForCoords(walls[0].i1,walls[0].k1).biomeName+" biome between "+walls[0].localCoordString(0,0,0)+" and "+walls[2].localCoordString(0,0,0) + " ******\n");
+		((PopulatorWalledCity)master).chatBuildingCity("** Building city... **","\n***** Building "+ows.name+" city"+", ID="+ID+" in "+world.getBiomeGenForCoordsBody(walls[0].i1,walls[0].k1).biomeName+" biome between "+walls[0].localCoordString(0,0,0)+" and "+walls[2].localCoordString(0,0,0) + " ******\n");
 		if(ows.LevelInterior) 
 			levelCity();
 		
@@ -230,7 +219,8 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 			BuildingWall[] avenues=w.buildGateway(new int[]{w.bLength/4,3*w.bLength/4}, startScan, GATE_HEIGHT, avenueWS.WWidth, avenueWS, 
 					random.nextInt(6)<gateFlankingTowers ? 0:axXHand, 500, null, -axXHand, 150, cityCenter, radialAvenueHand);
 			w.makeBuildings(axXHand==-1,axXHand==1,true,false, false);
-			if(w.gatewayStart!=BuildingWall.NO_GATEWAY) gateFlankingTowers++;
+			if(w.gatewayStart!=BuildingWall.NO_GATEWAY) 
+				gateFlankingTowers++;
 
 			
 			//build avenues
@@ -267,9 +257,6 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 			}
 		}
 		
-		
-		if(!master.isFlushingGenThreads) 
-			suspendGen();
 		//===============================================      streets   ===============================================
 		//Plan/Build Order:
 		//1)Plan radial avenues as part of wall building
@@ -307,8 +294,6 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 
 		int streetsBuilt=0;
 		for(int tries=0;tries<maxStreetCount; tries++){
-			if(tries % 5==0 && !master.isFlushingGenThreads) 
-				suspendGen();
 			int[] pt=randInteriorPoint();
 			if(pt!=null){
 				pt[1]++;//want block above surface block
@@ -334,13 +319,11 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		for(BuildingDoubleWall avenue : crossAvenues)
 			avenue.buildTowers(true,true,false,cityIsDense, true);
 		for(BuildingDoubleWall street : plannedStreets){
-			if(!master.isFlushingGenThreads) 
-				suspendGen();
 			street.buildTowers(true,true,sws.MakeGatehouseTowers,cityIsDense, false);
 		}
 			
-		wc.chatCityBuilt(new int[]{i0,j0,k0,cityType,Lmean/2+40});
-		
+		((PopulatorWalledCity)master).chatCityBuilt(new int[]{i0,j0,k0,cityType,Lmean/2+40});
+		((PopulatorWalledCity)master).addCityToVillages(new int[]{cityType,ID});
 		//printLayout(new File("layout.txt"));
 		
 		//guard against memory leaks
@@ -421,25 +404,25 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 	private int[] randInteriorPoint(){
 		int tries=0;
 		int[] pt=new int[3];
-		wc.logOrPrint("Finding random interior point for city seeded at corner ("+walls[0].i1+","+walls[0].j1+","+walls[0].k1+")"+walls[0].IDString());
+		master.logOrPrint("Finding random interior point for city seeded at corner ("+walls[0].i1+","+walls[0].j1+","+walls[0].k1+")"+walls[0].IDString(),"FINE");
 		while(tries < 20){
 			pt[0]=mincorner[0] + random.nextInt( Math.abs(corner1[0]-corner2[0]));
 			pt[2]=mincorner[2] + random.nextInt(Math.abs(corner1[2]-corner2[2]));
 			pt[1]=Building.findSurfaceJ(world,pt[0],pt[2],Building.WORLD_MAX_Y,true,3);
 			boolean enclosed=true;
-			for(BuildingWall w : walls) if(w.ptIsToXHand(pt,-sws.WWidth)) enclosed=false;
+			for(BuildingWall w : walls) 
+				if(w.ptIsToXHand(pt,-sws.WWidth)) 
+					enclosed=false;
 			if(enclosed) return pt;
 			tries++;
 		}
-		System.err.println("Could not find point within bounds!");
+		master.logOrPrint("Could not find point within bounds!","WARNING");
 		return null;
 	}
 
-	
-
 	//****************************************  FUNCTION - levelCity  *************************************************************************************//
 	
-	private void levelCity() throws InterruptedException{
+	private void levelCity(){
 		for(BuildingWall w : walls) w.setCursor(0);
 		int incI=Building.signum(corner2[0]-corner1[0],0), incK=Building.signum(corner2[2]-corner1[2],0);
 		int[] pt=new int[3];
@@ -476,14 +459,10 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		for(int chunkI=corner1[0]>>4; ((corner2[0]>>4)-chunkI)*incI > 0; chunkI+=incI)
 			for(int chunkK=corner1[2]>>4; ((corner2[2]>>4)-chunkK)*incK > 0; chunkK+=incK)
 				world.getChunkFromChunkCoords(chunkI,chunkK).generateSkylightMap();
-		
-		if(!master.isFlushingGenThreads) 
-			suspendGen();
 	}
 	
 	//****************************************  FUNCTION - chooseDirection *************************************************************************************//
-	private void chooseDirection(int chunkI, int chunkK){	
-		
+	private void chooseDirection(int chunkI, int chunkK){
 		boolean[] exploredChunk = new boolean[4];
 		exploredChunk[0]=world.blockExists(chunkI << 4, 0, (chunkK-1) << 4); //North
 		exploredChunk[1]=world.blockExists((chunkI+1) << 4, 0, chunkK << 4); //East
@@ -506,17 +485,6 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		dir[1]=(dir[0]-axXHand+4) % 4;
 		dir[2]=(dir[1]-axXHand+4) % 4;
 		dir[3]=(dir[2]-axXHand+4) % 4;
-
 	}
 
 }
-
-
-
-
-
-
-
-
-
-

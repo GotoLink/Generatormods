@@ -54,10 +54,7 @@ public class BuildingCellularAutomaton extends Building {
 	}
 	
 	//unlike other Buildings, this should be called after plan()
-	public boolean queryCanBuild( int ybuffer, boolean nonLayoutFrameCheck) throws InterruptedException{
-		if(!( queryExplorationHandlerForChunk(0,bLength-1) && queryExplorationHandlerForChunk(bWidth-1,0) && queryExplorationHandlerForChunk(bWidth-1,bLength-1) )){
-			return false;
-		}
+	public boolean queryCanBuild( int ybuffer, boolean nonLayoutFrameCheck){
 		
 		int layoutCode= bWidth*bLength > 120 ? WorldGeneratorThread.LAYOUT_CODE_TOWER : WorldGeneratorThread.LAYOUT_CODE_TEMPLATE;
     	if(wgt.isLayoutGenerator()){
@@ -206,7 +203,7 @@ public class BuildingCellularAutomaton extends Building {
 		return true;
 	}
 		
-	public void build(boolean SmoothWithStairs,boolean makeFloors) throws InterruptedException{
+	public void build(boolean SmoothWithStairs,boolean makeFloors){
 		int stairsBlock=SmoothWithStairs ? blockToStairs(bRule.primaryBlock) : 0;
 		TemplateRule[] stairs=new TemplateRule[]{ new TemplateRule(new int[]{stairsBlock,STAIRS_DIR_TO_META[DIR_NORTH]},bRule.chance),
 												  new TemplateRule(new int[]{stairsBlock,STAIRS_DIR_TO_META[DIR_EAST]},bRule.chance),
@@ -232,8 +229,6 @@ public class BuildingCellularAutomaton extends Building {
 				for(int y=0; y<bLength; y++){
 					//if(fBB[0][z]<=x && x<=fBB[1][z] && fBB[2][z]<=y && y<=fBB[3][z])
 					//	setBlockLocal(x,z,y,GLASS_ID);
-					/*if(!queryExplorationHandlerForChunk(x,y))
-						break;*/
 					if(layers[z][x][y]==ALIVE)
 						setBlockLocal(x,z,y,bRule);			
 					else if(z>0 && layers[z-1][x][y]==ALIVE){ //if a floor block
@@ -286,7 +281,7 @@ public class BuildingCellularAutomaton extends Building {
 			//now clear a hole surrounding the central floor volume
 			for(int y=0; y<bLength; y++)
 				for(int x=holeLimits[y][0]+1; x<=holeLimits[y][1]-1; x++)
-					if(layers[z][x][y]!=ALIVE /*&& queryExplorationHandlerForChunk(x,y)*/ && !IS_ARTIFICAL_BLOCK[getBlockIdLocal(x,z,y)])
+					if(layers[z][x][y]!=ALIVE && !IS_ARTIFICAL_BLOCK[getBlockIdLocal(x,z,y)])
 						setBlockLocal(x,z,y,0);
 			
 			//then gradually taper hole limits...
@@ -616,4 +611,3 @@ public class BuildingCellularAutomaton extends Building {
 	}
 	
 }
-
