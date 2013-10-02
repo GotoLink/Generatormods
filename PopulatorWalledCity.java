@@ -154,7 +154,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 			int[] location = cityLocations.get(world).get(cityLocations.get(world).size()-1);
 			pw.println(new StringBuilder(Integer.toString(location[0]))
 							.append(",").append(Integer.toString(location[1]))
-							.append(",type:").append(Integer.toString(location[2])));
+							.append(",").append(Integer.toString(location[2])));
 			
 		}catch(IOException e) {logOrPrint(e.getMessage(),"WARNING"); }
 		finally{ if(pw!=null) pw.close(); }

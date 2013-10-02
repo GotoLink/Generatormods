@@ -59,7 +59,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
  	protected int[] chestTries=new int[]{4,6,6,6};
 	protected int[][][] chestItems=new int[][][]{null,null,null,null};
 	protected boolean errFlag=false, dataFilesLoaded=false;
-	protected boolean logActivated=false, chatMessage=false;
+	protected boolean logActivated=false;
 	private List<Integer> AllowedDimensions=new ArrayList();
 	private List<World> currentWorld=new ArrayList<World>();
 	  
@@ -234,8 +234,6 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 		pw.println("AllowedDimensions:"+(AllowedDimensions.isEmpty()?"-1,0":Arrays.toString(AllowedDimensions.toArray()).replace("[", "").replace("]", "").trim()));
 		pw.println("<-LogActivated controls information stored into forge logs. Set to true if you want to report an issue with complete forge logs.->");
 		pw.println("LogActivated:"+logActivated);
-		pw.println("<-ChatMessage controls lag warnings.->");
-		pw.println("ChatMessage:"+chatMessage);
 	}
 	
 	//****************************************  FUNCTIONS - error handling parameter readers  *************************************************************************************//
@@ -243,8 +241,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator
 		if(read.startsWith( "GlobalFrequency" )) GlobalFrequency = readFloatParam(lw,GlobalFrequency,":",read);
 		if(read.startsWith( "TriesPerChunk" )) TriesPerChunk = readIntParam(lw,TriesPerChunk,":",read);
 		if(read.startsWith( "AllowedDimensions" )) AllowedDimensions = Arrays.asList(readIntList(lw,new Integer[]{-1,0},":",read));
-		if(read.startsWith( "LogActivated" )) logActivated = readBooleanParam(lw,logActivated,":",read);					
-		if(read.startsWith( "ChatMessage" )) chatMessage = readBooleanParam(lw,chatMessage,":",read);
+		if(read.startsWith( "LogActivated" )) logActivated = readBooleanParam(lw,logActivated,":",read);
 	}
 	
 	public static int readIntParam(PrintWriter lw,int defaultVal,String splitString, String read){
