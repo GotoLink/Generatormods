@@ -6,16 +6,16 @@ import net.minecraft.world.World;
 
 public class WorldGenCARuins extends WorldGeneratorThread{
 	
-	private byte[][] caRule=null, seed;
+	private byte[][] caRule=null;
 	private int[][] caRulesWeightsAndIndex;
 	private int MinHeight, MaxHeight;
 	private float GlobalFrequency, SymmetricSeedDensity;
-	private int ContainerWidth, ContainerLength, seedCode;
+	private int ContainerWidth, ContainerLength;
 	private int[] seedTypeWeights;
 	private final static int[] SEED_TYPE_CODES=new int[]{0,1,2,3};
 	private int MinHeightBeforeOscillation;
 	private boolean SmoothWithStairs, MakeFloors;
-	private TemplateRule[] blockRules, blockRule;
+	private TemplateRule[] blockRules;
 
 //****************************************  CONSTRUCTOR - WorldGenCARuins  *************************************************************************************//
 	public WorldGenCARuins(PopulatorCARuins ca, World world, Random random, int chunkI, int chunkK, int triesPerChunk, double chunkTryProb) {
@@ -30,6 +30,7 @@ public class WorldGenCARuins extends WorldGeneratorThread{
 		blockRules=ca.blockRules;
 	}
 	//****************************************  FUNCTION - generate  *************************************************************************************//
+	@Override
 	public boolean generate(int i0, int j0, int k0) {
 		
 		int th=MinHeight+random.nextInt(MaxHeight-MinHeight+1);

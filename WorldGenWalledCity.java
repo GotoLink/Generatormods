@@ -55,6 +55,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 	
 	//****************************************  FUNCTION - generate  *************************************************************************************//
 	
+	@Override
 	public boolean generate(int i0,int j0,int k0){
 		ows=TemplateWall.pickBiomeWeightedWallStyle(((PopulatorWalledCity)master).cityStyles,world,i0,k0,world.rand,false);
 		if(ows==null) 
@@ -292,7 +293,6 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		
 		LinkedList<BuildingDoubleWall> plannedStreets=new LinkedList<BuildingDoubleWall>();
 
-		int streetsBuilt=0;
 		for(int tries=0;tries<maxStreetCount; tries++){
 			int[] pt=randInteriorPoint();
 			if(pt!=null){
@@ -302,7 +302,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 				//streets
 					BuildingDoubleWall street=new BuildingDoubleWall(ID+tries,this,sws,random.nextInt(4),Building.R_HAND,pt);
 					if(street.plan())
-					{ plannedStreets.add(street); streetsBuilt++; }
+					{ plannedStreets.add(street); }
 				}
 			}
 		}	
@@ -334,8 +334,10 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 	}
 	
 	//****************************************  FUNCTION - layoutIsClear *************************************************************************************//
+	@Override
 	public boolean isLayoutGenerator(){ return true; }
 	
+	@Override
 	public boolean layoutIsClear(int[] pt1, int[] pt2, int layoutCode){
 		for(int i=Math.min(pt1[0],pt2[0]); i<=Math.max(pt1[0],pt2[0]); i++)
 			for(int k=Math.min(pt1[2],pt2[2]); k<=Math.max(pt1[2],pt2[2]); k++)
@@ -345,6 +347,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		return true;
 	}
 	
+	@Override
 	public boolean layoutIsClear(Building building, boolean[][] templateLayout, int layoutCode){
 		for(int y=0; y<templateLayout.length;y++){
     		for(int x=0; x<templateLayout[0].length;x++){
@@ -359,6 +362,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 	
 	//****************************************  FUNCTION - setLayoutCode *************************************************************************************//
 	
+	@Override
 	public void setLayoutCode(int[] pt1, int[] pt2, int layoutCode){
 		for(int i=Math.min(pt1[0],pt2[0]); i<=Math.max(pt1[0],pt2[0]); i++)
 			for(int k=Math.min(pt1[2],pt2[2]); k<=Math.max(pt1[2],pt2[2]); k++)
@@ -366,6 +370,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 					layout[i-mincorner[0]][k-mincorner[2]]=layoutCode;
 	}
 	
+	@Override
 	public void setLayoutCode(Building building, boolean[][] templateLayout, int layoutCode) {
 		for(int y=0; y<templateLayout.length;y++){
     		for(int x=0; x<templateLayout[0].length;x++){

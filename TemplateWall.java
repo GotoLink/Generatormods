@@ -29,7 +29,6 @@ import net.minecraft.world.biome.BiomeGenBase;
 
 public class TemplateWall extends TemplateTML{
 	public final static String BUILDING_DIRECTORY_NAME="buildings";
-	private final static int DEFAULT_WATER_HEIGHT=666;
 	public final static int[] ALL_BIOMES=null;
 	
 	public final static int NO_RULE=-1;

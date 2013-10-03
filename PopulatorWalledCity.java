@@ -43,7 +43,6 @@ import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.registry.GameRegistry;
 
 @Mod(modid = "WalledCityMod", name = "Walled City Generator", version = "0.1.4",dependencies= "after:ExtraBiomes,BiomesOPlenty")
@@ -82,6 +81,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	}
 	
 	//****************************  FUNCTION - loadDataFiles *************************************************************************************//
+	@Override
 	public final void loadDataFiles(){
 		try {
 			initializeLogging("Loading options and templates for the Walled City Generator.");
@@ -201,7 +201,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 			for (int index = 0; index < playerList.size(); ++index)
 	        {
 	            EntityPlayerMP player = (EntityPlayerMP)playerList.get(index);
-	            player.sendChatToPlayer(new ChatMessageComponent().createFromText(chatString));
+	            player.sendChatToPlayer(ChatMessageComponent.createFromText(chatString));
 	        }
 		}
 	}
@@ -229,12 +229,13 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 							? (dK>0 ? "southeast" : "northeast") 
 							: (dK>0 ? "southwest" : "northwest");
 
-			player.sendChatToPlayer(new ChatMessageComponent().createFromText("** Built city "+dirStr+" ("+args[0]+","+args[1]+","+args[2]+")! **"));	
+			player.sendChatToPlayer(ChatMessageComponent.createFromText("** Built city "+dirStr+" ("+args[0]+","+args[1]+","+args[2]+")! **"));	
 	        }		
 		}
 	}
 	//****************************  FUNCTION - generate *************************************************************************************//
 	
+	@Override
 	public final void generate(World world, Random random, int i, int k) {
 		if(CityBuiltMessage && world.playerEntities!=null)
 			while(citiesBuiltMessages.size()>0) 
@@ -255,6 +256,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 	}
 	
 	//****************************  FUNCTION - getGlobalOptions  *************************************************************************************//
+	@Override
 	public void loadGlobalOptions(BufferedReader br) {
 		try{   
 			for(String read=br.readLine(); read!=null; read=br.readLine()){
@@ -276,6 +278,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler{
 		}catch(IOException e) { lw.println(e.getMessage()); }
 		finally{ try{ if(br!=null) br.close();} catch(IOException e) {} }
 	}
+	@Override
 	public void writeGlobalOptions(PrintWriter pw){
 		printGlobalOptions(pw,false);
 		pw.println("<-GlobalFrequency/UndergroundGlobalFrequency controls how likely aboveground/belowground cities are to appear. Should be between 0.0 and 1.0. Lower to make less common->");

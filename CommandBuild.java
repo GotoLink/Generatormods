@@ -16,18 +16,22 @@ public class CommandBuild extends CommandBase{
         return 2;
     }
 	
+	@Override
 	public String getCommandName() {
 		return "build";
 	}
 
+	@Override
 	public String getCommandUsage(ICommandSender commandSender) {
 		return "/" + getCommandName() + " <ruin:wall:city:undcity> <dimensionID,default:0> <x> <z>";
 	}
 
+	@Override
 	public List getCommandAliases() {
 		return null;
 	}
 	
+	@Override
 	public void processCommand(ICommandSender var1, String[] coordinate) {
 		if (coordinate.length == 4 || coordinate.length == 3)
         {	

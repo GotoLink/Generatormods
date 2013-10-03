@@ -31,7 +31,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
 public class PopulatorCARuins extends BuildingExplorationHandler{
 	@Instance("CARuins")
 	public static PopulatorCARuins instance;
-	private final static String AUTOMATA_RULES_STRING="AUTOMATA RULES",LINEAR_STR="linear",SYMMETRIC_STR="symmetric", BOTH_STR="both";
+	private final static String AUTOMATA_RULES_STRING="AUTOMATA RULES";
 	private final static TemplateRule DEFAULT_TEMPLATE=new TemplateRule(new int[]{4,48,48},new int[]{0,0,0},100);
 	private static TemplateRule[] DEFAULT_BLOCK_RULES = new TemplateRule[BIOME_NAMES.length];
 	static{
@@ -114,6 +114,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 	}
 	
 	//****************************  FUNCTION - loadDataFiles *************************************************************************************//
+	@Override
 	public final void loadDataFiles(){
 		try {
 			initializeLogging("Loading options for the Cellular Automata Generator.");
@@ -142,6 +143,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 	}
 	
 	//****************************  FUNCTION - getGlobalOptions *************************************************************************************//
+	@Override
 	public void loadGlobalOptions(BufferedReader br){
 		ArrayList<Integer> caRuleWeights=new ArrayList<Integer>();
 		try{
@@ -204,6 +206,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 			caRulesWeightsAndIndex[1][m]=m;
 		}
 	}
+	@Override
 	public void writeGlobalOptions(PrintWriter pw){
 		ArrayList<Integer> caRuleWeights=new ArrayList<Integer>();
 		printGlobalOptions(pw,true);
@@ -265,6 +268,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler{
 	
 
 	//****************************  FUNCTION - generate *************************************************************************************//
+	@Override
 	public final void generate( World world, Random random, int i, int k ) {	
 		if(random.nextFloat() < GlobalFrequency)
 			(new WorldGenCARuins(this, world, random, i, k,TriesPerChunk, GlobalFrequency)).run();		

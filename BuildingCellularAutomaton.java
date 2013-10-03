@@ -343,6 +343,7 @@ public class BuildingCellularAutomaton extends Building {
 		
 		//populate
 		Collections.sort(floors,new Comparator() {
+			@Override
 			public int compare(Object o1, Object o2) {
                 int a = ((int[])o1)[0];
                 int b = ((int[])o2)[0];

@@ -486,7 +486,8 @@ public class Building
    
     }
     //TODO:To use for city doors
-    private void addDoorToNewListIfAppropriate(int id, int par1, int par2, int par3)
+    @SuppressWarnings("unused")
+	private void addDoorToNewListIfAppropriate(int id, int par1, int par2, int par3)
     {
     	if(!((PopulatorWalledCity)this.wgt.master).cityDoors.containsKey(id)){
     		((PopulatorWalledCity)this.wgt.master).cityDoors.put(id, new ArrayList());

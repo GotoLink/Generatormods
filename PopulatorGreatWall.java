@@ -18,9 +18,7 @@ package assets.generator;
  */
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -32,7 +30,6 @@ import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.registry.GameRegistry;
 
 @Mod(modid = "GreatWallMod", name = "Great Wall Mod", version = "0.1.4",dependencies= "after:ExtraBiomes,BiomesOPlenty")
@@ -58,6 +55,7 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 	}
 	
 	//****************************  FUNCTION - loadDataFiles *************************************************************************************//
+	@Override
 	public final void loadDataFiles(){
 		try {
 			initializeLogging("Loading options and templates for the Great Wall Mod.");
@@ -81,12 +79,14 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 	
 	//****************************  FUNCTION - generate *************************************************************************************//
 	
+	@Override
 	public final void generate( World world, Random random, int i, int k ) {	
 		if(random.nextFloat() < GlobalFrequency)
 			(new WorldGenGreatWall(this,world, random, i, k,TriesPerChunk, GlobalFrequency)).run();		
 	}
 
 	//****************************  FUNCTION - getGlobalOptions  *************************************************************************************//
+	@Override
 	public void loadGlobalOptions(BufferedReader br){
 		try{   
 			for(String read=br.readLine(); read!=null; read=br.readLine()){
@@ -103,6 +103,7 @@ public class PopulatorGreatWall extends BuildingExplorationHandler{
 		}catch(IOException e) { lw.println(e.getMessage()); }
 		finally{ try{ if(br!=null) br.close();} catch(IOException e) {}}
 	}
+	@Override
 	public void writeGlobalOptions(PrintWriter pw){
 		printGlobalOptions(pw,true);
 		pw.println();
