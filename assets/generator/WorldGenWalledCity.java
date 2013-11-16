@@ -166,7 +166,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread {
 			}
 		}
 		if (!ows.LevelInterior && (float) waterArea / (float) cityArea > MAX_WATER_PERCENTAGE) {
-			master.logOrPrint("Rejected " + ows.name + " city " + ID + ", too much water! City area was " + (100.0f * (float) waterArea / (float) cityArea) + "% water!", "INFO");
+			master.logOrPrint("Rejected " + ows.name + " city " + ID + ", too much water! City area was " + (100.0f * waterArea / cityArea) + "% water!", "INFO");
 			return false;
 		}
 		//query the exploration handler again to see if we've built nearby cities in the meanwhile
@@ -299,7 +299,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread {
 			street.buildTowers(true, true, sws.MakeGatehouseTowers, cityIsDense, false);
 		}
 		((PopulatorWalledCity) master).chatCityBuilt(new int[] { i0, j0, k0, cityType, Lmean / 2 + 40 });
-		((PopulatorWalledCity) master).addCityToVillages(new int[] { cityType, ID });
+		((PopulatorWalledCity) master).addCityToVillages(world, ID);
 		//printLayout(new File("layout.txt"));
 		//guard against memory leaks
 		layout = null;
@@ -310,16 +310,6 @@ public class WorldGenWalledCity extends WorldGeneratorThread {
 	//****************************************  FUNCTION - layoutIsClear *************************************************************************************//
 	@Override
 	public boolean isLayoutGenerator() {
-		return true;
-	}
-
-	@Override
-	public boolean layoutIsClear(int[] pt1, int[] pt2, int layoutCode) {
-		for (int i = Math.min(pt1[0], pt2[0]); i <= Math.max(pt1[0], pt2[0]); i++)
-			for (int k = Math.min(pt1[2], pt2[2]); k <= Math.max(pt1[2], pt2[2]); k++)
-				if (i >= mincorner[0] && k >= mincorner[2] && i - mincorner[0] < layout.length && k - mincorner[2] < layout[0].length)
-					if (LAYOUT_CODE_OVERRIDE_MATRIX[layout[i - mincorner[0]][k - mincorner[2]]][layoutCode] == 0)
-						return false;
 		return true;
 	}
 
@@ -338,13 +328,14 @@ public class WorldGenWalledCity extends WorldGeneratorThread {
 		return true;
 	}
 
-	//****************************************  FUNCTION - setLayoutCode *************************************************************************************//
 	@Override
-	public void setLayoutCode(int[] pt1, int[] pt2, int layoutCode) {
+	public boolean layoutIsClear(int[] pt1, int[] pt2, int layoutCode) {
 		for (int i = Math.min(pt1[0], pt2[0]); i <= Math.max(pt1[0], pt2[0]); i++)
 			for (int k = Math.min(pt1[2], pt2[2]); k <= Math.max(pt1[2], pt2[2]); k++)
 				if (i >= mincorner[0] && k >= mincorner[2] && i - mincorner[0] < layout.length && k - mincorner[2] < layout[0].length)
-					layout[i - mincorner[0]][k - mincorner[2]] = layoutCode;
+					if (LAYOUT_CODE_OVERRIDE_MATRIX[layout[i - mincorner[0]][k - mincorner[2]]][layoutCode] == 0)
+						return false;
+		return true;
 	}
 
 	@Override
@@ -360,50 +351,35 @@ public class WorldGenWalledCity extends WorldGeneratorThread {
 		}
 	}
 
-	//****************************************  FUNCTION - printLayout *************************************************************************************//
-	private void printLayout(File f) {
-		try {
-			PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(f)));
-			pw.println("  +y   ");
-			pw.println("   ^   ");
-			pw.println("+x<.>-x");
-			pw.println("   v   ");
-			pw.println("  -y   ");
-			pw.println();
-			for (int y = layout[0].length - 1; y >= 0; y--) {
-				for (int x = layout.length - 1; x >= 0; x--) {
-					pw.print(LAYOUT_CODE_TO_CHAR[layout[x][y]]);
-				}
-				pw.println();
-			}
-			pw.close();
-		} catch (Exception e) {
-		}
+	//****************************************  FUNCTION - setLayoutCode *************************************************************************************//
+	@Override
+	public void setLayoutCode(int[] pt1, int[] pt2, int layoutCode) {
+		for (int i = Math.min(pt1[0], pt2[0]); i <= Math.max(pt1[0], pt2[0]); i++)
+			for (int k = Math.min(pt1[2], pt2[2]); k <= Math.max(pt1[2], pt2[2]); k++)
+				if (i >= mincorner[0] && k >= mincorner[2] && i - mincorner[0] < layout.length && k - mincorner[2] < layout[0].length)
+					layout[i - mincorner[0]][k - mincorner[2]] = layoutCode;
 	}
 
-	//****************************************  FUNCTION - randInteriorPoint  *************************************************************************************//
-	/**
-	 * @return Coordinates (i,j,k) of interior surface point, j will be -1 if
-	 *         point was water
-	 */
-	private int[] randInteriorPoint() {
-		int tries = 0;
-		int[] pt = new int[3];
-		master.logOrPrint("Finding random interior point for city seeded at corner (" + walls[0].i1 + "," + walls[0].j1 + "," + walls[0].k1 + ")" + walls[0].IDString(), "FINE");
-		while (tries < 20) {
-			pt[0] = mincorner[0] + random.nextInt(Math.abs(corner1[0] - corner2[0]));
-			pt[2] = mincorner[2] + random.nextInt(Math.abs(corner1[2] - corner2[2]));
-			pt[1] = Building.findSurfaceJ(world, pt[0], pt[2], Building.WORLD_MAX_Y, true, 3);
-			boolean enclosed = true;
-			for (BuildingWall w : walls)
-				if (w.ptIsToXHand(pt, -sws.WWidth))
-					enclosed = false;
-			if (enclosed)
-				return pt;
-			tries++;
-		}
-		master.logOrPrint("Could not find point within bounds!", "WARNING");
-		return null;
+	//****************************************  FUNCTION - chooseDirection *************************************************************************************//
+	private void chooseDirection(int chunkI, int chunkK) {
+		boolean[] exploredChunk = new boolean[4];
+		exploredChunk[0] = world.blockExists(chunkI << 4, 0, (chunkK - 1) << 4); //North
+		exploredChunk[1] = world.blockExists((chunkI + 1) << 4, 0, chunkK << 4); //East
+		exploredChunk[2] = world.blockExists(chunkI << 4, 0, (chunkK + 1) << 4); //South
+		exploredChunk[3] = world.blockExists((chunkI - 1) << 4, 0, chunkK << 4); //West
+		//pick an explored direction if it exists
+		dir = new int[4];
+		int randDir = random.nextInt(4);
+		for (dir[0] = (randDir + 1) % 4; dir[0] != randDir; dir[0] = (dir[0] + 1) % 4)
+			if (exploredChunk[dir[0]])
+				break; //this chunk has been explored so we want to go in this direction
+		//Choose axXHand (careful it is opposite the turn direction of the square).
+		//if RH direction explored, then turn RH; else turn LH;
+		//axXHand=2*random.nextInt(2)-1;
+		axXHand = exploredChunk[(dir[0] + 1) % 4] ? -1 : 1;
+		dir[1] = (dir[0] - axXHand + 4) % 4;
+		dir[2] = (dir[1] - axXHand + 4) % 4;
+		dir[3] = (dir[2] - axXHand + 4) % 4;
 	}
 
 	//****************************************  FUNCTION - levelCity  *************************************************************************************//
@@ -450,25 +426,49 @@ public class WorldGenWalledCity extends WorldGeneratorThread {
 				world.getChunkFromChunkCoords(chunkI, chunkK).generateSkylightMap();
 	}
 
-	//****************************************  FUNCTION - chooseDirection *************************************************************************************//
-	private void chooseDirection(int chunkI, int chunkK) {
-		boolean[] exploredChunk = new boolean[4];
-		exploredChunk[0] = world.blockExists(chunkI << 4, 0, (chunkK - 1) << 4); //North
-		exploredChunk[1] = world.blockExists((chunkI + 1) << 4, 0, chunkK << 4); //East
-		exploredChunk[2] = world.blockExists(chunkI << 4, 0, (chunkK + 1) << 4); //South
-		exploredChunk[3] = world.blockExists((chunkI - 1) << 4, 0, chunkK << 4); //West
-		//pick an explored direction if it exists
-		dir = new int[4];
-		int randDir = random.nextInt(4);
-		for (dir[0] = (randDir + 1) % 4; dir[0] != randDir; dir[0] = (dir[0] + 1) % 4)
-			if (exploredChunk[dir[0]])
-				break; //this chunk has been explored so we want to go in this direction
-		//Choose axXHand (careful it is opposite the turn direction of the square).
-		//if RH direction explored, then turn RH; else turn LH;
-		//axXHand=2*random.nextInt(2)-1;
-		axXHand = exploredChunk[(dir[0] + 1) % 4] ? -1 : 1;
-		dir[1] = (dir[0] - axXHand + 4) % 4;
-		dir[2] = (dir[1] - axXHand + 4) % 4;
-		dir[3] = (dir[2] - axXHand + 4) % 4;
+	//****************************************  FUNCTION - printLayout *************************************************************************************//
+	private void printLayout(File f) {
+		try {
+			PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(f)));
+			pw.println("  +y   ");
+			pw.println("   ^   ");
+			pw.println("+x<.>-x");
+			pw.println("   v   ");
+			pw.println("  -y   ");
+			pw.println();
+			for (int y = layout[0].length - 1; y >= 0; y--) {
+				for (int x = layout.length - 1; x >= 0; x--) {
+					pw.print(LAYOUT_CODE_TO_CHAR[layout[x][y]]);
+				}
+				pw.println();
+			}
+			pw.close();
+		} catch (Exception e) {
+		}
+	}
+
+	//****************************************  FUNCTION - randInteriorPoint  *************************************************************************************//
+	/**
+	 * @return Coordinates (i,j,k) of interior surface point, j will be -1 if
+	 *         point was water
+	 */
+	private int[] randInteriorPoint() {
+		int tries = 0;
+		int[] pt = new int[3];
+		master.logOrPrint("Finding random interior point for city seeded at corner (" + walls[0].i1 + "," + walls[0].j1 + "," + walls[0].k1 + ")" + walls[0].IDString(), "FINE");
+		while (tries < 20) {
+			pt[0] = mincorner[0] + random.nextInt(Math.abs(corner1[0] - corner2[0]));
+			pt[2] = mincorner[2] + random.nextInt(Math.abs(corner1[2] - corner2[2]));
+			pt[1] = Building.findSurfaceJ(world, pt[0], pt[2], Building.WORLD_MAX_Y, true, 3);
+			boolean enclosed = true;
+			for (BuildingWall w : walls)
+				if (w.ptIsToXHand(pt, -sws.WWidth))
+					enclosed = false;
+			if (enclosed)
+				return pt;
+			tries++;
+		}
+		master.logOrPrint("Could not find point within bounds!", "WARNING");
+		return null;
 	}
 }

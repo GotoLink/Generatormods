@@ -23,6 +23,7 @@ public class BuildingWall extends Building {
 	public enum FailType {
 		NOTHING, OBSTRUCTED, UNDERWATER, TOOSTEEPDOWN, TOOSTEEPUP, HITWALL, CANNOTEXPLORE, HITTARGET, MAXLENGTH
 	}
+
 	public final static boolean DEBUG = false;
 	public final static boolean DEBUG_SIGNS = false;
 	public final static int SEARCHDOWN = 2, MIN_SEARCHUP = 2;
@@ -30,9 +31,7 @@ public class BuildingWall extends Building {
 	public final static int MAX_BACKTRACK_DEPTH = 2;
 	public final static int OVERHEAD_CLEARENCE = 4, OVERHEAD_TREE_CLEARENCE = 8;
 	public final static int NO_GATEWAY = -1, NO_MIN_J = -1;
-
 	private final static int MIN_GATEWAY_ROAD_LENGTH = 20;
-
 	//**** WORKING VARIABLES ****
 	public int i1, j1, k1;
 	public int n0 = 0;
@@ -164,7 +163,7 @@ public class BuildingWall extends Building {
 						// if merging walls, don't clutter with crenelations etc.
 						if (z1 >= WalkHeight
 								&& (x1 == 0 && (wallBlockPresent || isWallBlock(-1, WalkHeight - 1, 0) || isWallBlock(-1, WalkHeight - 2, 0)) || x1 == bWidth - 1
-								&& (wallBlockPresent || isFloor(bWidth, WalkHeight - 1, 0) || isWallBlock(bWidth, WalkHeight - 2, 0)))) {
+										&& (wallBlockPresent || isFloor(bWidth, WalkHeight - 1, 0) || isWallBlock(bWidth, WalkHeight - 2, 0)))) {
 							continue;
 						}
 						if (idAndMeta[0] == 0 && z1 < bHeight)
@@ -442,121 +441,121 @@ public class BuildingWall extends Building {
 		//int searchUp=Math.min(Math.max(MIN_SEARCHUP,WalkHeight+1),MAX_SEARCHUP);
 		int searchUp = MIN_SEARCHUP;
 		int obstructionHeight = WalkHeight > 4 ? WalkHeight + 1 : bHeight + 1;
-			while (true) {
-				int gradx = 0, gradz = 0;
-				failCode = FailType.NOTHING;
-				for (int x1 = -1; x1 <= bWidth; x1++) {
-					for (int z1 = -SEARCHDOWN; z1 <= searchUp; z1++) {
-						int blockId = getBlockIdLocal(x1, z1, 0);
-						if (!IS_WALLABLE[blockId]) {
-							gradz++;
-							gradx += Integer.signum(2 * x1 - bWidth + 1);
-						} else if (IS_WATER_BLOCK[blockId])
-							gradx -= Integer.signum(2 * x1 - bWidth + 1);
-						//hit another wall, want to ignore sandstone that appears naturally in deserts
-						if ((stopAtWall || z1 < -2) && isArtificialWallBlock(x1, z1, 0))
-							failCode = FailType.HITWALL;
-					}
-					if (IS_WATER_BLOCK[getBlockIdLocal(x1, ws.waterHeight + 1, 0)])
-						failCode = FailType.UNDERWATER;
-					if (!isWallable(x1, obstructionHeight, 0) && failCode == FailType.NOTHING)
-						failCode = FailType.OBSTRUCTED;
+		while (true) {
+			int gradx = 0, gradz = 0;
+			failCode = FailType.NOTHING;
+			for (int x1 = -1; x1 <= bWidth; x1++) {
+				for (int z1 = -SEARCHDOWN; z1 <= searchUp; z1++) {
+					int blockId = getBlockIdLocal(x1, z1, 0);
+					if (!IS_WALLABLE[blockId]) {
+						gradz++;
+						gradx += Integer.signum(2 * x1 - bWidth + 1);
+					} else if (IS_WATER_BLOCK[blockId])
+						gradx -= Integer.signum(2 * x1 - bWidth + 1);
+					//hit another wall, want to ignore sandstone that appears naturally in deserts
+					if ((stopAtWall || z1 < -2) && isArtificialWallBlock(x1, z1, 0))
+						failCode = FailType.HITWALL;
 				}
-				gradz = (gradz + (bWidth + 2) / 2) / (bWidth + 2) - SEARCHDOWN;
-				if (failCode == FailType.HITWALL)
-					gradz = 0;
-				if (failCode == FailType.NOTHING && gradz < -1)
-					failCode = FailType.TOOSTEEPDOWN;
-				if (failCode == FailType.NOTHING && gradz > 4)
-					failCode = FailType.TOOSTEEPUP;
-				gradz = signum(gradz, 0);
-				if (minJ != NO_MIN_J && zArray[bLength - 1] + gradz + j1 < minJ)
-					gradz = 0; //don't go below minJ
-				if (gradz == 0) {
-					int HorizForceThreshold = bWidth / 2;
-					int bias = target ? Integer.signum(xArray[bLength - 1] - x_targ) * (2 * HorizForceThreshold) : 0;
-					gradx = (gradx > HorizForceThreshold + bias ? 1 : (gradx < -HorizForceThreshold + bias ? -1 : 0));
-				} else
-					gradx = 0;
-				setOriginLocal(i0, j0, k0, gradx, gradz, 1);
-				xArray[bLength] = xArray[bLength - 1] + gradx;
-				zArray[bLength] = zArray[bLength - 1] + gradz;
-				bLength++;
-				//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   TERMINATION / BACKTRACKING   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-				if (failCode == FailType.NOTHING)
-					fails = 0;
-				else
-					fails++;
-				if (target && bLength > y_targ) {
-					failCode = FailType.HITTARGET;
-					break;
-				} else if (bLength >= maxLength) {
-					failCode = FailType.MAXLENGTH;
-					break;
-				} else if (failCode == FailType.HITWALL || failCode == FailType.UNDERWATER) {
-					bLength -= fails;
-					break;
-				} else if (fails >= lookahead) {
-					bLength -= fails; //planL should be at first failed position at end of loop
-					if (bLength - startN < Backtrack || (bLength - startN < MIN_BRANCH_IMPROVEMENT && depth != 0)) {
-						break; //loop termination condition 2
-					}
-					if (depth >= MAX_BACKTRACK_DEPTH) { //loop termination condition 2
-						hitMaxDepth = true; //may still be able to proceed, note this so we can do so from root
-						break; //loop termination condition 3
-					} else {
-						//if(DEBUG) FMLLog.getLogger().info("\nTrying branches for "+IDString()+", depth="+depth+" at n="+bLength+" x="+(xArray[bLength])+" z="+(zArray[bLength]));
-						int improvement, bestImprovement = 0;
-						BuildingWall branch, bestBranch = null;
-						//String[] branchNames={"Down","Minus","Straight","Plus","Up"};
-						for (int zAx = 0; zAx <= 1; zAx++) {
-							for (int d = -1; d <= 1; d++) {
-								if (!(zAx == 0 && d == 0)) {
-									branch = new BuildingWall(this, maxLength, i1, j1, k1);
-									for (int m = 0; m < Backtrack; m++) {
-										branch.xArray[bLength - Backtrack + m] = xArray[bLength - Backtrack] + (1 - zAx) * (d * m);
-										branch.zArray[bLength - Backtrack + m] = zArray[bLength - Backtrack] + zAx * (d * m);
-									}
-									improvement = branch.plan(bLength, depth + 1, lookahead, stopAtWall);
-									if (improvement > bestImprovement) {
-										bestBranch = branch;
-										bestImprovement = improvement;
-									}
+				if (IS_WATER_BLOCK[getBlockIdLocal(x1, ws.waterHeight + 1, 0)])
+					failCode = FailType.UNDERWATER;
+				if (!isWallable(x1, obstructionHeight, 0) && failCode == FailType.NOTHING)
+					failCode = FailType.OBSTRUCTED;
+			}
+			gradz = (gradz + (bWidth + 2) / 2) / (bWidth + 2) - SEARCHDOWN;
+			if (failCode == FailType.HITWALL)
+				gradz = 0;
+			if (failCode == FailType.NOTHING && gradz < -1)
+				failCode = FailType.TOOSTEEPDOWN;
+			if (failCode == FailType.NOTHING && gradz > 4)
+				failCode = FailType.TOOSTEEPUP;
+			gradz = signum(gradz, 0);
+			if (minJ != NO_MIN_J && zArray[bLength - 1] + gradz + j1 < minJ)
+				gradz = 0; //don't go below minJ
+			if (gradz == 0) {
+				int HorizForceThreshold = bWidth / 2;
+				int bias = target ? Integer.signum(xArray[bLength - 1] - x_targ) * (2 * HorizForceThreshold) : 0;
+				gradx = (gradx > HorizForceThreshold + bias ? 1 : (gradx < -HorizForceThreshold + bias ? -1 : 0));
+			} else
+				gradx = 0;
+			setOriginLocal(i0, j0, k0, gradx, gradz, 1);
+			xArray[bLength] = xArray[bLength - 1] + gradx;
+			zArray[bLength] = zArray[bLength - 1] + gradz;
+			bLength++;
+			//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   TERMINATION / BACKTRACKING   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+			if (failCode == FailType.NOTHING)
+				fails = 0;
+			else
+				fails++;
+			if (target && bLength > y_targ) {
+				failCode = FailType.HITTARGET;
+				break;
+			} else if (bLength >= maxLength) {
+				failCode = FailType.MAXLENGTH;
+				break;
+			} else if (failCode == FailType.HITWALL || failCode == FailType.UNDERWATER) {
+				bLength -= fails;
+				break;
+			} else if (fails >= lookahead) {
+				bLength -= fails; //planL should be at first failed position at end of loop
+				if (bLength - startN < Backtrack || (bLength - startN < MIN_BRANCH_IMPROVEMENT && depth != 0)) {
+					break; //loop termination condition 2
+				}
+				if (depth >= MAX_BACKTRACK_DEPTH) { //loop termination condition 2
+					hitMaxDepth = true; //may still be able to proceed, note this so we can do so from root
+					break; //loop termination condition 3
+				} else {
+					//if(DEBUG) FMLLog.getLogger().info("\nTrying branches for "+IDString()+", depth="+depth+" at n="+bLength+" x="+(xArray[bLength])+" z="+(zArray[bLength]));
+					int improvement, bestImprovement = 0;
+					BuildingWall branch, bestBranch = null;
+					//String[] branchNames={"Down","Minus","Straight","Plus","Up"};
+					for (int zAx = 0; zAx <= 1; zAx++) {
+						for (int d = -1; d <= 1; d++) {
+							if (!(zAx == 0 && d == 0)) {
+								branch = new BuildingWall(this, maxLength, i1, j1, k1);
+								for (int m = 0; m < Backtrack; m++) {
+									branch.xArray[bLength - Backtrack + m] = xArray[bLength - Backtrack] + (1 - zAx) * (d * m);
+									branch.zArray[bLength - Backtrack + m] = zArray[bLength - Backtrack] + zAx * (d * m);
+								}
+								improvement = branch.plan(bLength, depth + 1, lookahead, stopAtWall);
+								if (improvement > bestImprovement) {
+									bestBranch = branch;
+									bestImprovement = improvement;
 								}
 							}
 						}
-						if (bestImprovement + bLength > maxLength)
-							bestImprovement = maxLength - bLength;
-						if (bestImprovement > 0) {
-							//if(DEBUG==3) System.out.println("Chose branch="+bestBranch.branchName+" for wall "+IDString()+"depth="+depth+" at n="+planL+" with added length="+bestImprovement);
-							for (int m = bLength - Backtrack; m < bLength + bestImprovement; m++) {
-								xArray[m] = bestBranch.xArray[m];
-								zArray[m] = bestBranch.zArray[m];
-								//failString=bestBranch.failString;
-								failCode = bestBranch.failCode;
-							}
-							hitMaxDepth = bestBranch.hitMaxDepth;
-							bLength += bestImprovement;
-						}
-						//else if(DEBUG) FMLLog.getLogger().info("Could not improve wall "+IDString()+" at n="+bLength+"\n");
-						if (depth == 0 && hitMaxDepth && bLength < maxLength) {
-							hitMaxDepth = false;
-							fails = 1;
-							//if(DEBUG) FMLLog.getLogger().info("Hit max search depth, continuing planning wall "+IDString()+"at n="+bLength+" from root");
-						} else {
-							break; //we have added branches if any and did not hit max depth, so break
-						}
 					}
-					//if(DEBUG && planL>startN) printWall(startN);
+					if (bestImprovement + bLength > maxLength)
+						bestImprovement = maxLength - bLength;
+					if (bestImprovement > 0) {
+						//if(DEBUG==3) System.out.println("Chose branch="+bestBranch.branchName+" for wall "+IDString()+"depth="+depth+" at n="+planL+" with added length="+bestImprovement);
+						for (int m = bLength - Backtrack; m < bLength + bestImprovement; m++) {
+							xArray[m] = bestBranch.xArray[m];
+							zArray[m] = bestBranch.zArray[m];
+							//failString=bestBranch.failString;
+							failCode = bestBranch.failCode;
+						}
+						hitMaxDepth = bestBranch.hitMaxDepth;
+						bLength += bestImprovement;
+					}
+					//else if(DEBUG) FMLLog.getLogger().info("Could not improve wall "+IDString()+" at n="+bLength+"\n");
+					if (depth == 0 && hitMaxDepth && bLength < maxLength) {
+						hitMaxDepth = false;
+						fails = 1;
+						//if(DEBUG) FMLLog.getLogger().info("Hit max search depth, continuing planning wall "+IDString()+"at n="+bLength+" from root");
+					} else {
+						break; //we have added branches if any and did not hit max depth, so break
+					}
 				}
-			}//end main loop
-			if (depth == 0) {
-				bLength -= endBLength;
-				if (bLength < startN)
-					bLength = startN;
+				//if(DEBUG && planL>startN) printWall(startN);
 			}
-			setCursor(0);
-			return bLength - startN;
+		}//end main loop
+		if (depth == 0) {
+			bLength -= endBLength;
+			if (bLength < startN)
+				bLength = startN;
+		}
+		setCursor(0);
+		return bLength - startN;
 	}
 
 	//****************************************  FUNCTION  - printWall  *************************************************************************************//
@@ -599,9 +598,9 @@ public class BuildingWall extends Building {
 		int ptY = getY(pt);
 		if (ptY < 0)
 			return getX(pt) >= buffer;
-			if (ptY >= bLength)
-				return getX(pt) >= xArray[bLength - 1] + buffer;
-				return getX(pt) >= xArray[ptY] + buffer;
+		if (ptY >= bLength)
+			return getX(pt) >= xArray[bLength - 1] + buffer;
+		return getX(pt) >= xArray[ptY] + buffer;
 	}
 
 	public boolean queryLayout(int layoutCode) {
@@ -758,12 +757,12 @@ public class BuildingWall extends Building {
 		int id = world.getBlockId(pt[0], pt[1], pt[2]);
 		int meta = world.getBlockMetadata(pt[0], pt[1], pt[2]);
 		if (IS_STAIRS_BLOCK[id] && STAIRS_META_TO_DIR[meta < 4 ? meta : (meta - 4)] == rotDir(bDir, -bHand))
-			world.setBlock(pt[0], pt[1], pt[2], stairToSolidBlock(id));
+			world.setBlock(pt[0], pt[1], pt[2], stairToSolidBlock(id), 0, 2);
 		pt = getIJKPt(bWidth, WalkHeight - 1, 0);
 		id = world.getBlockId(pt[0], pt[1], pt[2]);
 		meta = world.getBlockMetadata(pt[0], pt[1], pt[2]);
 		if (IS_STAIRS_BLOCK[id] && STAIRS_META_TO_DIR[meta < 4 ? meta : (meta - 4)] == rotDir(bDir, bHand))
-			world.setBlock(pt[0], pt[1], pt[2], stairToSolidBlock(id));
+			world.setBlock(pt[0], pt[1], pt[2], stairToSolidBlock(id), 0, 2);
 	}
 
 	private void pickTowers(boolean circular_, boolean endTowers) {

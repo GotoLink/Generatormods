@@ -34,12 +34,15 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import net.minecraft.block.*;
+import net.minecraft.entity.item.EntityPainting;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.tileentity.TileEntityMobSpawner;
+import net.minecraft.tileentity.TileEntitySign;
 import net.minecraft.village.VillageDoorInfo;
 import net.minecraft.world.World;
 import net.minecraftforge.common.IPlantable;
@@ -64,14 +67,12 @@ public class Building {
 	private int xI, yI, xK, yK; //
 	protected int bHand; // hand of secondary axis. Takes values of 1 for right-handed, -1 for left-handed.
 	protected int bDir; // Direction code of primary axis. Takes values of DIR_NORTH=0,DIR_EAST=1,DIR_SOUTH=2,DIR_WEST=3.
-
 	// **************************************** CONSTRUCTOR - findSurfaceJ
 	// *************************************************************************************//
 	// Finds a surface block.
 	// Depending on the value of waterIsSurface and wallIsSurface will treat
 	// liquid and wall blocks as either solid or air.
 	public final static int IGNORE_WATER = -1;
-
 	// TODO should use real blockID instead
 	public final static int STONE_ID = 1, GRASS_ID = 2, DIRT_ID = 3, COBBLESTONE_ID = 4, WOOD_ID = 5, WATER_ID = 8, STATIONARY_WATER_ID = 9, LAVA_ID = 10, STATIONARY_LAVA_ID = 11, SAND_ID = 12,
 			GRAVEL_ID = 13, COAL_ORE_ID = 16, LOG_ID = 17, GLASS_ID = 20, DISPENSER_ID = 23, SANDSTONE_ID = 24, BED_BLOCK_ID = 26, POWERED_RAIL_ID = 27, DETECTOR_RAIL_ID = 28, STICKY_PISTON_ID = 29,
@@ -81,16 +82,13 @@ public class Building {
 			WOOD_PLATE_ID = 72, REDSTONE_ORE_ID = 73, GLOWING_REDSTONE_ORE_ID = 74, REDSTONE_TORCH_OFF_ID = 75, REDSTONE_TORCH_ON_ID = 76, STONE_BUTTON_ID = 77, SNOW_ID = 78, ICE_ID = 79,
 			CACTUS_ID = 81, CLAY_ID = 82, SUGAR_CANE_BLOCK_ID = 83, FENCE_ID = 85, PUMPKIN_ID = 86, NETHERRACK_ID = 87, SOUL_SAND_ID = 88, GLOWSTONE_ID = 89, PORTAL_ID = 90, JACK_O_LANTERN_ID = 91,
 			DIODE_BLOCK_OFF_ID = 93, DIODE_BLOCK_ON_ID = 94;
-
 	public final static int LOCKED_CHEST_ID = 95, TRAP_DOOR_ID = 96, SILVERFISH_BLOCK_ID = 97, STONE_BRICK_ID = 98, IRON_BARS_ID = 101, GLASS_PANE_ID = 102, PUMPKIN_STEM_ID = 104,
 			MELON_STEM_ID = 105, VINES_ID = 106, FENCE_GATE_ID = 107, BRICK_STAIRS_ID = 108, STONE_BRICK_STAIRS_ID = 109, MYCELIUM_ID = 110, NETHER_BRICK_ID = 112, NETHER_BRICK_FENCE_ID = 113,
 			NETHER_BRICK_STAIRS_ID = 114, NETHER_WART_ID = 115, ENCHANTMENT_TABLE_ID = 116, BREWING_STAND_BLOCK_ID = 117, CAULDRON_BLOCK_ID = 118, END_PORTAL_ID = 119, END_PORTAL_FRAME_ID = 120,
 			END_STONE_ID = 121, DRAGON_EGG_ID = 122, REDSTONE_LAMP_OFF_ID = 123, REDSTONE_LAMP_ON_ID = 124, WOOD_DOUBLE_SLAB_ID = 125, WOOD_SLAB_ID = 126, SAND_STAIRS_ID = 128,
 			TRIPWIRE_SOURCE_ID = 131, TRIPWIRE_ID = 132;
-
 	public final static int SPRUCE_STAIRS_ID = 134, BIRCH_STAIRS_ID = 135, JUNGLE_STAIRS_ID = 136, WOOD_BUTTON_ID = 143, CHEST_TRAP_ID = 146, COMPARATOR_ID = 149, LIGHT_DETECTOR_ID = 151,
 			HOPPER_ID = 154, QUARTZ_ID = 155, QUARTZ_STAIRS_ID = 156, ACTIVATORRAIL_ID = 157, DROPPER_ID = 158;
-
 	// Special Blocks
 	public final static int SPECIAL_BLOCKID_START = 300, PRESERVE_ID = 300, ZOMBIE_SPAWNER_ID = 301, SKELETON_SPAWNER_ID = 302, SPIDER_SPAWNER_ID = 303, CREEPER_SPAWNER_ID = 304,
 			UPRIGHT_SPAWNER_ID = 305, EASY_SPAWNER_ID = 306, MEDIUM_SPAWNER_ID = 307, HARD_SPAWNER_ID = 308, EASY_CHEST_ID = 309, MEDIUM_CHEST_ID = 310, HARD_CHEST_ID = 311, TOWER_CHEST_ID = 312,
@@ -98,23 +96,18 @@ public class Building {
 			SLIME_SPAWNER_ID = 328, LAVA_SLIME_SPAWNER_ID = 329, VILLAGER_SPAWNER_ID = 330, SNOW_GOLEM_SPAWNER_ID = 331, MUSHROOM_COW_SPAWNER_ID = 332, SHEEP_SPAWNER_ID = 333, COW_SPAWNER_ID = 334,
 			CHICKEN_SPAWNER_ID = 335, SQUID_SPAWNER_ID = 336, WOLF_SPAWNER_ID = 337, GIANT_ZOMBIE_SPAWNER_ID = 338, SILVERFISH_SPAWNER_ID = 339, DRAGON_SPAWNER_ID = 340, OCELOT_SPAWNER_ID = 341,
 			IRON_GOLEM_SPAWNER_ID = 342, WITHERBOSS_SPAWNER_ID = 343, BAT_SPAWNER_ID = 344, WITCH_SPAWNER_ID = 345;
-
 	// maps block metadata to a dir
 	public final static int[] BED_META_TO_DIR = new int[] { DIR_SOUTH, DIR_WEST, DIR_NORTH, DIR_EAST }, STAIRS_META_TO_DIR = new int[] { DIR_EAST, DIR_WEST, DIR_SOUTH, DIR_NORTH },
 			LADDER_META_TO_DIR = new int[] { DIR_NORTH, DIR_SOUTH, DIR_WEST, DIR_EAST }, TRAPDOOR_META_TO_DIR = new int[] { DIR_SOUTH, DIR_NORTH, DIR_EAST, DIR_WEST }, VINES_META_TO_DIR = new int[] {
-		0, DIR_SOUTH, DIR_WEST, 0, DIR_NORTH, 0, 0, 0, DIR_EAST }, DOOR_META_TO_DIR = new int[] { DIR_WEST, DIR_NORTH, DIR_EAST, DIR_SOUTH };
-
+					0, DIR_SOUTH, DIR_WEST, 0, DIR_NORTH, 0, 0, 0, DIR_EAST }, DOOR_META_TO_DIR = new int[] { DIR_WEST, DIR_NORTH, DIR_EAST, DIR_SOUTH };
 	// inverse map should be {North_inv,East_inv,dummy,West_inv,South_inv}
 	// inverse map should be {North_inv,East_inv,South_inv, West_inv}
 	public final static int[] BED_DIR_TO_META = new int[] { 2, 3, 0, 1 }, BUTTON_DIR_TO_META = new int[] { 4, 1, 3, 2 }, STAIRS_DIR_TO_META = new int[] { 3, 0, 2, 1 }, LADDER_DIR_TO_META = new int[] {
-		2, 5, 3, 4 }, TRAPDOOR_DIR_TO_META = new int[] { 1, 2, 0, 3 }, VINES_DIR_TO_META = new int[] { 4, 8, 1, 2 }, DOOR_DIR_TO_META = new int[] { 3, 0, 1, 2 },
-				PAINTING_DIR_TO_FACEDIR = new int[] { 0, 3, 2, 1 };
-
+			2, 5, 3, 4 }, TRAPDOOR_DIR_TO_META = new int[] { 1, 2, 0, 3 }, VINES_DIR_TO_META = new int[] { 4, 8, 1, 2 }, DOOR_DIR_TO_META = new int[] { 3, 0, 1, 2 },
+			PAINTING_DIR_TO_FACEDIR = new int[] { 0, 3, 2, 1 };
 	public final static int[] DIR_TO_I = new int[] { 0, 1, 0, -1 }, DIR_TO_K = new int[] { -1, 0, 1, 0 };
-
 	// for use in local orientation
 	public final static int[] DIR_TO_X = new int[] { 0, 1, 0, -1 }, DIR_TO_Y = new int[] { 1, 0, -1, 0 };
-
 	// some prebuilt directional blocks
 	public final static int[] WEST_FACE_TORCH_BLOCK = new int[] { TORCH_ID, BUTTON_DIR_TO_META[DIR_WEST] }, EAST_FACE_TORCH_BLOCK = new int[] { TORCH_ID, BUTTON_DIR_TO_META[DIR_EAST] },
 			NORTH_FACE_TORCH_BLOCK = new int[] { TORCH_ID, BUTTON_DIR_TO_META[DIR_NORTH] }, SOUTH_FACE_TORCH_BLOCK = new int[] { TORCH_ID, BUTTON_DIR_TO_META[DIR_SOUTH] },
@@ -122,7 +115,6 @@ public class Building {
 			PRESERVE_BLOCK = new int[] { PRESERVE_ID, 0 }, HARD_SPAWNER_BLOCK = new int[] { HARD_SPAWNER_ID, 0 }, PIG_ZOMBIE_SPAWNER_BLOCK = new int[] { PIG_ZOMBIE_SPAWNER_ID, 0 },
 			ENDERMAN_SPAWNER_BLOCK = new int[] { ENDERMAN_SPAWNER_ID, 0 }, TOWER_CHEST_BLOCK = new int[] { TOWER_CHEST_ID, 0 }, HARD_CHEST_BLOCK = new int[] { HARD_CHEST_ID, 0 },
 			PORTAL_BLOCK = new int[] { PORTAL_ID, 0 };
-
 	protected static boolean[] IS_ARTIFICAL_BLOCK = new boolean[4096], IS_WALLABLE = new boolean[4096], IS_DELAY_BLOCK = new boolean[4096], IS_LOAD_TRASMITER_BLOCK = new boolean[4096],
 			IS_WATER_BLOCK = new boolean[4096], IS_FLOWING_BLOCK = new boolean[4096], IS_ORE_BLOCK = new boolean[4096], IS_STAIRS_BLOCK = new boolean[4096], IS_DOOR_BLOCK = new boolean[4096],
 			IS_LIGHT_BLOCK = new boolean[4096];
@@ -151,6 +143,92 @@ public class Building {
 		}
 		delayedBuildQueue = new LinkedList<int[]>();
 	}
+
+	static {
+		for (int blockID = 0; blockID < IS_ARTIFICAL_BLOCK.length; blockID++) {
+			Block block = Block.blocksList[blockID];
+			// note lava is considered to NOT be a liquid, and is therefore not
+			// wallable. This is so we can build cities on the lava surface.
+			IS_WATER_BLOCK[blockID] = blockID == WATER_ID || blockID == STATIONARY_WATER_ID || blockID == ICE_ID;
+			if (block != null) {
+				IS_STAIRS_BLOCK[blockID] = block instanceof BlockStairs;
+				IS_DOOR_BLOCK[blockID] = block instanceof BlockDoor;
+				IS_FLOWING_BLOCK[blockID] = block instanceof BlockFlowing || IS_WATER_BLOCK[blockID] || blockID == STATIONARY_LAVA_ID || blockID == LAVA_ID || block instanceof BlockSand
+						|| block instanceof BlockGravel;
+				IS_WALLABLE[blockID] = IS_WATER_BLOCK[blockID] || block instanceof BlockLog || block instanceof BlockWeb || block instanceof BlockSnow || block instanceof BlockPumpkin
+						|| block instanceof BlockMelon || block instanceof IShearable || block instanceof BlockMushroomCap || block instanceof IPlantable;
+				IS_ORE_BLOCK[blockID] = blockID == REDSTONE_ORE_ID || blockID == CLAY_ID || block instanceof BlockOre;
+				// Define by what it is not. Not IS_WALLABLE and not a naturally
+				// occurring solid block (obsidian/bedrock are exceptions)
+				IS_ARTIFICAL_BLOCK[blockID] = !(IS_WALLABLE[blockID] || IS_ORE_BLOCK[blockID] || blockID == STONE_ID || block instanceof BlockDirt || block instanceof BlockGrass
+						|| block instanceof BlockGravel || block instanceof BlockSand || block instanceof BlockNetherrack || block instanceof BlockSoulSand || block instanceof BlockMycelium);
+				IS_LIGHT_BLOCK[blockID] = block instanceof BlockTorch || block instanceof BlockGlowStone;
+				IS_DELAY_BLOCK[blockID] = /* IS_STAIRS_BLOCK[blockID] || */IS_FLOWING_BLOCK[blockID] || IS_LIGHT_BLOCK[blockID] || block instanceof BlockLever || block instanceof BlockSign
+						|| block instanceof BlockFire || block instanceof BlockButton || block instanceof BlockVine || block instanceof BlockRedstoneWire || block instanceof BlockDispenser
+						|| block instanceof BlockFurnace;
+				// Define by what it is not.
+				IS_LOAD_TRASMITER_BLOCK[blockID] = !(IS_WALLABLE[blockID] || IS_FLOWING_BLOCK[blockID] || block instanceof BlockTorch || blockID == LADDER_ID);
+			} else {
+				IS_WALLABLE[blockID] = blockID == 0;
+				IS_LOAD_TRASMITER_BLOCK[blockID] = !(IS_WALLABLE[blockID] || blockID == PRESERVE_ID);
+			}
+		}
+	}
+	protected final static int[] STEP_TO_STAIRS = { STONE_BRICK_STAIRS_ID, SAND_STAIRS_ID, WOOD_STAIRS_ID, COBBLESTONE_STAIRS_ID, BRICK_STAIRS_ID, STONE_BRICK_STAIRS_ID, NETHER_BRICK_STAIRS_ID,
+			QUARTZ_STAIRS_ID };
+	public final static int MAX_SPHERE_DIAM = 40;
+	public final static int[][] SPHERE_SHAPE = new int[MAX_SPHERE_DIAM + 1][];
+	public final static int[][][] CIRCLE_SHAPE = new int[MAX_SPHERE_DIAM + 1][][], CIRCLE_CRENEL = new int[MAX_SPHERE_DIAM + 1][][];
+	static {
+		for (int diam = 1; diam <= MAX_SPHERE_DIAM; diam++) {
+			circleShape(diam);
+		}
+		// change diam 6 shape to look better
+		CIRCLE_SHAPE[6] = new int[][] { { -1, -1, 1, 1, -1, -1 }, { -1, 1, 0, 0, 1, -1 }, { 1, 0, 0, 0, 0, 1 }, { 1, 0, 0, 0, 0, 1 }, { -1, 1, 0, 0, 1, -1 }, { -1, -1, 1, 1, -1, -1 } };
+		CIRCLE_CRENEL[6] = new int[][] { { -1, -1, 1, 0, -1, -1 }, { -1, 0, 0, 0, 1, -1 }, { 1, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 1 }, { -1, 1, 0, 0, 0, -1 }, { -1, -1, 0, 1, -1, -1 } };
+	}
+	private final static int LIGHTING_INVERSE_DENSITY = 10;
+	private final static boolean[] randLightingHash = new boolean[512];
+	static {
+		Random rand = new Random();
+		for (int m = 0; m < randLightingHash.length; m++)
+			randLightingHash[m] = rand.nextInt(LIGHTING_INVERSE_DENSITY) == 0;
+	}
+	// TODO:Extend chest_type_labels as config option
+	public static String[] CHEST_TYPE_LABELS = new String[] { "CHEST_EASY", "CHEST_MEDIUM", "CHEST_HARD", "CHEST_TOWER" };
+	public static List<String> CHEST_LABELS = new ArrayList<String>();
+	public static int[] DEFAULT_CHEST_TRIES = new int[] { 4, 6, 6, 6 };
+	// chest items[n] format is array of 6 arrays
+	// 0array - idx
+	// 1array - blockId
+	// 2array - block damage/meta
+	// 3array - block weight
+	// 4array - block min stacksize
+	// 5array block max stacksize
+	public static int[][][] DEFAULT_CHEST_ITEMS = new int[][][] { { // Easy
+			{ 0, Item.arrow.itemID, 0, 2, 1, 12 }, { 1, Item.swordIron.itemID, 0, 2, 1, 1 }, { 2, Item.legsLeather.itemID, 0, 1, 1, 1 }, { 3, Item.shovelIron.itemID, 0, 1, 1, 1 },
+					{ 4, Item.silk.itemID, 0, 1, 1, 1 }, { 5, Item.pickaxeIron.itemID, 0, 2, 1, 1 }, { 6, Item.bootsLeather.itemID, 0, 1, 1, 1 }, { 7, Item.bucketEmpty.itemID, 0, 1, 1, 1 },
+					{ 8, Item.helmetLeather.itemID, 0, 1, 1, 1 }, { 9, Item.seeds.itemID, 0, 1, 10, 15 }, { 10, Item.goldNugget.itemID, 0, 2, 3, 8 }, { 11, Item.potion.itemID, 5, 2, 1, 1 }, // healing I
+					{ 12, Item.potion.itemID, 4, 1, 1, 1 } }, // poison, hehe
+			{ // Medium
+			{ 0, Item.swordGold.itemID, 0, 2, 1, 1 }, { 1, Item.bucketMilk.itemID, 0, 2, 1, 1 }, { 2, WEB_ID, 0, 1, 8, 16 }, { 3, Item.shovelGold.itemID, 0, 1, 1, 1 },
+					{ 4, Item.hoeGold.itemID, 0, 1, 0, 1 }, { 5, Item.pocketSundial.itemID, 0, 1, 1, 1 }, { 6, Item.axeIron.itemID, 0, 3, 1, 1 }, { 7, Item.map.itemID, 0, 1, 1, 1 },
+					{ 8, Item.appleRed.itemID, 0, 2, 2, 3 }, { 9, Item.compass.itemID, 0, 1, 1, 1 }, { 10, Item.ingotIron.itemID, 0, 1, 5, 8 }, { 11, Item.slimeBall.itemID, 0, 1, 1, 3 },
+					{ 12, OBSIDIAN_ID, 0, 1, 1, 4 }, { 13, Item.bread.itemID, 0, 2, 8, 15 }, { 14, Item.potion.itemID, 2, 1, 1, 1 }, { 15, Item.potion.itemID, 37, 3, 1, 1 }, // healing II
+					{ 16, Item.potion.itemID, 34, 1, 1, 1 }, // swiftness II
+					{ 17, Item.potion.itemID, 9, 1, 1, 1 } }, // strength
+			{ // Hard
+			{ 0, STICKY_PISTON_ID, 0, 2, 6, 12 }, { 1, WEB_ID, 0, 1, 8, 24 }, { 2, Item.cookie.itemID, 0, 2, 8, 18 }, { 3, Item.axeDiamond.itemID, 0, 1, 1, 1 },
+					{ 4, Item.minecartEmpty.itemID, 0, 1, 12, 24 }, { 5, Item.redstone.itemID, 0, 2, 12, 24 }, { 6, Item.bucketLava.itemID, 0, 2, 1, 1 }, { 7, Item.enderPearl.itemID, 0, 1, 1, 1 },
+					{ 8, MOB_SPAWNER_ID, 0, 1, 2, 4 }, { 9, Item.record13.itemID, 0, 1, 1, 1 }, { 10, Item.appleGold.itemID, 0, 1, 4, 8 }, { 11, TNT_ID, 0, 2, 8, 20 },
+					{ 12, Item.diamond.itemID, 0, 2, 1, 4 }, { 13, Item.ingotGold.itemID, 0, 2, 30, 64 }, { 14, Item.potion.itemID, 37, 3, 1, 1 }, // healing II
+					{ 15, Item.potion.itemID, 49, 2, 1, 1 }, // regeneration II
+					{ 16, Item.potion.itemID, 3, 2, 1, 1 } }, // fire resistance
+			{ // Tower
+			{ 0, Item.arrow.itemID, 0, 1, 1, 12 }, { 1, Item.fishRaw.itemID, 0, 2, 1, 1 }, { 2, Item.helmetGold.itemID, 0, 1, 1, 1 }, { 3, WEB_ID, 0, 1, 1, 12 },
+					{ 4, Item.ingotIron.itemID, 0, 1, 2, 3 }, { 5, Item.swordStone.itemID, 0, 1, 1, 1 }, { 6, Item.axeIron.itemID, 0, 1, 1, 1 }, { 7, Item.egg.itemID, 0, 2, 8, 16 },
+					{ 8, Item.saddle.itemID, 0, 1, 1, 1 }, { 9, Item.wheat.itemID, 0, 2, 3, 6 }, { 10, Item.gunpowder.itemID, 0, 1, 2, 4 }, { 11, Item.plateLeather.itemID, 0, 1, 1, 1 },
+					{ 12, PUMPKIN_ID, 0, 1, 1, 5 }, { 13, Item.goldNugget.itemID, 0, 2, 1, 3 } } };
 
 	// ******************** LOCAL COORDINATE FUNCTIONS - ACCESSORS
 	// *************************************************************************************************************//
@@ -209,21 +287,24 @@ public class Building {
 
 	// &&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setPainting
 	// &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
-	// FIXME
 	public void setPainting(int[] pt, int metadata) {
-		wgt.master.logOrPrint("trying to set a painting, but method is not yet working", "WARNING");
 		// painting uses same orientation meta as ladders.
 		// Have to adjust ijk since unlike ladders the entity exists at the
 		// block it is hung on.
-		/*
-		 * int dir=orientDirToBDir(LADDER_META_TO_DIR[metadata]);
-		 * pt[0]-=DIR_TO_I[dir]; pt[2]-=DIR_TO_K[dir]; if(dir==DIR_NORTH)
-		 * pt[2]++; else if(dir==DIR_SOUTH) pt[2]--; else if(dir==DIR_WEST)
-		 * pt[0]++; else pt[0]--; EntityPainting entitypainting = new
-		 * EntityPainting(world,pt[0],pt[1],pt[2],PAINTING_DIR_TO_FACEDIR[dir]);
-		 * if(!world.isRemote && entitypainting.onValidSurface() )
-		 * world.spawnEntityInWorld(entitypainting);
-		 */
+		int dir = orientDirToBDir(LADDER_META_TO_DIR[metadata]);
+		pt[0] -= DIR_TO_I[dir];
+		pt[2] -= DIR_TO_K[dir];
+		if (dir == DIR_NORTH)
+			pt[2]++;
+		else if (dir == DIR_SOUTH)
+			pt[2]--;
+		else if (dir == DIR_WEST)
+			pt[0]++;
+		else
+			pt[0]--;
+		EntityPainting entitypainting = new EntityPainting(world, pt[0], pt[1], pt[2], PAINTING_DIR_TO_FACEDIR[dir]);
+		if (!world.isRemote && entitypainting.onValidSurface())
+			world.spawnEntityInWorld(entitypainting);
 	}
 
 	// ******************** ORIENTATION FUNCTIONS
@@ -262,16 +343,14 @@ public class Building {
 	// &&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setSignOrPost
 	// &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
 	public void setSignOrPost(int x2, int z2, int y2, boolean post, int sDir, String[] lines) {
-		wgt.master.logOrPrint("trying to set a sign, but method is not yet working", "WARNING");
-		/*
-		 * int[] pt=getIJKPt(x2,z2,y2);
-		 * world.setBlockAndMetadata(pt[0],pt[1],pt[2],post ? SIGN_POST_ID :
-		 * WALL_SIGN_ID,sDir); TileEntitySign
-		 * tileentitysign=(TileEntitySign)world.getBlockTileEntity
-		 * (pt[0],pt[1],pt[2]); if(tileentitysign==null) return; for(int
-		 * m=0;m<Math.min(lines.length, 4);m++){
-		 * tileentitysign.signText[m]=lines[m]; }
-		 */
+		int[] pt = getIJKPt(x2, z2, y2);
+		world.setBlock(pt[0], pt[1], pt[2], post ? SIGN_POST_ID : WALL_SIGN_ID, sDir, 2);
+		TileEntitySign tileentitysign = (TileEntitySign) world.getBlockTileEntity(pt[0], pt[1], pt[2]);
+		if (tileentitysign == null)
+			return;
+		for (int m = 0; m < Math.min(lines.length, 4); m++) {
+			tileentitysign.signText[m] = lines[m];
+		}
 	}
 
 	// call with z=start of builDown, will buildDown a maximum of maxDepth
@@ -477,15 +556,15 @@ public class Building {
 		if (IS_DELAY_BLOCK[block[0]])
 			delayedBuildQueue.offer(new int[] { pt[0], pt[1], pt[2], block[0], rotateMetadata(block[0], block[1]) });
 		else if (randLightingHash[(x & 0x7) | (y & 0x38) | (z & 0x1c0)]) {
-			if (block[1] == 0)
-				world.setBlock(pt[0], pt[1], pt[2], block[0]);
-			else
-				world.setBlock(pt[0], pt[1], pt[2], block[0], rotateMetadata(block[0], block[1]), 2);
+			world.setBlock(pt[0], pt[1], pt[2], block[0], rotateMetadata(block[0], block[1]), 2);
 		} else {
 			if (block[1] == 0)
 				setBlockNoLighting(world, pt[0], pt[1], pt[2], block[0]);
 			else
 				setBlockAndMetaNoLighting(world, pt[0], pt[1], pt[2], block[0], rotateMetadata(block[0], block[1]));
+		}
+		if (IS_DOOR_BLOCK[block[0]]) {
+			addDoorToNewListIfAppropriate(pt[0], pt[1], pt[2]);
 		}
 	}
 
@@ -509,6 +588,9 @@ public class Building {
 			world.setBlock(pt[0], pt[1], pt[2], blockID, rotateMetadata(blockID, metadata), 3);
 		else
 			setBlockAndMetaNoLighting(world, pt[0], pt[1], pt[2], blockID, rotateMetadata(blockID, metadata));
+		if (IS_DOOR_BLOCK[blockID]) {
+			addDoorToNewListIfAppropriate(pt[0], pt[1], pt[2]);
+		}
 	}
 
 	protected final void setOrigin(int i0_, int j0_, int k0_) {
@@ -536,7 +618,7 @@ public class Building {
 			if (presentBlock != 0 && !IS_WATER_BLOCK[presentBlock]) {
 				if (!(IS_WATER_BLOCK[world.getBlockId(pt[0] - 1, pt[1], pt[2])] || IS_WATER_BLOCK[world.getBlockId(pt[0], pt[1], pt[2] - 1)]
 						|| IS_WATER_BLOCK[world.getBlockId(pt[0] + 1, pt[1], pt[2])] || IS_WATER_BLOCK[world.getBlockId(pt[0], pt[1], pt[2] + 1)] || IS_WATER_BLOCK[world.getBlockId(pt[0], pt[1] + 1,
-								pt[2])])) {// don't adjacent to a water block
+						pt[2])])) {// don't adjacent to a water block
 					world.setBlockToAir(pt[0], pt[1], pt[2]);
 				}
 			}
@@ -594,7 +676,7 @@ public class Building {
 			setMobSpawner(pt, 1, 5);
 			return;
 		case WALL_STAIR_ID:
-			world.setBlock(pt[0], pt[1], pt[2], STEP_ID, rotateMetadata(STEP_ID, metadata), 3);
+			world.setBlock(pt[0], pt[1], pt[2], STEP_ID, rotateMetadata(STEP_ID, metadata), 2);
 			return; // this case should not be reached
 			// case PAINTING_SPECIAL_ID: delayedBuildQueue.offer(new
 			// int[]{pt[0],pt[1],pt[2],blockID,metadata}); return;
@@ -661,10 +743,14 @@ public class Building {
 		}
 	}
 
-	// TODO:To use for city doors
-	private void addDoorToNewListIfAppropriate(int id, int par1, int par2, int par3) {
-		if (!((PopulatorWalledCity) this.wgt.master).cityDoors.containsKey(id)) {
-			((PopulatorWalledCity) this.wgt.master).cityDoors.put(id, new ArrayList());
+	private void addDoorToNewListIfAppropriate(int par1, int par2, int par3) {
+		if (!(this.wgt instanceof WorldGenWalledCity)) {
+			return;
+		}
+		int id = getKnownBuilding();
+		if (id == -1) {
+			((PopulatorWalledCity) this.wgt.master).cityDoors.put(bID, new ArrayList());
+			id = bID;
 		}
 		int l = ((BlockDoor) Block.doorWood).getDoorOrientation(this.world, par1, par2, par3);
 		int i1;
@@ -719,6 +805,15 @@ public class Building {
 		int[][] itempool = wgt.chestItems[chestType];
 		int idx = pickWeightedOption(world.rand, itempool[3], itempool[0]);
 		return new ItemStack(itempool[1][idx], itempool[4][idx] + random.nextInt(itempool[5][idx] - itempool[4][idx] + 1), itempool[2][idx]);
+	}
+
+	private int getKnownBuilding() {
+		Set keys = ((PopulatorWalledCity) this.wgt.master).cityDoors.keySet();
+		for (int id = bID - 3; id < bID + 4; id++) {
+			if (keys.contains(id))
+				return id;
+		}
+		return -1;
 	}
 
 	private int rotateMetadata(int blockID, int metadata) {
@@ -1155,7 +1250,7 @@ public class Building {
 	// &&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setLootChest
 	// &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
 	private final void setLootChest(int[] pt, int chestType) {
-		if (world.setBlock(pt[0], pt[1], pt[2], CHEST_ID)) {
+		if (world.setBlock(pt[0], pt[1], pt[2], CHEST_ID, 0, 2)) {
 			TileEntityChest chest = (TileEntityChest) world.getBlockTileEntity(pt[0], pt[1], pt[2]);
 			if (wgt.chestTries != null) {
 				for (int m = 0; m < wgt.chestTries[chestType]; m++) {
@@ -1260,100 +1355,12 @@ public class Building {
 			mob = "Skeleton";
 			break;
 		}
-		world.setBlock(pt[0], pt[1], pt[2], MOB_SPAWNER_ID);
+		world.setBlock(pt[0], pt[1], pt[2], MOB_SPAWNER_ID, 0, 2);
 		TileEntityMobSpawner tileentitymobspawner = (TileEntityMobSpawner) world.getBlockTileEntity(pt[0], pt[1], pt[2]);
 		if (tileentitymobspawner != null)
 			tileentitymobspawner.getSpawnerLogic().setMobID(mob);
 	}
 
-	static {
-		for (int blockID = 0; blockID < IS_ARTIFICAL_BLOCK.length; blockID++) {
-			Block block = Block.blocksList[blockID];
-			// note lava is considered to NOT be a liquid, and is therefore not
-			// wallable. This is so we can build cities on the lava surface.
-			IS_WATER_BLOCK[blockID] = blockID == WATER_ID || blockID == STATIONARY_WATER_ID || blockID == ICE_ID;
-			if (block != null) {
-				IS_STAIRS_BLOCK[blockID] = block instanceof BlockStairs;
-				IS_DOOR_BLOCK[blockID] = block instanceof BlockDoor;
-				IS_FLOWING_BLOCK[blockID] = block instanceof BlockFlowing || IS_WATER_BLOCK[blockID] || blockID == STATIONARY_LAVA_ID || blockID == LAVA_ID || block instanceof BlockSand
-						|| block instanceof BlockGravel;
-				IS_WALLABLE[blockID] = IS_WATER_BLOCK[blockID] || block instanceof BlockLog || block instanceof BlockWeb || block instanceof BlockSnow || block instanceof BlockPumpkin
-						|| block instanceof BlockMelon || block instanceof IShearable || block instanceof BlockMushroomCap || block instanceof IPlantable;
-				IS_ORE_BLOCK[blockID] = blockID == REDSTONE_ORE_ID || blockID == CLAY_ID || block instanceof BlockOre;
-				// Define by what it is not. Not IS_WALLABLE and not a naturally
-				// occurring solid block (obsidian/bedrock are exceptions)
-				IS_ARTIFICAL_BLOCK[blockID] = !(IS_WALLABLE[blockID] || IS_ORE_BLOCK[blockID] || blockID == STONE_ID || block instanceof BlockDirt || block instanceof BlockGrass
-						|| block instanceof BlockGravel || block instanceof BlockSand || block instanceof BlockNetherrack || block instanceof BlockSoulSand || block instanceof BlockMycelium);
-				IS_LIGHT_BLOCK[blockID] = block instanceof BlockTorch || block instanceof BlockGlowStone;
-				IS_DELAY_BLOCK[blockID] = /* IS_STAIRS_BLOCK[blockID] || */IS_FLOWING_BLOCK[blockID] || IS_LIGHT_BLOCK[blockID] || block instanceof BlockLever || block instanceof BlockSign
-						|| block instanceof BlockFire || block instanceof BlockButton || block instanceof BlockVine || block instanceof BlockRedstoneWire || block instanceof BlockDispenser
-						|| block instanceof BlockFurnace;
-				// Define by what it is not.
-				IS_LOAD_TRASMITER_BLOCK[blockID] = !(IS_WALLABLE[blockID] || IS_FLOWING_BLOCK[blockID] || block instanceof BlockTorch || blockID == LADDER_ID);
-			} else {
-				IS_WALLABLE[blockID] = blockID == 0;
-				IS_LOAD_TRASMITER_BLOCK[blockID] = !(IS_WALLABLE[blockID] || blockID == PRESERVE_ID);
-			}
-		}
-	}
-
-	protected final static int[] STEP_TO_STAIRS = { STONE_BRICK_STAIRS_ID, SAND_STAIRS_ID, WOOD_STAIRS_ID, COBBLESTONE_STAIRS_ID, BRICK_STAIRS_ID, STONE_BRICK_STAIRS_ID, NETHER_BRICK_STAIRS_ID,
-		QUARTZ_STAIRS_ID };
-
-	public final static int MAX_SPHERE_DIAM = 40;
-
-	public final static int[][] SPHERE_SHAPE = new int[MAX_SPHERE_DIAM + 1][];
-	public final static int[][][] CIRCLE_SHAPE = new int[MAX_SPHERE_DIAM + 1][][], CIRCLE_CRENEL = new int[MAX_SPHERE_DIAM + 1][][];
-	static {
-		for (int diam = 1; diam <= MAX_SPHERE_DIAM; diam++) {
-			circleShape(diam);
-		}
-		// change diam 6 shape to look better
-		CIRCLE_SHAPE[6] = new int[][] { { -1, -1, 1, 1, -1, -1 }, { -1, 1, 0, 0, 1, -1 }, { 1, 0, 0, 0, 0, 1 }, { 1, 0, 0, 0, 0, 1 }, { -1, 1, 0, 0, 1, -1 }, { -1, -1, 1, 1, -1, -1 } };
-		CIRCLE_CRENEL[6] = new int[][] { { -1, -1, 1, 0, -1, -1 }, { -1, 0, 0, 0, 1, -1 }, { 1, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 1 }, { -1, 1, 0, 0, 0, -1 }, { -1, -1, 0, 1, -1, -1 } };
-	}
-	private final static int LIGHTING_INVERSE_DENSITY = 10;
-	private final static boolean[] randLightingHash = new boolean[512];
-	static {
-		Random rand = new Random();
-		for (int m = 0; m < randLightingHash.length; m++)
-			randLightingHash[m] = rand.nextInt(LIGHTING_INVERSE_DENSITY) == 0;
-	}
-	// TODO:Extend chest_type_labels as config option
-	public static String[] CHEST_TYPE_LABELS = new String[] { "CHEST_EASY", "CHEST_MEDIUM", "CHEST_HARD", "CHEST_TOWER" };
-	public static List<String> CHEST_LABELS = new ArrayList<String>();
-	public static int[] DEFAULT_CHEST_TRIES = new int[] { 4, 6, 6, 6 };
-	// chest items[n] format is array of 6 arrays
-	// 0array - idx
-	// 1array - blockId
-	// 2array - block damage/meta
-	// 3array - block weight
-	// 4array - block min stacksize
-	// 5array block max stacksize
-	public static int[][][] DEFAULT_CHEST_ITEMS = new int[][][] { { // Easy
-		{ 0, Item.arrow.itemID, 0, 2, 1, 12 }, { 1, Item.swordIron.itemID, 0, 2, 1, 1 }, { 2, Item.legsLeather.itemID, 0, 1, 1, 1 }, { 3, Item.shovelIron.itemID, 0, 1, 1, 1 },
-		{ 4, Item.silk.itemID, 0, 1, 1, 1 }, { 5, Item.pickaxeIron.itemID, 0, 2, 1, 1 }, { 6, Item.bootsLeather.itemID, 0, 1, 1, 1 }, { 7, Item.bucketEmpty.itemID, 0, 1, 1, 1 },
-		{ 8, Item.helmetLeather.itemID, 0, 1, 1, 1 }, { 9, Item.seeds.itemID, 0, 1, 10, 15 }, { 10, Item.goldNugget.itemID, 0, 2, 3, 8 }, { 11, Item.potion.itemID, 5, 2, 1, 1 }, // healing I
-		{ 12, Item.potion.itemID, 4, 1, 1, 1 } }, // poison, hehe
-		{ // Medium
-			{ 0, Item.swordGold.itemID, 0, 2, 1, 1 }, { 1, Item.bucketMilk.itemID, 0, 2, 1, 1 }, { 2, WEB_ID, 0, 1, 8, 16 }, { 3, Item.shovelGold.itemID, 0, 1, 1, 1 },
-			{ 4, Item.hoeGold.itemID, 0, 1, 0, 1 }, { 5, Item.pocketSundial.itemID, 0, 1, 1, 1 }, { 6, Item.axeIron.itemID, 0, 3, 1, 1 }, { 7, Item.map.itemID, 0, 1, 1, 1 },
-			{ 8, Item.appleRed.itemID, 0, 2, 2, 3 }, { 9, Item.compass.itemID, 0, 1, 1, 1 }, { 10, Item.ingotIron.itemID, 0, 1, 5, 8 }, { 11, Item.slimeBall.itemID, 0, 1, 1, 3 },
-			{ 12, OBSIDIAN_ID, 0, 1, 1, 4 }, { 13, Item.bread.itemID, 0, 2, 8, 15 }, { 14, Item.potion.itemID, 2, 1, 1, 1 }, { 15, Item.potion.itemID, 37, 3, 1, 1 }, // healing II
-			{ 16, Item.potion.itemID, 34, 1, 1, 1 }, // swiftness II
-			{ 17, Item.potion.itemID, 9, 1, 1, 1 } }, // strength
-			{ // Hard
-				{ 0, STICKY_PISTON_ID, 0, 2, 6, 12 }, { 1, WEB_ID, 0, 1, 8, 24 }, { 2, Item.cookie.itemID, 0, 2, 8, 18 }, { 3, Item.axeDiamond.itemID, 0, 1, 1, 1 },
-				{ 4, Item.minecartEmpty.itemID, 0, 1, 12, 24 }, { 5, Item.redstone.itemID, 0, 2, 12, 24 }, { 6, Item.bucketLava.itemID, 0, 2, 1, 1 }, { 7, Item.enderPearl.itemID, 0, 1, 1, 1 },
-				{ 8, MOB_SPAWNER_ID, 0, 1, 2, 4 }, { 9, Item.record13.itemID, 0, 1, 1, 1 }, { 10, Item.appleGold.itemID, 0, 1, 4, 8 }, { 11, TNT_ID, 0, 2, 8, 20 },
-				{ 12, Item.diamond.itemID, 0, 2, 1, 4 }, { 13, Item.ingotGold.itemID, 0, 2, 30, 64 }, { 14, Item.potion.itemID, 37, 3, 1, 1 }, // healing II
-				{ 15, Item.potion.itemID, 49, 2, 1, 1 }, // regeneration II
-				{ 16, Item.potion.itemID, 3, 2, 1, 1 } }, // fire resistance
-				{ // Tower
-					{ 0, Item.arrow.itemID, 0, 1, 1, 12 }, { 1, Item.fishRaw.itemID, 0, 2, 1, 1 }, { 2, Item.helmetGold.itemID, 0, 1, 1, 1 }, { 3, WEB_ID, 0, 1, 1, 12 },
-					{ 4, Item.ingotIron.itemID, 0, 1, 2, 3 }, { 5, Item.swordStone.itemID, 0, 1, 1, 1 }, { 6, Item.axeIron.itemID, 0, 1, 1, 1 }, { 7, Item.egg.itemID, 0, 2, 8, 16 },
-					{ 8, Item.saddle.itemID, 0, 1, 1, 1 }, { 9, Item.wheat.itemID, 0, 2, 3, 6 }, { 10, Item.gunpowder.itemID, 0, 1, 2, 4 }, { 11, Item.plateLeather.itemID, 0, 1, 1, 1 },
-					{ 12, PUMPKIN_ID, 0, 1, 1, 5 }, { 13, Item.goldNugget.itemID, 0, 2, 1, 3 } } };
 	public static int distance(int[] pt1, int[] pt2) {
 		return (int) Math.sqrt((pt1[0] - pt2[0]) * (pt1[0] - pt2[0]) + (pt1[1] - pt2[1]) * (pt1[1] - pt2[1]) + (pt1[2] - pt2[2]) * (pt1[2] - pt2[2]));
 	}
@@ -1476,18 +1483,21 @@ public class Building {
 	public final static int rotDir(int dir, int rotation) {
 		return (dir + rotation + 4) % 4;
 	}
+
 	public static void setBlockAndMetaNoLighting(World world, int i, int j, int k, int blockId, int meta) {
 		if (i < 0xfe363c80 || k < 0xfe363c80 || i >= 0x1c9c380 || k >= 0x1c9c380 || j < 0 || j > Building.WORLD_MAX_Y)
 			return;
 		world.getChunkFromChunkCoords(i >> 4, k >> 4).setBlockIDWithMetadata(i & 0xf, j, k & 0xf, blockId, meta);
 	}
+
 	// ******************** STATIC FUNCTIONS
 	// ******************************************************************************************************************************************//
 	public static void setBlockNoLighting(World world, int i, int j, int k, int blockId) {
 		if (i < 0xfe363c80 || k < 0xfe363c80 || i >= 0x1c9c380 || k >= 0x1c9c380 || j < 0 || j > Building.WORLD_MAX_Y)
 			return;
-		world.setBlock(i, j, k, blockId);
+		world.setBlock(i, j, k, blockId, 0, 2);
 	}
+
 	protected final static int blockToStairs(int[] idAndMeta) {
 		switch (idAndMeta[0]) {
 		case COBBLESTONE_ID:
@@ -1523,6 +1533,7 @@ public class Building {
 			return idAndMeta[0];
 		}
 	}
+
 	protected final static int[] blockToStepMeta(int[] idAndMeta) {
 		if (!IS_ARTIFICAL_BLOCK[idAndMeta[0]])
 			return new int[] { idAndMeta[0], idAndMeta[1] };
@@ -1550,6 +1561,7 @@ public class Building {
 			return new int[] { idAndMeta[0], 0 };
 		}
 	}
+
 	protected final static void fillDown(int[] lowPt, int jtop, World world) {
 		while (IS_ARTIFICAL_BLOCK[world.getBlockId(lowPt[0], lowPt[1], lowPt[2])])
 			lowPt[1]--;
@@ -1564,6 +1576,7 @@ public class Building {
 		for (; lowPt[1] <= jtop; lowPt[1]++)
 			setBlockAndMetaNoLighting(world, lowPt[0], lowPt[1], lowPt[2], lowPt[1] == jtop ? oldSurfaceBlockId : fillBlockId, 0);
 	}
+
 	protected final static int minOrMax(int[] a, boolean isMin) {
 		if (isMin) {
 			int min = Integer.MAX_VALUE;
@@ -1577,12 +1590,14 @@ public class Building {
 			return max;
 		}
 	}
+
 	// wiggle allows for some leeway before nonzero is detected
 	protected final static int signum(int n, int wiggle) {
 		if (n <= wiggle && -n <= wiggle)
 			return 0;
 		return n < 0 ? -1 : 1;
 	}
+
 	protected final static int stairToSolidBlock(int blockID) {
 		switch (blockID) {
 		case COBBLESTONE_STAIRS_ID:
@@ -1603,6 +1618,7 @@ public class Building {
 			return blockID;
 		}
 	}
+
 	private final static void circleShape(int diam) {
 		float rad = diam / 2.0F;
 		float[][] shape_density = new float[diam][diam];
@@ -1649,6 +1665,7 @@ public class Building {
 		for (int y = diam / 2; y < diam; y++)
 			SPHERE_SHAPE[diam][y - diam / 2] = (2 * (diam / 2 - xheight[y]) + (diam % 2 == 0 ? 0 : 1));
 	}
+
 	private final static boolean isSolidBlock(int blockID) {
 		return blockID != 0 && Block.blocksList[blockID].blockMaterial.isSolid();
 	}

@@ -63,46 +63,18 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 		BIOME_NAMES[0] = "Underground";
 	}
 
-	abstract public void loadDataFiles();
-
-	protected void initializeLogging(String message) throws IOException {
-		if (LOG.length() > 8350)
-			LOG.delete();
-		lw = new PrintWriter(new BufferedWriter(new FileWriter(LOG, LOG.canWrite())));
-		logOrPrint(message, "INFO");
-		if (BIOME_NAMES[1] == null || BIOME_NAMES[1].equals("")) {
-			for (int i = 0; i < BIOME_NAMES.length - 1; i++) {
-				if (BiomeGenBase.biomeList[i] != null)
-					BIOME_NAMES[i + 1] = BiomeGenBase.biomeList[i].biomeName;
-			}
-		}
-	}
-
-	protected void finalizeLoading(boolean hasTemplate, String structure) {
-		if (hasTemplate) {
-			lw.println("\nTemplate loading complete.");
-		}
-		lw.println("Probability of " + structure + " generation attempt per chunk explored is " + GlobalFrequency + ", with " + TriesPerChunk + " tries per chunk.");
-	}
-
-	//****************************  FUNCTION - updateWorldExplored *************************************************************************************//
-	public void updateWorldExplored(World world) {
-		if (isNewWorld(world)) {
-			logOrPrint("Starting to survey " + world.provider.getDimensionName() + " for generation...", "INFO");
-		}
-	}
-
 	//**************************** FORGE WORLD GENERATING HOOK ****************************************************************************//
 	@Override
 	public void generate(Random random, int chunkX, int chunkZ, World world, IChunkProvider chunkGenerator, IChunkProvider chunkProvider) {
-		if (world.getWorldInfo().isMapFeaturesEnabled() && !(world.provider instanceof WorldProviderEnd)) { //if structures are enabled
-																											//can generate in any world except in The End,
-																											//if id is in AllowedDimensions list
+		if (world.getWorldInfo().isMapFeaturesEnabled() && !(world.provider instanceof WorldProviderEnd)) {
+			//if structures are enabled can generate in any world except in The End, if id is in AllowedDimensions list
 			if (AllowedDimensions.contains(world.provider.dimensionId)) {
 				generateSurface(world, random, chunkX, chunkZ);
 			}
 		}
 	}
+
+	abstract public void generate(World world, Random random, int i, int k);
 
 	//****************************  FUNCTION - GenerateSurface  *************************************************************************************//
 	public void generateSurface(World world, Random random, int i, int k) {
@@ -112,30 +84,14 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 		generate(world, random, i * 16, k * 16);
 	}
 
-	abstract public void generate(World world, Random random, int i, int k);
-
-	//****************************  FUNCTION - getGlobalOptions *************************************************************************************//
-	protected final void getGlobalOptions() {
-		File settingsFile = new File(CONFIG_DIRECTORY, settingsFileName);
-		if (settingsFile.exists()) {
-			lw.println("Getting global options for " + this.toString() + " ...");
-			try {
-				loadGlobalOptions(new BufferedReader(new FileReader(settingsFile)));
-			} catch (FileNotFoundException e) {
-			}
-		} else {
-			copyDefaultChestItems();
-			try {
-				writeGlobalOptions(new PrintWriter(new BufferedWriter(new FileWriter(settingsFile))));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
-	abstract public void writeGlobalOptions(PrintWriter pw);
+	abstract public void loadDataFiles();
 
 	abstract public void loadGlobalOptions(BufferedReader br);
+
+	public void logOrPrint(String str, String lvl) {
+		if (this.logActivated)
+			logger.log(Level.parse(lvl), str);
+	}
 
 	//****************************  FUNCTION - chestContentsList *************************************************************************************//
 	public void readChestItemsList(PrintWriter lw, String line, BufferedReader br) throws IOException {
@@ -180,6 +136,30 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 		}
 	}
 
+	//if an integer ruleId: try reading from rules and return.
+	//If a rule: parse the rule, add it to rules, and return.
+	public TemplateRule readRuleIdOrRule(String splitString, String read, TemplateRule[] rules) throws Exception {
+		String postSplit = read.split(splitString)[1].trim();
+		try {
+			int ruleId = Integer.parseInt(postSplit);
+			return rules[ruleId];
+		} catch (NumberFormatException e) {
+			TemplateRule r = new TemplateRule(postSplit, false);
+			return r;
+		} catch (Exception e) {
+			throw new Exception("Error reading block rule for variable: " + e.toString() + ". Line:" + read);
+		}
+	}
+
+	//****************************  FUNCTION - updateWorldExplored *************************************************************************************//
+	public void updateWorldExplored(World world) {
+		if (isNewWorld(world)) {
+			logOrPrint("Starting to survey " + world.provider.getDimensionName() + " for generation...", "INFO");
+		}
+	}
+
+	abstract public void writeGlobalOptions(PrintWriter pw);
+
 	protected void copyDefaultChestItems() {
 		chestTries = new int[Building.DEFAULT_CHEST_TRIES.length];
 		for (int n = 0; n < Building.DEFAULT_CHEST_TRIES.length; n++)
@@ -193,6 +173,66 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 					chestItems[l][n][m] = Building.DEFAULT_CHEST_ITEMS[l][m][n];
 				}
 			}
+		}
+	}
+
+	protected void finalizeLoading(boolean hasTemplate, String structure) {
+		if (hasTemplate) {
+			lw.println("\nTemplate loading complete.");
+		}
+		lw.println("Probability of " + structure + " generation attempt per chunk explored is " + GlobalFrequency + ", with " + TriesPerChunk + " tries per chunk.");
+	}
+
+	//****************************  FUNCTION - getGlobalOptions *************************************************************************************//
+	protected final void getGlobalOptions() {
+		File settingsFile = new File(CONFIG_DIRECTORY, settingsFileName);
+		if (settingsFile.exists()) {
+			lw.println("Getting global options for " + this.toString() + " ...");
+			try {
+				loadGlobalOptions(new BufferedReader(new FileReader(settingsFile)));
+			} catch (FileNotFoundException e) {
+			}
+		} else {
+			copyDefaultChestItems();
+			try {
+				writeGlobalOptions(new PrintWriter(new BufferedWriter(new FileWriter(settingsFile))));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	protected void initializeLogging(String message) throws IOException {
+		if (LOG.length() > 8350)
+			LOG.delete();
+		lw = new PrintWriter(new BufferedWriter(new FileWriter(LOG, LOG.canWrite())));
+		logOrPrint(message, "INFO");
+		if (BIOME_NAMES[1] == null || BIOME_NAMES[1].equals("")) {
+			for (int i = 0; i < BIOME_NAMES.length - 1; i++) {
+				if (BiomeGenBase.biomeList[i] != null)
+					BIOME_NAMES[i + 1] = BiomeGenBase.biomeList[i].biomeName;
+			}
+		}
+	}
+
+	protected boolean isNewWorld(World world) {
+		if (currentWorld == null || currentWorld.isEmpty()) {
+			currentWorld.add(world);
+			return true;
+		} else if (currentWorld.contains(world)) {
+			return false;
+		} else {
+			File newdir = getWorldSaveDir(world);
+			for (World w : currentWorld) {
+				//check the filename in case we changed of dimension
+				File olddir = getWorldSaveDir(w);
+				if (newdir != null && olddir != null && olddir.compareTo(newdir) != 0) {
+					// new world has definitely been created.
+					currentWorld.add(world);
+					return true;
+				}
+			}
+			return false;
 		}
 	}
 
@@ -244,14 +284,17 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 			logActivated = readBooleanParam(lw, logActivated, ":", read);
 	}
 
-	public static int readIntParam(PrintWriter lw, int defaultVal, String splitString, String read) {
-		try {
-			defaultVal = Integer.parseInt(read.split(splitString)[1].trim());
-		} catch (NumberFormatException e) {
-			lw.println("Error parsing int: " + e.toString());
-			lw.println("Using default " + defaultVal + ". Line:" + read);
+	public static ArrayList<byte[][]> readAutomataList(PrintWriter lw, String splitString, String read) {
+		ArrayList<byte[][]> rules = new ArrayList<byte[][]>();
+		String[] ruleStrs = (read.split(splitString)[1]).split(",");
+		for (String ruleStr : ruleStrs) {
+			byte[][] rule = BuildingCellularAutomaton.parseCARule(ruleStr.trim(), lw);
+			if (rule != null)
+				rules.add(rule);
 		}
-		return defaultVal;
+		if (rules.size() == 0)
+			return null;
+		return rules;
 	}
 
 	public static boolean readBooleanParam(PrintWriter lw, boolean defaultVal, String splitString, String read) {
@@ -274,19 +317,29 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 		return defaultVal;
 	}
 
-	//if an integer ruleId: try reading from rules and return.
-	//If a rule: parse the rule, add it to rules, and return.
-	public TemplateRule readRuleIdOrRule(String splitString, String read, TemplateRule[] rules) throws Exception {
-		String postSplit = read.split(splitString)[1].trim();
+	public static Integer[] readIntList(PrintWriter lw, Integer[] defaultVals, String splitString, String read) {
 		try {
-			int ruleId = Integer.parseInt(postSplit);
-			return rules[ruleId];
-		} catch (NumberFormatException e) {
-			TemplateRule r = new TemplateRule(postSplit, false);
-			return r;
+			String[] check = (read.split(splitString)[1]).split(",");
+			Integer[] newVals = new Integer[check.length];
+			for (int i = 0; i < check.length; i++) {
+				newVals[i] = Integer.valueOf(Integer.parseInt(check[i].trim()));
+			}
+			return newVals;
 		} catch (Exception e) {
-			throw new Exception("Error reading block rule for variable: " + e.toString() + ". Line:" + read);
+			lw.println("Error parsing intlist input: " + e.toString());
+			lw.println("Using default. Line:" + read);
 		}
+		return defaultVals;
+	}
+
+	public static int readIntParam(PrintWriter lw, int defaultVal, String splitString, String read) {
+		try {
+			defaultVal = Integer.parseInt(read.split(splitString)[1].trim());
+		} catch (NumberFormatException e) {
+			lw.println("Error parsing int: " + e.toString());
+			lw.println("Using default " + defaultVal + ". Line:" + read);
+		}
+		return defaultVal;
 	}
 
 	public static int[] readNamedCheckList(PrintWriter lw, int[] defaultVals, String splitString, String read, String[] names, String allStr) {
@@ -320,62 +373,6 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 		return defaultVals;
 	}
 
-	public static Integer[] readIntList(PrintWriter lw, Integer[] defaultVals, String splitString, String read) {
-		try {
-			String[] check = (read.split(splitString)[1]).split(",");
-			Integer[] newVals = new Integer[check.length];
-			for (int i = 0; i < check.length; i++) {
-				newVals[i] = Integer.valueOf(Integer.parseInt(check[i].trim()));
-			}
-			return newVals;
-		} catch (Exception e) {
-			lw.println("Error parsing intlist input: " + e.toString());
-			lw.println("Using default. Line:" + read);
-		}
-		return defaultVals;
-	}
-
-	public static ArrayList<byte[][]> readAutomataList(PrintWriter lw, String splitString, String read) {
-		ArrayList<byte[][]> rules = new ArrayList<byte[][]>();
-		String[] ruleStrs = (read.split(splitString)[1]).split(",");
-		for (String ruleStr : ruleStrs) {
-			byte[][] rule = BuildingCellularAutomaton.parseCARule(ruleStr.trim(), lw);
-			if (rule != null)
-				rules.add(rule);
-		}
-		if (rules.size() == 0)
-			return null;
-		return rules;
-	}
-
-	private static File getMinecraftBaseDir() {
-		if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
-			return FMLClientHandler.instance().getClient().getMinecraft().mcDataDir;
-		}
-		return FMLCommonHandler.instance().getMinecraftServerInstance().getFile("");
-	}
-
-	protected boolean isNewWorld(World world) {
-		if (currentWorld == null || currentWorld.isEmpty()) {
-			currentWorld.add(world);
-			return true;
-		} else if (currentWorld.contains(world)) {
-			return false;
-		} else {
-			File newdir = getWorldSaveDir(world);
-			for (World w : currentWorld) {
-				//check the filename in case we changed of dimension
-				File olddir = getWorldSaveDir(w);
-				if (newdir != null && olddir != null && olddir.compareTo(newdir) != 0) {
-					// new world has definitely been created.
-					currentWorld.add(world);
-					return true;
-				}
-			}
-			return false;
-		}
-	}
-
 	protected static File getWorldSaveDir(World world) {
 		ISaveHandler worldSaver = world.getSaveHandler();
 		if (worldSaver.getChunkLoader(world.provider) instanceof AnvilChunkLoader) {
@@ -384,8 +381,10 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 		return null;
 	}
 
-	public void logOrPrint(String str, String lvl) {
-		if (this.logActivated)
-			logger.log(Level.parse(lvl), str);
+	private static File getMinecraftBaseDir() {
+		if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
+			return FMLClientHandler.instance().getClient().getMinecraft().mcDataDir;
+		}
+		return FMLCommonHandler.instance().getMinecraftServerInstance().getFile("");
 	}
 }

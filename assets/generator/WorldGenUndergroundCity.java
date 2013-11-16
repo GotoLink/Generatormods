@@ -70,85 +70,6 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread {
 		return true;
 	}
 
-	//****************************  FUNCTION - hollow *************************************************************************************//
-	//hollows out a nearly spherical void as part of the cavern structure
-	private boolean hollow(int i, int j, int k, int diam) {
-		if (diam < MIN_DIAM)
-			return false;
-		if (j - diam / 2 < 10 || j + diam / 2 > Building.findSurfaceJ(world, i + diam / 2, k + diam / 2, Building.WORLD_MAX_Y, false, Building.IGNORE_WATER) - 3)
-			return false;
-		hollows.add(new int[] { i, j, k, diam, 0 });
-		if (diam == MAX_DIAM)
-			((PopulatorWalledCity) master).chatBuildingCity("** Building underground city... **", null);
-		for (int z1 = 0; z1 < (diam + 1) / 2; z1++) {
-			//top half
-			int top_diam = Building.SPHERE_SHAPE[diam][z1];
-			int offset = (diam - top_diam) / 2;
-			for (int y1 = 0; y1 < top_diam; y1++) {
-				for (int x1 = 0; x1 < top_diam; x1++) {
-					if (Building.CIRCLE_SHAPE[top_diam][x1][y1] >= 0) {
-						Building.setBlockAndMetaNoLighting(world, i + offset + x1, j + z1, k + offset + y1, 0, 0);
-					}
-				}
-			}
-			for (int y1 = 0; y1 < top_diam; y1++) {
-				for (int x1 = 0; x1 < top_diam; x1++) {
-					if (Building.CIRCLE_SHAPE[top_diam][x1][y1] >= 0) {
-						//keep gravel and water from pouring in
-						for (int z2 = z1 + 1; z2 <= z1 + 3; z2++)
-							if (Building.IS_FLOWING_BLOCK[world.getBlockId(i + offset + x1, j + z2, k + offset + y1)]) {
-								world.setBlock(i + offset + x1, j + z2, k + offset + y1, Building.STONE_ID);
-							}
-					}
-				}
-			}
-			//bottom half, make flatter than top half
-			int bottom_diam = Building.SPHERE_SHAPE[diam][2 * z1 / 3];
-			offset = (diam - bottom_diam) / 2;
-			if (z1 > 0) {
-				for (int y1 = 0; y1 < bottom_diam; y1++) {
-					for (int x1 = 0; x1 < bottom_diam; x1++) {
-						if (Building.CIRCLE_SHAPE[bottom_diam][x1][y1] >= 0) {
-							Building.setBlockAndMetaNoLighting(world, i + offset + x1, j - z1, k + offset + y1, 0, 0);
-						}
-					}
-				}
-				for (int y1 = 0; y1 < bottom_diam; y1++) {
-					for (int x1 = 0; x1 < bottom_diam; x1++) {
-						if (Building.CIRCLE_SHAPE[bottom_diam][x1][y1] >= 0) {
-							int blockId = world.getBlockId(i + offset + x1, j - z1 - 1, k + offset + y1);
-							if (Building.IS_ORE_BLOCK[blockId] && blockId != Building.COAL_ORE_ID)
-								world.setBlock(i + offset + x1, j - z1 - 1, k + offset + y1, Building.STONE_ID);
-						}
-					}
-				}
-			}
-		}
-		//update center of mass numbers
-		int hollowMass = diam * diam * diam;
-		cavernMass += hollowMass;
-		cavernMass_i += hollowMass * i;
-		cavernMass_k += hollowMass * k;
-		//spawn nearby hollows
-		int successes = 0;
-		for (int tries = 0; tries < (diam >= MAX_DIAM - 2 * DIAM_INCREMENT ? 10 : MAX_CHILDREN); tries++) {
-			if (random.nextFloat() < P_CHILDREN) {
-				float theta;
-				if (diam >= MAX_DIAM - 2 * DIAM_INCREMENT)
-					theta = random.nextFloat() * 6.283185F;
-				//theta points away from center of mass + noise
-				else
-					theta = (float) Math.atan((cavernMass * i - cavernMass_i) / (cavernMass * k - cavernMass_k)) + THETA_SHIFT_SIGMA * random.nextFloat() * (random.nextFloat() - 0.5F);
-				float rshift = (float) Building.SPHERE_SHAPE[diam][diam / 3] + (float) diam * (HORIZ_SHIFT_SIGMA / 2 - HORIZ_SHIFT_SIGMA * random.nextFloat());
-				if (hollow(i + (int) (MathHelper.sin(theta) * rshift), j + random.nextInt(random.nextInt(Z_SHIFT) + 1) - Z_SHIFT / 4, k + (int) (MathHelper.cos(theta) * rshift), diam - DIAM_INCREMENT))
-					successes++;
-				if (successes >= MAX_CHILDREN)
-					break;
-			}
-		}
-		return true;
-	}
-
 	//****************************  FUNCTION - buildEntranceways *************************************************************************************//
 	private List<BuildingUndergroundEntranceway> buildEntranceways() {
 		if (!pws.MakeUndergroundEntranceways)
@@ -217,5 +138,84 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread {
 			}
 		}
 		return farthestHollow;
+	}
+
+	//****************************  FUNCTION - hollow *************************************************************************************//
+	//hollows out a nearly spherical void as part of the cavern structure
+	private boolean hollow(int i, int j, int k, int diam) {
+		if (diam < MIN_DIAM)
+			return false;
+		if (j - diam / 2 < 10 || j + diam / 2 > Building.findSurfaceJ(world, i + diam / 2, k + diam / 2, Building.WORLD_MAX_Y, false, Building.IGNORE_WATER) - 3)
+			return false;
+		hollows.add(new int[] { i, j, k, diam, 0 });
+		if (diam == MAX_DIAM)
+			((PopulatorWalledCity) master).chatBuildingCity("** Building underground city... **", null);
+		for (int z1 = 0; z1 < (diam + 1) / 2; z1++) {
+			//top half
+			int top_diam = Building.SPHERE_SHAPE[diam][z1];
+			int offset = (diam - top_diam) / 2;
+			for (int y1 = 0; y1 < top_diam; y1++) {
+				for (int x1 = 0; x1 < top_diam; x1++) {
+					if (Building.CIRCLE_SHAPE[top_diam][x1][y1] >= 0) {
+						Building.setBlockAndMetaNoLighting(world, i + offset + x1, j + z1, k + offset + y1, 0, 0);
+					}
+				}
+			}
+			for (int y1 = 0; y1 < top_diam; y1++) {
+				for (int x1 = 0; x1 < top_diam; x1++) {
+					if (Building.CIRCLE_SHAPE[top_diam][x1][y1] >= 0) {
+						//keep gravel and water from pouring in
+						for (int z2 = z1 + 1; z2 <= z1 + 3; z2++)
+							if (Building.IS_FLOWING_BLOCK[world.getBlockId(i + offset + x1, j + z2, k + offset + y1)]) {
+								world.setBlock(i + offset + x1, j + z2, k + offset + y1, Building.STONE_ID, 0, 2);
+							}
+					}
+				}
+			}
+			//bottom half, make flatter than top half
+			int bottom_diam = Building.SPHERE_SHAPE[diam][2 * z1 / 3];
+			offset = (diam - bottom_diam) / 2;
+			if (z1 > 0) {
+				for (int y1 = 0; y1 < bottom_diam; y1++) {
+					for (int x1 = 0; x1 < bottom_diam; x1++) {
+						if (Building.CIRCLE_SHAPE[bottom_diam][x1][y1] >= 0) {
+							Building.setBlockAndMetaNoLighting(world, i + offset + x1, j - z1, k + offset + y1, 0, 0);
+						}
+					}
+				}
+				for (int y1 = 0; y1 < bottom_diam; y1++) {
+					for (int x1 = 0; x1 < bottom_diam; x1++) {
+						if (Building.CIRCLE_SHAPE[bottom_diam][x1][y1] >= 0) {
+							int blockId = world.getBlockId(i + offset + x1, j - z1 - 1, k + offset + y1);
+							if (Building.IS_ORE_BLOCK[blockId] && blockId != Building.COAL_ORE_ID)
+								world.setBlock(i + offset + x1, j - z1 - 1, k + offset + y1, Building.STONE_ID, 0, 2);
+						}
+					}
+				}
+			}
+		}
+		//update center of mass numbers
+		int hollowMass = diam * diam * diam;
+		cavernMass += hollowMass;
+		cavernMass_i += hollowMass * i;
+		cavernMass_k += hollowMass * k;
+		//spawn nearby hollows
+		int successes = 0;
+		for (int tries = 0; tries < (diam >= MAX_DIAM - 2 * DIAM_INCREMENT ? 10 : MAX_CHILDREN); tries++) {
+			if (random.nextFloat() < P_CHILDREN) {
+				float theta;
+				if (diam >= MAX_DIAM - 2 * DIAM_INCREMENT)
+					theta = random.nextFloat() * 6.283185F;
+				//theta points away from center of mass + noise
+				else
+					theta = (float) Math.atan((cavernMass * i - cavernMass_i) / (cavernMass * k - cavernMass_k)) + THETA_SHIFT_SIGMA * random.nextFloat() * (random.nextFloat() - 0.5F);
+				float rshift = Building.SPHERE_SHAPE[diam][diam / 3] + diam * (HORIZ_SHIFT_SIGMA / 2 - HORIZ_SHIFT_SIGMA * random.nextFloat());
+				if (hollow(i + (int) (MathHelper.sin(theta) * rshift), j + random.nextInt(random.nextInt(Z_SHIFT) + 1) - Z_SHIFT / 4, k + (int) (MathHelper.cos(theta) * rshift), diam - DIAM_INCREMENT))
+					successes++;
+				if (successes >= MAX_CHILDREN)
+					break;
+			}
+		}
+		return true;
 	}
 }

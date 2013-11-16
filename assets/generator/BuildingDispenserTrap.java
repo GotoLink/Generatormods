@@ -21,13 +21,11 @@ import net.minecraft.tileentity.TileEntityDispenser;
  */
 public class BuildingDispenserTrap extends Building {
 	public final static int ARROW_MISSILE = 0, DAMAGE_POTION_MISSILE = 1;
-
 	private static int[][] CODE_TO_BLOCK = new int[][] { { PRESERVE_ID, 0 }, {}, { 0, 0 }, { REDSTONE_WIRE_ID, 0 }, { REDSTONE_TORCH_ON_ID, BUTTON_DIR_TO_META[DIR_NORTH] },
-		{ REDSTONE_TORCH_OFF_ID, BUTTON_DIR_TO_META[DIR_SOUTH] }, { REDSTONE_TORCH_ON_ID, 5 } };
-
+			{ REDSTONE_TORCH_OFF_ID, BUTTON_DIR_TO_META[DIR_SOUTH] }, { REDSTONE_TORCH_ON_ID, 5 } };
 	private static int[][][] MECHANISM = new int[][][] { { { 0, 0, 0 }, { 0, 0, 0 }, { 0, 1, 0 }, { 0, 0, 0 } }, { { 0, 0, 0 }, { 1, 1, 1 }, { 1, 4, 1 }, { 1, 1, 1 } },
-		{ { 0, 0, 0 }, { 1, 1, 1 }, { 1, 1, 1 }, { 1, 5, 1 } }, { { 0, 1, 0 }, { 1, 1, 1 }, { 1, 3, 1 }, { 1, 1, 1 } }, { { 0, 1, 0 }, { 1, 6, 1 }, { 1, 0, 1 }, { 1, 2, 1 } },
-		{ { 0, 1, 0 }, { 1, 1, 1 }, { 1, 1, 1 }, { 1, 1, 1 } }, };
+			{ { 0, 0, 0 }, { 1, 1, 1 }, { 1, 1, 1 }, { 1, 5, 1 } }, { { 0, 1, 0 }, { 1, 1, 1 }, { 1, 3, 1 }, { 1, 1, 1 } }, { { 0, 1, 0 }, { 1, 6, 1 }, { 1, 0, 1 }, { 1, 2, 1 } },
+			{ { 0, 1, 0 }, { 1, 1, 1 }, { 1, 1, 1 }, { 1, 1, 1 } }, };
 
 	public BuildingDispenserTrap(WorldGeneratorThread wgt_, TemplateRule bRule_, int bDir_, int plateSeparation, int[] sourcePt) {
 		super(0, wgt_, bRule_, bDir_, 1, true, new int[] { 3, 6, plateSeparation }, sourcePt);
@@ -88,9 +86,10 @@ public class BuildingDispenserTrap extends Building {
 		}
 		return false;
 	}
+
 	private void setItemDispenser(int x, int z, int y, int metaDir, ItemStack itemstack) {
 		int[] pt = getIJKPt(x, z, y);
-		world.setBlock(pt[0], pt[1], pt[2], DISPENSER_ID);
+		world.setBlock(pt[0], pt[1], pt[2], DISPENSER_ID, 0, 2);
 		world.setBlockMetadataWithNotify(pt[0], pt[1], pt[2], LADDER_DIR_TO_META[orientDirToBDir(metaDir)], 3);
 		try {
 			TileEntityDispenser tileentitychest = (TileEntityDispenser) world.getBlockTileEntity(pt[0], pt[1], pt[2]);

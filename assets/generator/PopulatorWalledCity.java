@@ -36,7 +36,6 @@ import net.minecraft.util.ChatMessageComponent;
 import net.minecraft.village.Village;
 import net.minecraft.village.VillageDoorInfo;
 import net.minecraft.world.World;
-import net.minecraftforge.common.DimensionManager;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -66,131 +65,18 @@ public class PopulatorWalledCity extends BuildingExplorationHandler {
 	private File cityFile;
 	private Map<World, File> cityFiles;
 
-	@EventHandler
-	public void preInit(FMLPreInitializationEvent event) {
-		cityFiles = new HashMap();
-		cityLocations = new HashMap();
-		cityDoors = new HashMap();
-		logger = event.getModLog();
-		settingsFileName = "WalledCitySettings.txt";
-		templateFolderName = "walledcity";
-	}
-
-	//****************************  FUNCTION - loadDataFiles *************************************************************************************//
-	@Override
-	public final void loadDataFiles() {
-		try {
-			initializeLogging("Loading options and templates for the Walled City Generator.");
-			//read and check values from file
-			getGlobalOptions();
-			File stylesDirectory = new File(CONFIG_DIRECTORY, templateFolderName);
-			cityStyles = TemplateWall.loadWallStylesFromDir(stylesDirectory, this);
-			TemplateWall.loadStreets(cityStyles, new File(stylesDirectory, STREET_TEMPLATES_FOLDER_NAME), this);
-			for (int m = 0; m < cityStyles.size(); m++) {
-				if (cityStyles.get(m).underground) {
-					TemplateWall uws = cityStyles.remove(m);
-					uws.streets.add(uws); //underground cities have no outer walls, so this should be a street style
-					undergroundCityStyles.add(uws);
-					m--;
-				}
-			}
-			finalizeLoading(true, "city");
-		} catch (Exception e) {
-			errFlag = true;
-			lw.println("There was a problem loading the walled city mod: " + e.getMessage());
-			logOrPrint("There was a problem loading the walled city mod: " + e.getMessage(), "SEVERE");
-			e.printStackTrace();
-		} finally {
-			if (lw != null)
-				lw.close();
-		}
-		if (GlobalFrequency < 0.000001 && UndergroundGlobalFrequency < 0.000001)
-			errFlag = true;
-		dataFilesLoaded = true;
-	}
-
-	//****************************  FUNCTION - cityIsSeparated *************************************************************************************//
-	public boolean cityIsSeparated(World world, int i, int k, int cityType) {
-		if (cityLocations.containsKey(world)) {
-			for (int[] location : cityLocations.get(world)) {
-				if (location[2] == cityType && Math.abs(location[0] - i) + Math.abs(location[1] - k) < (cityType == CITY_TYPE_UNDERGROUND ? UndergroundMinCitySeparation : MinCitySeparation)) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
-
-	public static List<int[]> getCityLocs(File city) {
-		List<int[]> cityLocs = new ArrayList<int[]>();
-		BufferedReader br = null;
-		try {
-			br = new BufferedReader(new FileReader(city));
-			for (String read = br.readLine(); read != null; read = br.readLine()) {
-				String[] split = read.split(",");
-				if (split.length == 3) {
-					cityLocs.add(new int[] { Integer.parseInt(split[0]), Integer.parseInt(split[1]), Integer.parseInt(split[2]) });
-				}
-			}
-		} catch (IOException e) {
-			System.err.println(e.getMessage());
-		} finally {
-			try {
-				if (br != null)
-					br.close();
-			} catch (IOException e) {
-			}
-		}
-		return cityLocs;
-	}
-
-	//****************************  FUNCTION - saveCityLocations *************************************************************************************//
-	public void saveCityLocations(World world) {
-		PrintWriter pw = null;
-		try {
-			pw = new PrintWriter(new BufferedWriter(new FileWriter(cityFiles.get(world), true)));
-			BufferedReader br = new BufferedReader(new FileReader(cityFiles.get(world)));
-			if (br.readLine() == null) {
-				pw.println("City locations in " + world.provider.getDimensionName() + " of : " + world.getWorldInfo().getWorldName());
-			}
-			br.close();
-			int[] location = cityLocations.get(world).get(cityLocations.get(world).size() - 1);
-			pw.println(new StringBuilder(Integer.toString(location[0])).append(",").append(Integer.toString(location[1])).append(",").append(Integer.toString(location[2])));
-		} catch (IOException e) {
-			logOrPrint(e.getMessage(), "WARNING");
-		} finally {
-			if (pw != null)
-				pw.close();
-		}
-	}
-
-	//****************************  FUNCTION - updateWorldExplored *************************************************************************************//
-	@Override
-	public void updateWorldExplored(World world) {
-		super.updateWorldExplored(world);
-		cityFile = new File(getWorldSaveDir(world), world.provider.getDimensionName() + CITY_FILE_SAVE);
-		if (cityFiles.isEmpty() || !cityFiles.containsKey(world))
-			cityFiles.put(world, cityFile);
-		try {
-			if (!cityFile.createNewFile() && !cityLocations.containsKey(world))
-				cityLocations.put(world, getCityLocs(cityFile));
-		} catch (IOException e) {
-			logOrPrint(e.getMessage(), "WARNING");
-		}
-	}
-
 	//****************************  FUNCTION - addCityToVillages*************************************************************************************//
-	public void addCityToVillages(int[] args) {
-		//TODO:Add doors to cityDoors list:
-		if (args[0] != CITY_TYPE_UNDERGROUND) {
-			World world = DimensionManager.getWorld(args[0]);
-			Village city = new Village(world);
-			if (cityDoors.containsKey(args[1])) {
-				for (VillageDoorInfo door : cityDoors.get(args[1]))
-					if (door != null)
-						city.addVillageDoorInfo(door);
-				world.villageCollectionObj.getVillageList().add(city);
-				cityDoors.remove(args[1]);
+	public void addCityToVillages(World world, int id) {
+		if (world != null && world.provider.dimensionId != CITY_TYPE_UNDERGROUND) {
+			if (world.villageCollectionObj != null) {
+				Village city = new Village(world);
+				if (cityDoors.containsKey(id)) {
+					for (VillageDoorInfo door : cityDoors.get(id))
+						if (door != null)
+							city.addVillageDoorInfo(door);
+					world.villageCollectionObj.getVillageList().add(city);
+					cityDoors.remove(id);
+				}
 			}
 		}
 	}
@@ -237,6 +123,18 @@ public class PopulatorWalledCity extends BuildingExplorationHandler {
 		}
 	}
 
+	//****************************  FUNCTION - cityIsSeparated *************************************************************************************//
+	public boolean cityIsSeparated(World world, int i, int k, int cityType) {
+		if (cityLocations.containsKey(world)) {
+			for (int[] location : cityLocations.get(world)) {
+				if (location[2] == cityType && Math.abs(location[0] - i) + Math.abs(location[1] - k) < (cityType == CITY_TYPE_UNDERGROUND ? UndergroundMinCitySeparation : MinCitySeparation)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
 	//****************************  FUNCTION - generate *************************************************************************************//
 	@Override
 	public final void generate(World world, Random random, int i, int k) {
@@ -254,6 +152,39 @@ public class PopulatorWalledCity extends BuildingExplorationHandler {
 				wgt.setSpawnHeight(minSpawnHeight, maxSpawnHeight, false);
 			(wgt).run();
 		}
+	}
+
+	//****************************  FUNCTION - loadDataFiles *************************************************************************************//
+	@Override
+	public final void loadDataFiles() {
+		try {
+			initializeLogging("Loading options and templates for the Walled City Generator.");
+			//read and check values from file
+			getGlobalOptions();
+			File stylesDirectory = new File(CONFIG_DIRECTORY, templateFolderName);
+			cityStyles = TemplateWall.loadWallStylesFromDir(stylesDirectory, this);
+			TemplateWall.loadStreets(cityStyles, new File(stylesDirectory, STREET_TEMPLATES_FOLDER_NAME), this);
+			for (int m = 0; m < cityStyles.size(); m++) {
+				if (cityStyles.get(m).underground) {
+					TemplateWall uws = cityStyles.remove(m);
+					uws.streets.add(uws); //underground cities have no outer walls, so this should be a street style
+					undergroundCityStyles.add(uws);
+					m--;
+				}
+			}
+			finalizeLoading(true, "city");
+		} catch (Exception e) {
+			errFlag = true;
+			lw.println("There was a problem loading the walled city mod: " + e.getMessage());
+			logOrPrint("There was a problem loading the walled city mod: " + e.getMessage(), "SEVERE");
+			e.printStackTrace();
+		} finally {
+			if (lw != null)
+				lw.close();
+		}
+		if (GlobalFrequency < 0.000001 && UndergroundGlobalFrequency < 0.000001)
+			errFlag = true;
+		dataFilesLoaded = true;
 	}
 
 	//****************************  FUNCTION - getGlobalOptions  *************************************************************************************//
@@ -292,6 +223,66 @@ public class PopulatorWalledCity extends BuildingExplorationHandler {
 		}
 	}
 
+	//Load templates after mods have loaded so we can check whether any modded blockIDs are valid
+	@EventHandler
+	public void modsLoaded(FMLPostInitializationEvent event) {
+		if (!dataFilesLoaded)
+			loadDataFiles();
+		if (!errFlag) {
+			GameRegistry.registerWorldGenerator(this);
+		}
+	}
+
+	@EventHandler
+	public void preInit(FMLPreInitializationEvent event) {
+		cityFiles = new HashMap();
+		cityLocations = new HashMap();
+		cityDoors = new HashMap();
+		logger = event.getModLog();
+		settingsFileName = "WalledCitySettings.txt";
+		templateFolderName = "walledcity";
+	}
+
+	//****************************  FUNCTION - saveCityLocations *************************************************************************************//
+	public void saveCityLocations(World world) {
+		PrintWriter pw = null;
+		try {
+			pw = new PrintWriter(new BufferedWriter(new FileWriter(cityFiles.get(world), true)));
+			BufferedReader br = new BufferedReader(new FileReader(cityFiles.get(world)));
+			if (br.readLine() == null) {
+				pw.println("City locations in " + world.provider.getDimensionName() + " of : " + world.getWorldInfo().getWorldName());
+			}
+			br.close();
+			int[] location = cityLocations.get(world).get(cityLocations.get(world).size() - 1);
+			pw.println(new StringBuilder(Integer.toString(location[0])).append(",").append(Integer.toString(location[1])).append(",").append(Integer.toString(location[2])));
+		} catch (IOException e) {
+			logOrPrint(e.getMessage(), "WARNING");
+		} finally {
+			if (pw != null)
+				pw.close();
+		}
+	}
+
+	@Override
+	public String toString() {
+		return "WalledCityMod";
+	}
+
+	//****************************  FUNCTION - updateWorldExplored *************************************************************************************//
+	@Override
+	public void updateWorldExplored(World world) {
+		super.updateWorldExplored(world);
+		cityFile = new File(getWorldSaveDir(world), world.provider.getDimensionName() + CITY_FILE_SAVE);
+		if (cityFiles.isEmpty() || !cityFiles.containsKey(world))
+			cityFiles.put(world, cityFile);
+		try {
+			if (!cityFile.createNewFile() && !cityLocations.containsKey(world))
+				cityLocations.put(world, getCityLocs(cityFile));
+		} catch (IOException e) {
+			logOrPrint(e.getMessage(), "WARNING");
+		}
+	}
+
 	@Override
 	public void writeGlobalOptions(PrintWriter pw) {
 		printGlobalOptions(pw, false);
@@ -314,18 +305,26 @@ public class PopulatorWalledCity extends BuildingExplorationHandler {
 			pw.close();
 	}
 
-	@Override
-	public String toString() {
-		return "WalledCityMod";
-	}
-
-	//Load templates after mods have loaded so we can check whether any modded blockIDs are valid
-	@EventHandler
-	public void modsLoaded(FMLPostInitializationEvent event) {
-		if (!dataFilesLoaded)
-			loadDataFiles();
-		if (!errFlag) {
-			GameRegistry.registerWorldGenerator(this);
+	public static List<int[]> getCityLocs(File city) {
+		List<int[]> cityLocs = new ArrayList<int[]>();
+		BufferedReader br = null;
+		try {
+			br = new BufferedReader(new FileReader(city));
+			for (String read = br.readLine(); read != null; read = br.readLine()) {
+				String[] split = read.split(",");
+				if (split.length == 3) {
+					cityLocs.add(new int[] { Integer.parseInt(split[0]), Integer.parseInt(split[1]), Integer.parseInt(split[2]) });
+				}
+			}
+		} catch (IOException e) {
+			System.err.println(e.getMessage());
+		} finally {
+			try {
+				if (br != null)
+					br.close();
+			} catch (IOException e) {
+			}
 		}
+		return cityLocs;
 	}
 }
