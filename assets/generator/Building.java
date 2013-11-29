@@ -749,7 +749,7 @@ public class Building {
 		}
 		int id = getKnownBuilding();
 		if (id == -1) {
-			((PopulatorWalledCity) this.wgt.master).cityDoors.put(bID, new ArrayList());
+			((PopulatorWalledCity) this.wgt.master).cityDoors.put(bID, new ArrayList<VillageDoorInfo>());
 			id = bID;
 		}
 		int l = ((BlockDoor) Block.doorWood).getDoorOrientation(this.world, par1, par2, par3);
@@ -808,7 +808,7 @@ public class Building {
 	}
 
 	private int getKnownBuilding() {
-		Set keys = ((PopulatorWalledCity) this.wgt.master).cityDoors.keySet();
+		Set<?> keys = ((PopulatorWalledCity) this.wgt.master).cityDoors.keySet();
 		for (int id = bID - 3; id < bID + 4; id++) {
 			if (keys.contains(id))
 				return id;

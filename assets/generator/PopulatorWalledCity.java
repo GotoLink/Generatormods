@@ -87,7 +87,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler {
 			logOrPrint(logString, "FINEST");
 		if (!CityBuiltMessage)
 			return;
-		List playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
+		List<?> playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
 		if (playerList != null) {
 			for (int index = 0; index < playerList.size(); ++index) {
 				EntityPlayerMP player = (EntityPlayerMP) playerList.get(index);
@@ -99,7 +99,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler {
 	public void chatCityBuilt(int[] args) {
 		if (!CityBuiltMessage)
 			return;
-		List playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
+		List<?> playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
 		if (playerList == null) {
 			citiesBuiltMessages.add(args);
 		} else {
@@ -235,9 +235,9 @@ public class PopulatorWalledCity extends BuildingExplorationHandler {
 
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
-		cityFiles = new HashMap();
-		cityLocations = new HashMap();
-		cityDoors = new HashMap();
+		cityFiles = new HashMap<World, File>();
+		cityLocations = new HashMap<World, List<int[]>>();
+		cityDoors = new HashMap<Integer, List<VillageDoorInfo>>();
 		logger = event.getModLog();
 		settingsFileName = "WalledCitySettings.txt";
 		templateFolderName = "walledcity";
