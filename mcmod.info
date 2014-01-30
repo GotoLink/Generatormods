@@ -1,0 +1,46 @@
+[
+{
+  "modid": "CARuins",
+  "name": "Cellular Automata Generator",
+  "description": "",
+  "version": $version,
+  "credits": "Made by Formivore, Updated by GotoLink from MC 1.4.7",
+  "logoFile": "",
+  "mcversion": $mcversion,
+  "url": "http://www.minecraftforum.net/topic/171188-",
+  "updateUrl": "",
+  "authors": ["Formivore","GotoLink"],
+  "parent":"",
+  "screenshots": [],
+  "dependencies": []
+},
+{
+  "modid": "GreatWallMod",
+  "name": "Great Wall Mod",
+  "description": "",
+  "version": $version,
+  "credits": "Made by Formivore, Updated by GotoLink from MC 1.4.7",
+  "logoFile": "",
+  "mcversion": $mcversion,
+  "url": "http://www.minecraftforum.net/topic/171188-",
+  "updateUrl": "",
+  "authors": ["Formivore","GotoLink"],
+  "parent":"",
+  "screenshots": [],
+  "dependencies": []
+},
+{
+  "modid": "WalledCityMod",
+  "name": "Walled City Generator",
+  "description": "",
+  "version": $version,
+  "credits": "Made by Formivore, Updated by GotoLink from MC 1.4.7",
+  "logoFile": "",
+  "mcversion": $mcversion,
+  "url": "http://www.minecraftforum.net/topic/171188-",
+  "updateUrl": "",
+  "authors": ["Formivore","GotoLink"],
+  "parent":"",
+  "screenshots": [],
+  "dependencies": []
+}]
