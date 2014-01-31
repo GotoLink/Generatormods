@@ -1,8 +1,8 @@
 /*
-/*/
-*.*
 
 !build.gradle
+!/assets/
+!/gradle/
 !assets/*
 !gradle/*
 !mcmod.info
