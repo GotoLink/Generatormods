@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import net.minecraft.block.Block;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
@@ -157,7 +159,7 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread {
 			for (int y1 = 0; y1 < top_diam; y1++) {
 				for (int x1 = 0; x1 < top_diam; x1++) {
 					if (Building.CIRCLE_SHAPE[top_diam][x1][y1] >= 0) {
-						Building.setBlockAndMetaNoLighting(world, i + offset + x1, j + z1, k + offset + y1, 0, 0);
+						Building.setBlockAndMetaNoLighting(world, i + offset + x1, j + z1, k + offset + y1, Blocks.air, 0);
 					}
 				}
 			}
@@ -166,8 +168,8 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread {
 					if (Building.CIRCLE_SHAPE[top_diam][x1][y1] >= 0) {
 						//keep gravel and water from pouring in
 						for (int z2 = z1 + 1; z2 <= z1 + 3; z2++)
-							if (Building.IS_FLOWING_BLOCK[world.getBlockId(i + offset + x1, j + z2, k + offset + y1)]) {
-								world.setBlock(i + offset + x1, j + z2, k + offset + y1, Building.STONE_ID, 0, 2);
+							if (BlockProperties.get(world.func_147439_a(i + offset + x1, j + z2, k + offset + y1)).isFlowing) {
+								world.func_147465_d(i + offset + x1, j + z2, k + offset + y1, Blocks.stone, 0, 2);
 							}
 					}
 				}
@@ -179,16 +181,16 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread {
 				for (int y1 = 0; y1 < bottom_diam; y1++) {
 					for (int x1 = 0; x1 < bottom_diam; x1++) {
 						if (Building.CIRCLE_SHAPE[bottom_diam][x1][y1] >= 0) {
-							Building.setBlockAndMetaNoLighting(world, i + offset + x1, j - z1, k + offset + y1, 0, 0);
+							Building.setBlockAndMetaNoLighting(world, i + offset + x1, j - z1, k + offset + y1, Blocks.air, 0);
 						}
 					}
 				}
 				for (int y1 = 0; y1 < bottom_diam; y1++) {
 					for (int x1 = 0; x1 < bottom_diam; x1++) {
 						if (Building.CIRCLE_SHAPE[bottom_diam][x1][y1] >= 0) {
-							int blockId = world.getBlockId(i + offset + x1, j - z1 - 1, k + offset + y1);
-							if (Building.IS_ORE_BLOCK[blockId] && blockId != Building.COAL_ORE_ID)
-								world.setBlock(i + offset + x1, j - z1 - 1, k + offset + y1, Building.STONE_ID, 0, 2);
+							Block blockId = world.func_147439_a(i + offset + x1, j - z1 - 1, k + offset + y1);
+							if (BlockProperties.get(blockId).isOre && blockId != Blocks.coal_ore)
+								world.func_147465_d(i + offset + x1, j - z1 - 1, k + offset + y1, Blocks.stone, 0, 2);
 						}
 					}
 				}

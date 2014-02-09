@@ -2,6 +2,7 @@ package assets.generator;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLog;
+import net.minecraft.init.Blocks;
 import net.minecraftforge.common.IShearable;
 
 /*
@@ -102,7 +103,7 @@ public class BuildingWall extends Building {
 		if (DEBUG)
 			System.out.println("Wall planning was terminated due to: " + failString() + "\n");
 		int lN = 0;
-		int[] idAndMeta;
+		BlockAndMeta idAndMeta;
 		int layer[][];
 		//get named layers
 		int base[] = ws.template[0][0]; //defaults to bottom line of first layer
@@ -140,24 +141,24 @@ public class BuildingWall extends Building {
 					boolean wallBlockPresent = isWallBlock(x1, z1, 0);
 					idAndMeta = z1 < bHeight ? ws.rules[layer[z1 + ws.embed][x1]].getBlockOrHole(world.rand) : HOLE_BLOCK_NO_LIGHTING;
 					//starting from top, preserve old wall block until we run into a non-wall block
-					if (keepWallFromAbove && wallBlockPresent && idAndMeta[0] == 0) {
+					if (keepWallFromAbove && wallBlockPresent && idAndMeta.get() == Blocks.air) {
 						continue;
 					} else
 						keepWallFromAbove = false;
-					if (idAndMeta[0] == WALL_STAIR_ID) {
-						if (!wallBlockPresent && !IS_WATER_BLOCK[getBlockIdLocal(x1, z1, 0)]) {
+					if (idAndMeta.equals(WALL_STAIR)) {
+						if (!wallBlockPresent && !BlockProperties.get(getBlockIdLocal(x1, z1, 0)).isWater) {
 							if (n0 > 0 && zArray[n0 - 1] > zArray[n0]) { //stairs, going down
 								if ((n0 == 1 || zArray[n0 - 2] == zArray[n0 - 1]) && (n0 == bLength - 1 || zArray[n0] == zArray[n0 + 1]))
-									setBlockLocal(x1, z1, 0, STEP_ID, idAndMeta[1]);
+									setBlockLocal(x1, z1, 0, Blocks.stone_slab, idAndMeta.getMeta());
 								else
-									setBlockLocal(x1, z1, 0, STEP_TO_STAIRS[idAndMeta[1] > 7 ? idAndMeta[1] - 8 : idAndMeta[1]], 2);
+									setBlockLocal(x1, z1, 0, STEP_TO_STAIRS[idAndMeta.getMeta() > 7 ? idAndMeta.getMeta() - 8 : idAndMeta.getMeta()], 2);
 							} else if (n0 < bLength - 1 && zArray[n0] < zArray[n0 + 1]) { //stairs, going up
 								if ((n0 == 0 || zArray[n0 - 1] == zArray[n0]) && (n0 == bLength - 2 || zArray[n0 + 1] == zArray[n0 + 2]))
-									setBlockLocal(x1, z1, 0, STEP_ID, idAndMeta[1]);
+									setBlockLocal(x1, z1, 0, Blocks.stone_slab, idAndMeta.getMeta());
 								else
-									setBlockLocal(x1, z1, 0, STEP_TO_STAIRS[idAndMeta[1] > 7 ? idAndMeta[1] - 8 : idAndMeta[1]], 3);
+									setBlockLocal(x1, z1, 0, STEP_TO_STAIRS[idAndMeta.getMeta() > 7 ? idAndMeta.getMeta() - 8 : idAndMeta.getMeta()], 3);
 							} else
-								setBlockLocal(x1, z1, 0, 0);
+								setBlockLocal(x1, z1, 0, Blocks.air);
 						}
 					} else { //not a stair
 						// if merging walls, don't clutter with crenelations etc.
@@ -166,8 +167,8 @@ public class BuildingWall extends Building {
 										&& (wallBlockPresent || isFloor(bWidth, WalkHeight - 1, 0) || isWallBlock(bWidth, WalkHeight - 2, 0)))) {
 							continue;
 						}
-						if (idAndMeta[0] == 0 && z1 < bHeight)
-							setBlockWithLightingLocal(x1, z1, 0, 0, 0, true); //force lighting update for holes
+						if (idAndMeta.get() == Blocks.air && z1 < bHeight)
+							setBlockWithLightingLocal(x1, z1, 0, Blocks.air, 0, true); //force lighting update for holes
 						else
 							setBlockLocal(x1, z1, 0, idAndMeta); //straightforward build from template
 					}
@@ -259,7 +260,7 @@ public class BuildingWall extends Building {
 							avenues[0].smooth(10, 10, false);
 							avenues[1].smooth(10, 10, false);
 						}
-						int fenceBlock = bRule.chance < 100 || bRule.primaryBlock[0] == NETHER_BRICK_ID ? NETHER_BRICK_FENCE_ID : FENCE_ID;
+						Block fenceBlock = bRule.chance < 100 || bRule.primaryBlock.get() == Blocks.nether_brick ? Blocks.nether_brick_fence : Blocks.fence;
 						int fenceX = flankTHand == 0 ? bWidth / 2 : (flankTHand == bHand ? bWidth - 2 + ws.TowerXOffset : 1 - ws.TowerXOffset);
 						gateHeight = Math.min(gateHeight, bHeight - 1);
 						for (int y1 = 0; y1 > -gateWidth; y1--) {
@@ -267,7 +268,7 @@ public class BuildingWall extends Building {
 							for (int x1 = 0; x1 < bWidth; x1++)
 								for (int z1 = 0; z1 < gateHeight; z1++)
 									if (!((y1 == 0 || y1 == 1 - gateWidth) && z1 == gateHeight - 1))
-										setBlockLocal(x1, z1, y1, 0);
+										setBlockLocal(x1, z1, y1, Blocks.air);
 							//fence gate
 							for (int z1 = gateHeight - 2; z1 < gateHeight; z1++)
 								if (random.nextInt(100) < bRule.chance)
@@ -446,17 +447,17 @@ public class BuildingWall extends Building {
 			failCode = FailType.NOTHING;
 			for (int x1 = -1; x1 <= bWidth; x1++) {
 				for (int z1 = -SEARCHDOWN; z1 <= searchUp; z1++) {
-					int blockId = getBlockIdLocal(x1, z1, 0);
-					if (!IS_WALLABLE[blockId]) {
+					Block blockId = getBlockIdLocal(x1, z1, 0);
+					if (!BlockProperties.get(blockId).isWallable) {
 						gradz++;
 						gradx += Integer.signum(2 * x1 - bWidth + 1);
-					} else if (IS_WATER_BLOCK[blockId])
+					} else if (BlockProperties.get(blockId).isWater)
 						gradx -= Integer.signum(2 * x1 - bWidth + 1);
 					//hit another wall, want to ignore sandstone that appears naturally in deserts
 					if ((stopAtWall || z1 < -2) && isArtificialWallBlock(x1, z1, 0))
 						failCode = FailType.HITWALL;
 				}
-				if (IS_WATER_BLOCK[getBlockIdLocal(x1, ws.waterHeight + 1, 0)])
+				if (BlockProperties.get(getBlockIdLocal(x1, ws.waterHeight + 1, 0)).isWater)
 					failCode = FailType.UNDERWATER;
 				if (!isWallable(x1, obstructionHeight, 0) && failCode == FailType.NOTHING)
 					failCode = FailType.OBSTRUCTED;
@@ -676,11 +677,9 @@ public class BuildingWall extends Building {
 	private void clearTrees() {
 		for (int x1 = 0; x1 < bWidth; x1++)
 			for (int z1 = bHeight + OVERHEAD_CLEARENCE; z1 < bHeight + OVERHEAD_TREE_CLEARENCE; z1++) {
-				Block block = Block.blocksList[getBlockIdLocal(x1, z1, 0)];
-				if (block != null) {
-					if (block instanceof BlockLog || block instanceof IShearable || block.blockID == Block.snow.blockID)
-						setBlockLocal(x1, z1, 0, 0); //kill trees aggressively
-				}
+				Block block = getBlockIdLocal(x1, z1, 0);
+                if (block instanceof BlockLog || block instanceof IShearable || block == Blocks.snow)
+                    setBlockLocal(x1, z1, 0, Blocks.air); //kill trees aggressively
 			}
 	}
 
@@ -694,7 +693,7 @@ public class BuildingWall extends Building {
 		xArray = new int[maxLength];
 		zArray = new int[maxLength];
 		bLength = 0;
-		halfStairValue = blockToStepMeta(bRule.primaryBlock)[1];
+		halfStairValue = blockToStepMeta(bRule.primaryBlock).getMeta();
 	}
 
 	//****************************************  FUNCTION - makeBuildings *************************************************************************************//
@@ -742,27 +741,27 @@ public class BuildingWall extends Building {
 	private void mergeWallLayer() {
 		//if side is a floor one below, add a step down
 		if (isFloor(-1, WalkHeight - 1, 0))
-			setBlockLocal(-1, WalkHeight - 1, 0, STEP_ID, halfStairValue);
+			setBlockLocal(-1, WalkHeight - 1, 0, Blocks.stone_slab, halfStairValue);
 		if (isFloor(bWidth, WalkHeight - 1, 0))
-			setBlockLocal(bWidth, WalkHeight - 1, 0, STEP_ID, halfStairValue);
+			setBlockLocal(bWidth, WalkHeight - 1, 0, Blocks.stone_slab, halfStairValue);
 		//      x
 		// if  xxo are floors one above, add a step up
 		//      x
 		if (isFloor(-1, WalkHeight + 1, 0) && isFloor(-2, WalkHeight + 2, 0) && isFloor(-2, WalkHeight + 2, 1) && isFloor(-2, WalkHeight + 2, -1))
-			setBlockLocal(0, WalkHeight, 0, STEP_ID, halfStairValue);
+			setBlockLocal(0, WalkHeight, 0, Blocks.stone_slab, halfStairValue);
 		if (isFloor(bWidth, WalkHeight + 1, 0) && isFloor(bWidth + 1, WalkHeight + 2, 0) && isFloor(bWidth + 1, WalkHeight + 2, 1) && isFloor(bWidth + 1, WalkHeight + 2, -1))
-			setBlockLocal(bWidth - 1, WalkHeight, 0, STEP_ID, halfStairValue);
+			setBlockLocal(bWidth - 1, WalkHeight, 0, Blocks.stone_slab, halfStairValue);
 		//clean up stairs descending into this wall
 		int[] pt = getIJKPt(-1, WalkHeight - 1, 0);
-		int id = world.getBlockId(pt[0], pt[1], pt[2]);
+		Block id = world.func_147439_a(pt[0], pt[1], pt[2]);
 		int meta = world.getBlockMetadata(pt[0], pt[1], pt[2]);
-		if (IS_STAIRS_BLOCK[id] && STAIRS_META_TO_DIR[meta < 4 ? meta : (meta - 4)] == rotDir(bDir, -bHand))
-			world.setBlock(pt[0], pt[1], pt[2], stairToSolidBlock(id), 0, 2);
+		if (BlockProperties.get(id).isStair && STAIRS_META_TO_DIR[meta < 4 ? meta : (meta - 4)] == rotDir(bDir, -bHand))
+			world.func_147465_d(pt[0], pt[1], pt[2], stairToSolidBlock(id), 0, 2);
 		pt = getIJKPt(bWidth, WalkHeight - 1, 0);
-		id = world.getBlockId(pt[0], pt[1], pt[2]);
+		id = world.func_147439_a(pt[0], pt[1], pt[2]);
 		meta = world.getBlockMetadata(pt[0], pt[1], pt[2]);
-		if (IS_STAIRS_BLOCK[id] && STAIRS_META_TO_DIR[meta < 4 ? meta : (meta - 4)] == rotDir(bDir, bHand))
-			world.setBlock(pt[0], pt[1], pt[2], stairToSolidBlock(id), 0, 2);
+		if (BlockProperties.get(id).isStair && STAIRS_META_TO_DIR[meta < 4 ? meta : (meta - 4)] == rotDir(bDir, bHand))
+			world.func_147465_d(pt[0], pt[1], pt[2], stairToSolidBlock(id), 0, 2);
 	}
 
 	private void pickTowers(boolean circular_, boolean endTowers) {

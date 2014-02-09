@@ -17,19 +17,22 @@ package assets.generator;
  */
 import java.util.Random;
 
+import cpw.mods.fml.common.registry.GameData;
 import net.minecraft.block.Block;
+import net.minecraft.init.Blocks;
 
 public class TemplateRule {
 	public final static int FIXED_FOR_BUILDING = 5;
 	public final static TemplateRule RULE_NOT_PROVIDED = null;
 	public final static String BLOCK_NOT_REGISTERED_ERROR_PREFIX = "Error reading rule: BlockID "; //so we can treat this error differently
-	public final static TemplateRule AIR_RULE = new TemplateRule(new int[] { 0, 0 });
-	public final static TemplateRule STONE_RULE = new TemplateRule(new int[] { 1, 0 });
-	public final static TemplateRule NETHER_BRICK_RULE = new TemplateRule(new int[] { Building.NETHER_BRICK_ID, 0 });
-	private int[] blockIDs, blockMDs;
+	public final static TemplateRule AIR_RULE = new TemplateRule(Blocks.air, 0);
+	public final static TemplateRule STONE_RULE = new TemplateRule(Blocks.stone, 0);
+	public final static TemplateRule NETHER_BRICK_RULE = new TemplateRule(Blocks.nether_brick, 0);
+	private Block[] blockIDs;
+    private int[] blockMDs;
 	public int chance = 100, condition = 0;
-	public int[] primaryBlock = null;
-	private int[] fixedRuleChosen = null;
+	public BlockAndMeta primaryBlock = null;
+	private BlockAndMeta fixedRuleChosen = null;
 
 	public TemplateRule(String rule, boolean checkMetaValue) throws Exception {
 		String[] items = rule.split(",");
@@ -38,16 +41,27 @@ public class TemplateRule {
 			throw new Exception("Error reading rule: No blockIDs specified for rule!");
 		condition = Integer.parseInt(items[0].trim());
 		chance = Integer.parseInt(items[1].trim());
-		blockIDs = new int[numblocks];
+		blockIDs = new Block[numblocks];
 		blockMDs = new int[numblocks];
 		String[] data;
+        Block temp = null;
 		for (int i = 0; i < numblocks; i++) {
 			data = items[i + 2].trim().split("-");
-			blockIDs[i] = Integer.parseInt(data[0]);
-			if (!isValidRuleBlock(blockIDs[i]))
-				throw new Exception(BLOCK_NOT_REGISTERED_ERROR_PREFIX + blockIDs[i] + " not registered!");
-			blockMDs[i] = data.length > 1 ? Integer.parseInt(data[1]) : 0;
-			if (checkMetaValue) {
+            try{
+                temp = GameData.blockRegistry.get(Integer.parseInt(data[0]));
+            }catch (Exception e){
+                temp = GameData.blockRegistry.get(data[0]);
+            }
+            if(temp!=null){
+                blockIDs[i] = temp;
+                blockMDs[i] = data.length > 1 ? Integer.parseInt(data[1]) : 0;
+            }else if(data[0].equals("-1")||data[0].equals("PRESERVE")){//Preserve block rule
+                blockIDs[i] = Building.PRESERVE_BLOCK.get();
+                blockMDs[i] = Building.PRESERVE_BLOCK.getMeta();
+            }else{
+                throw new Exception(BLOCK_NOT_REGISTERED_ERROR_PREFIX + data[0] + " unknown!");
+            }
+			if (checkMetaValue && blockIDs[i]!=Blocks.air) {
 				String checkStr = Building.metaValueCheck(blockIDs[i], blockMDs[i]);
 				if (checkStr != null)
 					throw new Exception("Error reading rule: " + rule + "\nBad meta value " + blockMDs[i] + ". " + checkStr);
@@ -56,18 +70,28 @@ public class TemplateRule {
 		primaryBlock = getPrimaryBlock();
 	}
 
-	public TemplateRule(int[] block) {
-		blockIDs = new int[] { block[0] };
-		blockMDs = new int[] { block[1] };
+	public TemplateRule(int block, int meta) {
+		blockIDs = new Block[] { GameData.blockRegistry.get(block) };
+		blockMDs = new int[] { meta };
 		primaryBlock = getPrimaryBlock();
 	}
 
-	public TemplateRule(int[] block, int chance_) {
-		this(block);
+    public TemplateRule(Block block, int meta) {
+        blockIDs = new Block[] { block };
+        blockMDs = new int[] { meta };
+        primaryBlock = getPrimaryBlock();
+    }
+
+	public TemplateRule(Block block, int meta, int chance_) {
+        this(block, meta);
 		chance = chance_;
 	}
 
-	public TemplateRule(int[] blockIDs_, int[] blockMDs_, int chance_) {
+    public TemplateRule(BlockAndMeta blockAndMeta, int chance_) {
+        this(blockAndMeta.get(), blockAndMeta.getMeta(), chance_);
+    }
+
+	public TemplateRule(Block[] blockIDs_, int[] blockMDs_, int chance_) {
 		blockIDs = blockIDs_;
 		blockMDs = blockMDs_;
 		chance = chance_;
@@ -77,7 +101,7 @@ public class TemplateRule {
 	public void setFixedRule(Random random) {
 		if (condition == FIXED_FOR_BUILDING) {
 			int m = random.nextInt(blockIDs.length);
-			fixedRuleChosen = new int[] { blockIDs[m], blockMDs[m] };
+			fixedRuleChosen = new BlockAndMeta(blockIDs[m], blockMDs[m]);
 		} else
 			fixedRuleChosen = null;
 	}
@@ -86,54 +110,58 @@ public class TemplateRule {
 		if (condition != FIXED_FOR_BUILDING)
 			return this;
 		int m = random.nextInt(blockIDs.length);
-		return new TemplateRule(new int[] { blockIDs[m], blockMDs[m] }, chance);
+		return new TemplateRule(blockIDs[m], blockMDs[m], chance);
 	}
 
-	public int[] getBlock(Random random) {
+	public BlockAndMeta getBlock(Random random) {
 		if (chance >= 100 || random.nextInt(100) < chance) {
 			if (fixedRuleChosen != null)
 				return fixedRuleChosen;
 			int m = random.nextInt(blockIDs.length);
-			return new int[] { blockIDs[m], blockMDs[m] };
+			return new BlockAndMeta(blockIDs[m], blockMDs[m]);
 		}
-		return new int[] { 0, 0 };
+		return new BlockAndMeta(Blocks.air, 0);
 	}
 
-	public int[] getBlockOrHole(Random random) {
+	public BlockAndMeta getBlockOrHole(Random random) {
 		if (chance >= 100 || random.nextInt(100) < chance) {
 			if (fixedRuleChosen != null)
 				return fixedRuleChosen;
 			int m = random.nextInt(blockIDs.length);
-			return new int[] { blockIDs[m], blockMDs[m] };
+			return new BlockAndMeta(blockIDs[m], blockMDs[m]);
 		}
 		return Building.HOLE_BLOCK_LIGHTING;
 	}
 
-	private boolean isValidRuleBlock(int blockID) {
-		return Block.blocksList[blockID] != null || blockID == 0;
-	}
-
 	public boolean isPreserveRule() {
-		for (int blockID : blockIDs)
-			if (blockID != Building.PRESERVE_ID)
+		for (int i = 0; i<blockIDs.length; i++){
+			if(blockIDs[i] != Blocks.air)
 				return false;
+            if(blockMDs[i] != 1)
+                return  false;
+        }
 		return true;
 	}
 
-	public int[] getNonAirBlock(Random random) {
-		int m = random.nextInt(blockIDs.length);
-		return new int[] { blockIDs[m], blockMDs[m] };
-	}
+    public boolean hasUndeadSpawner(){
+        for (int i = 0; i<blockIDs.length; i++){
+            //Zombie, Skeleton, Creeper, EASY, UPRIGHT spawners
+            if(blockIDs[i] == Blocks.mob_spawner && (blockMDs[i]==1||blockMDs[i]==2||blockMDs[i]==4||blockMDs[i]==28||blockMDs[i]==31))
+                return true;
+        }
+        return false;
+    }
 
-	public int[] getBlockIDs() {
-		return blockIDs;
+	public BlockAndMeta getNonAirBlock(Random random) {
+		int m = random.nextInt(blockIDs.length);
+		return new BlockAndMeta(blockIDs[m], blockMDs[m]);
 	}
 
 	@Override
 	public String toString() {
 		String str = condition + "," + chance;
 		for (int m = 0; m < blockIDs.length; m++) {
-			str += "," + blockIDs[m];
+			str += "," + GameData.blockRegistry.func_148750_c(blockIDs[m]);
 			if (blockMDs[m] != 0)
 				str += "-" + blockMDs[m];
 		}
@@ -141,19 +169,19 @@ public class TemplateRule {
 	}
 
 	//returns the most frequent block in rule
-	private int[] getPrimaryBlock() {
+	private BlockAndMeta getPrimaryBlock() {
 		int[] hist = new int[blockIDs.length];
 		for (int l = 0; l < hist.length; l++)
 			for (int m = 0; m < hist.length; m++)
 				if (blockIDs[l] == blockIDs[m])
 					hist[l]++;
-		int maxFreq = 0;
+		int maxFreq = 0, pos = 0;
 		for (int l = 0; l < hist.length; l++) {
 			if (hist[l] > maxFreq) {
 				maxFreq = hist[l];
-				return new int[] { blockIDs[l], blockMDs[l] };
+                pos = l;
 			}
 		}
-		return null;
+		return new BlockAndMeta(blockIDs[pos], blockMDs[pos]);
 	}
 }

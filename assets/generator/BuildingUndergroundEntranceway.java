@@ -1,5 +1,8 @@
 package assets.generator;
 
+import net.minecraft.block.Block;
+import net.minecraft.init.Blocks;
+
 /*
  *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
  *  Copyright (C) 2011 by formivore
@@ -17,10 +20,9 @@ package assets.generator;
  */
 public class BuildingUndergroundEntranceway extends Building {
 	private final static int PASSAGE_HEIGHT = 6, PASSAGE_WIDTH = 4, SUPPORT_INTERVAL = 6;
-	private final static TemplateRule STONE_RULE = new TemplateRule(new int[] { STONE_ID, 0 });
 	private TemplateWall ws;
 	public BuildingWall street;
-	private int stairsID;
+	private Block stairsID;
 
 	//****************************************  CONSTRUCTOR - BuildingUndergroundEntraceway  *************************************************************************************//
 	public BuildingUndergroundEntranceway(int ID_, WorldGeneratorThread wgt_, TemplateWall ws_, int dir_, int[] sourcePt) {
@@ -33,11 +35,11 @@ public class BuildingUndergroundEntranceway extends Building {
 	//****************************************  FUNCTION - build *************************************************************************************//
 	public boolean build() {
 		for (; bLength < WORLD_MAX_Y - j0; bLength++) {
-			if (IS_WATER_BLOCK[getBlockIdLocal(0, bLength + PASSAGE_HEIGHT, bLength)])
+			if (BlockProperties.get(getBlockIdLocal(0, bLength + PASSAGE_HEIGHT, bLength)).isWater)
 				return false;
 			if (j0 + bLength > Building.SEA_LEVEL - 10 && isArtificialWallBlock(0, bLength + PASSAGE_HEIGHT, bLength))
 				return false;
-			if (j0 + bLength > Building.SEA_LEVEL && (IS_WALLABLE[getBlockIdLocal(0, bLength, bLength)] || IS_WALLABLE[getBlockIdLocal(PASSAGE_WIDTH - 1, bLength, bLength)])) {
+			if (j0 + bLength > Building.SEA_LEVEL && (BlockProperties.get(getBlockIdLocal(0, bLength, bLength)).isWallable || BlockProperties.get(getBlockIdLocal(PASSAGE_WIDTH - 1, bLength, bLength)).isWallable)) {
 				bLength--;
 				break;
 			}
@@ -50,15 +52,15 @@ public class BuildingUndergroundEntranceway extends Building {
 			for (int x = -1; x <= PASSAGE_WIDTH; x++) {
 				for (int z1 = 1; z1 <= PASSAGE_HEIGHT; z1++) {
 					if (x == -1 || x == PASSAGE_WIDTH || z1 == PASSAGE_HEIGHT) {
-						if (IS_FLOWING_BLOCK[getBlockIdLocal(x, z + z1, z)])
-							setBlockLocal(x, z + z1, z, STONE_ID);
+						if (BlockProperties.get(getBlockIdLocal(x, z + z1, z)).isFlowing)
+							setBlockLocal(x, z + z1, z, Blocks.stone);
 					} else
-						setBlockLocal(x, z + z1, z, 0);
+						setBlockLocal(x, z + z1, z, Blocks.air);
 				}
 			}
 			for (int x = 0; x < PASSAGE_WIDTH; x++) {
-				setBlockLocal(x, z, z, random.nextInt(100) < bRule.chance ? stairsID : 0, STAIRS_DIR_TO_META[DIR_NORTH]);
-				buildDown(x, z - 1, z, STONE_RULE, 20, 0, 3);
+				setBlockLocal(x, z, z, random.nextInt(100) < bRule.chance ? stairsID : Blocks.air, STAIRS_DIR_TO_META[DIR_NORTH]);
+				buildDown(x, z - 1, z, TemplateRule.STONE_RULE, 20, 0, 3);
 			}
 			if (z % SUPPORT_INTERVAL == 0 && z <= bLength - PASSAGE_HEIGHT) {
 				for (int z1 = -1; z1 < PASSAGE_HEIGHT; z1++) {

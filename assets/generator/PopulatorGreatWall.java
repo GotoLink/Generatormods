@@ -139,7 +139,7 @@ public class PopulatorGreatWall extends BuildingExplorationHandler {
 		if (!dataFilesLoaded)
 			loadDataFiles();
 		if (!errFlag) {
-			GameRegistry.registerWorldGenerator(this);
+			GameRegistry.registerWorldGenerator(this, 1);
 		}
 	}
 }

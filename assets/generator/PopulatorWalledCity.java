@@ -32,7 +32,7 @@ import java.util.Random;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ChatMessageComponent;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.village.Village;
 import net.minecraft.village.VillageDoorInfo;
 import net.minecraft.world.World;
@@ -91,7 +91,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler {
 		if (playerList != null) {
 			for (int index = 0; index < playerList.size(); ++index) {
 				EntityPlayerMP player = (EntityPlayerMP) playerList.get(index);
-				player.sendChatToPlayer(ChatMessageComponent.createFromText(chatString));
+				player.func_146105_b(new ChatComponentText(chatString));
 			}
 		}
 	}
@@ -118,7 +118,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler {
 					dirStr += dK > 0 ? "south" : "north";
 				else
 					dirStr += dI > 0 ? (dK > 0 ? "southeast" : "northeast") : (dK > 0 ? "southwest" : "northwest");
-				player.sendChatToPlayer(ChatMessageComponent.createFromText("** Built city " + dirStr + " (" + args[0] + "," + args[1] + "," + args[2] + ")! **"));
+				player.func_146105_b(new ChatComponentText("** Built city " + dirStr + " (" + args[0] + "," + args[1] + "," + args[2] + ")! **"));
 			}
 		}
 	}
@@ -229,7 +229,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler {
 		if (!dataFilesLoaded)
 			loadDataFiles();
 		if (!errFlag) {
-			GameRegistry.registerWorldGenerator(this);
+			GameRegistry.registerWorldGenerator(this, 0);
 		}
 	}
 

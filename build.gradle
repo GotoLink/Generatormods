@@ -19,10 +19,10 @@ minecraft {
     version = "1.7.2-10.12.0.1019"
     assetDir = "eclipse/assets"
 }
-version = "0.1.4"
+version = "0.1.4(1.7.2)"
 archivesBaseName = project.projectDir.name
-sourceSets.main.java{srcDirs project.projectDir.getPath() exclude("build*", "bin/**" , "*.*ml", ".*")}
-sourceSets.main.resources{srcDirs project.projectDir.getPath() exclude("build*", "bin/**" , "*.*ml", ".*")}
+sourceSets.main.java{srcDirs project.projectDir.getPath() include("assets/**")}
+sourceSets.main.resources{srcDirs project.projectDir.getPath() include("*.info", "*.mcmeta" , "*.md")}
 processResources {
     // replace stuff in mcmod.info, nothing else
     from(project.sourceSets.main.resources.srcDirs) {
@@ -32,6 +32,6 @@ processResources {
     }
     // copy everything else, thats not mcmod.info
     from(project.sourceSets.main.resources.srcDirs) {
-        include("assets/**", "pack.mcmeta")
+        include("pack.mcmeta", "license.md")
     }
 }

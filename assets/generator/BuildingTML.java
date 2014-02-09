@@ -1,5 +1,7 @@
 package assets.generator;
 
+import net.minecraft.init.Blocks;
+
 /*
  *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
  *  Copyright (C) 2011 by formivore
@@ -44,7 +46,7 @@ public class BuildingTML extends Building {
 					/*
 					 * if(!queryExplorationHandlerForChunk(x,y)) break;
 					 */
-					setBlockLocal(x, z, y, 0);
+					setBlockLocal(x, z, y, Blocks.air);
 				}
 		//build
 		for (int z = 0; z < bHeight; z++)
@@ -83,8 +85,8 @@ public class BuildingTML extends Building {
 		//check to see if we are underwater
 		if (tmlt.waterHeight != TemplateTML.NO_WATER_CHECK) {
 			int waterCheckHeight = tmlt.waterHeight + tmlt.embed + 1; //have to unshift by embed
-			if (IS_WATER_BLOCK[getBlockIdLocal(0, waterCheckHeight, 0)] || IS_WATER_BLOCK[getBlockIdLocal(0, waterCheckHeight, bLength - 1)]
-					|| IS_WATER_BLOCK[getBlockIdLocal(bWidth - 1, waterCheckHeight, 0)] || IS_WATER_BLOCK[getBlockIdLocal(bWidth - 1, waterCheckHeight, bLength - 1)])
+			if (BlockProperties.get(getBlockIdLocal(0, waterCheckHeight, 0)).isWater || BlockProperties.get(getBlockIdLocal(0, waterCheckHeight, bLength - 1)).isWater
+					|| BlockProperties.get(getBlockIdLocal(bWidth - 1, waterCheckHeight, 0)).isWater || BlockProperties.get(getBlockIdLocal(bWidth - 1, waterCheckHeight, bLength - 1)).isWater)
 				return false;
 		}
 		if (wgt.isLayoutGenerator()) {

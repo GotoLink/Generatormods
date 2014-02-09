@@ -24,6 +24,8 @@ import java.io.PrintWriter;
 import java.util.LinkedList;
 import java.util.Random;
 
+import net.minecraft.block.Block;
+import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
 
 public class WorldGenWalledCity extends WorldGeneratorThread {
@@ -158,7 +160,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread {
 					cityArea++;
 					if (j2 == Building.HIT_WATER)
 						waterArea++;
-					if (((PopulatorWalledCity) master).RejectOnPreexistingArtifacts && ows.LevelInterior && Building.IS_ARTIFICAL_BLOCK[world.getBlockId(i2, j2, k2)]) {
+					if (((PopulatorWalledCity) master).RejectOnPreexistingArtifacts && ows.LevelInterior && BlockProperties.get(world.func_147439_a(i2, j2, k2)).isArtificial) {
 						master.logOrPrint("Rejected " + ows.name + " city " + ID + ", found previous construction in city zone!", "WARNING");
 						return false;
 					}
@@ -404,15 +406,15 @@ public class WorldGenWalledCity extends WorldGeneratorThread {
 						enclosed = false;
 				if (enclosed) {
 					pt[1] = Building.findSurfaceJ(world, pt[0], pt[2], Building.WORLD_MAX_Y, false, Building.IGNORE_WATER);
-					int oldSurfaceBlockId = world.getBlockId(pt[0], pt[1], pt[2]);
+					Block oldSurfaceBlockId = world.func_147439_a(pt[0], pt[1], pt[2]);
 					if (pt[1] > jmax) {
-						while (world.getBlockId(pt[0], pt[1] + 1, pt[2]) != 0)
+						while (!world.func_147437_c(pt[0], pt[1] + 1, pt[2]))
 							pt[1]++; //go back up to grab any trees or whatnot
 						pt[1] += 10; //just to try to catch any overhanging blocks
 						for (; pt[1] > jmax; pt[1]--)
-							if (world.getBlockId(pt[0], pt[1], pt[2]) != 0)
-								Building.setBlockAndMetaNoLighting(world, pt[0], pt[1], pt[2], 0, 0);
-						if (world.getBlockId(pt[0], jmax - 1, pt[2]) != 0)
+							if (!world.func_147437_c(pt[0], pt[1], pt[2]))
+								Building.setBlockAndMetaNoLighting(world, pt[0], pt[1], pt[2], Blocks.air, 0);
+						if (!world.func_147437_c(pt[0], jmax - 1, pt[2]))
 							Building.setBlockAndMetaNoLighting(world, pt[0], jmax, pt[2], oldSurfaceBlockId, 0);
 					}
 					if (pt[1] < jmin)

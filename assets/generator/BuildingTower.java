@@ -1,5 +1,7 @@
 package assets.generator;
 
+import net.minecraft.init.Blocks;
+
 /*
  *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
  *  Copyright (C) 2011 by formivore
@@ -41,10 +43,9 @@ public class BuildingTower extends Building {
 		//								No windows/doors unless ground floor.
 		boolean undeadTower = false, ghastTower = false;
 		if (SpawnerRule != TemplateRule.RULE_NOT_PROVIDED) {
-			for (int blockID : SpawnerRule.getBlockIDs())
-				if (blockID == ZOMBIE_SPAWNER_ID || blockID == SKELETON_SPAWNER_ID || blockID == CREEPER_SPAWNER_ID || blockID == UPRIGHT_SPAWNER_ID || blockID == EASY_SPAWNER_ID)
-					undeadTower = true;
-			ghastTower = roofStyle == ROOF_CRENEL && SpawnerRule.getBlock(world.rand)[0] == GHAST_SPAWNER_ID;
+			if(SpawnerRule.hasUndeadSpawner())
+                undeadTower = true;
+			ghastTower = roofStyle == ROOF_CRENEL && SpawnerRule.getBlock(world.rand).equals(GHAST_SPAWNER);
 			if (ghastTower || random.nextInt(100) > SpawnerRule.chance)
 				undeadTower = false;
 		}
@@ -54,7 +55,7 @@ public class BuildingTower extends Building {
 			baseHeight = 0;
 		//buffer - dimensions have an offset of one on each side (except top) to fit in roof overhang and floor.
 		//So to translate from Building coord system need to add +1 to all entries, annoying but that's life.
-		buffer = new int[bWidth + 2][bHeight + minHorizDim + 3][bLength + 2][2];
+		buffer = new BlockAndMeta[bWidth + 2][bHeight + minHorizDim + 3][bLength + 2];
 		for (int x1 = 0; x1 < bWidth + 2; x1++)
 			for (int y1 = 0; y1 < bLength + 2; y1++)
 				for (int z1 = 0; z1 < bHeight + minHorizDim + 3; z1++)
@@ -102,7 +103,7 @@ public class BuildingTower extends Building {
 			for (int y1 = 1; y1 < bLength - 1; y1++)
 				for (int x1 = 1; x1 < bWidth - 1; x1++)
 					if (!circular || circle_shape[x1][y1] == 0)
-						buffer[x1 + 1][z1 + 1][y1 + 1] = bRule.primaryBlock[0] == LOG_ID ? new int[] { WOOD_ID, 0 } : bRule.getBlockOrHole(world.rand);
+						buffer[x1 + 1][z1 + 1][y1 + 1] = bRule.primaryBlock.get() == Blocks.log ? new BlockAndMeta(Blocks.planks, 0): bRule.getBlockOrHole(world.rand);
 						//door torches
 						if (!undeadTower && bRule.chance == 100) {
 							buffer[torchX1 + 1][z1 + 3 + 1][1 + (circular && bLength == 6 ? 1 : 0) + 1] = NORTH_FACE_TORCH_BLOCK;
@@ -119,8 +120,8 @@ public class BuildingTower extends Building {
 										buffer[x1 + 1][z1 + 1][y1 + 1] = HOLE_BLOCK_LIGHTING;
 							}
 						} else if (SpawnerRule != TemplateRule.RULE_NOT_PROVIDED && random.nextInt(100) < SpawnerRule.chance && !ghastTower) {
-							int[] spawnerBlock = SpawnerRule.getNonAirBlock(world.rand);
-							if (spawnerBlock[0] != GHAST_SPAWNER_ID)
+                            BlockAndMeta spawnerBlock = SpawnerRule.getNonAirBlock(world.rand);
+							if (!spawnerBlock.equals(GHAST_SPAWNER))
 								buffer[bWidth / 2 + 1][z1 + 1 + 1][sideWindowY + 1] = spawnerBlock;
 						}
 						//chests
@@ -164,10 +165,10 @@ public class BuildingTower extends Building {
 		}
 		//*** prettify any stairs outside entrance/exit ***
 		for (int x1 = 1; x1 < bWidth - 1; x1++) {
-			if (isStairBlock(x1, baseHeight, -1) && getBlockIdLocal(x1, baseHeight, -2) == bRule.primaryBlock[0])
-				setBlockLocal(x1, baseHeight, -1, bRule.primaryBlock[0]);
-			if (isStairBlock(x1, baseHeight, bLength) && getBlockIdLocal(x1, baseHeight, bLength + 1) == bRule.primaryBlock[0])
-				setBlockLocal(x1, baseHeight, bLength, bRule.primaryBlock[0]);
+			if (isStairBlock(x1, baseHeight, -1) && getBlockIdLocal(x1, baseHeight, -2) == bRule.primaryBlock.get())
+				setBlockLocal(x1, baseHeight, -1, bRule.primaryBlock.get());
+			if (isStairBlock(x1, baseHeight, bLength) && getBlockIdLocal(x1, baseHeight, bLength + 1) == bRule.primaryBlock.get())
+				setBlockLocal(x1, baseHeight, bLength, bRule.primaryBlock.get());
 		}
 		//furniture
 		if (PopulateFurniture) {
@@ -178,11 +179,11 @@ public class BuildingTower extends Building {
 					if (bHeight - baseHeight > 8 && random.nextInt(BOOKSHELF_ODDS) == 0)
 						populateBookshelves(z1);
 					if (random.nextInt(CAULDRON_ODDS) == 0)
-						populateFurnitureColumn(z1, new int[][] { { CAULDRON_BLOCK_ID, random.nextInt(4) } });
+						populateFurnitureColumn(z1, new BlockAndMeta[] { new BlockAndMeta(Blocks.cauldron, random.nextInt(4)) });
 					if (z1 > 12 && random.nextInt(BREWING_STAND_ODDS) == 0)
-						populateFurnitureColumn(z1, new int[][] { bRule.primaryBlock, { BREWING_STAND_BLOCK_ID, random.nextInt(2) + 1 } });
+						populateFurnitureColumn(z1, new BlockAndMeta[] { bRule.primaryBlock, new BlockAndMeta(Blocks.brewing_stand, random.nextInt(2) + 1)});
 					if (z1 > 20 && random.nextInt(ENCHANTMENT_TABLE_ODDS) == 0)
-						populateFurnitureColumn(z1, new int[][] { { ENCHANTMENT_TABLE_ID, 0 } });
+						populateFurnitureColumn(z1, new BlockAndMeta[] { new BlockAndMeta(Blocks.enchanting_table, 0)});
 				}
 				if (z1 == baseHeight)
 					z1++;
@@ -200,7 +201,7 @@ public class BuildingTower extends Building {
 	}
 
 	//****************************************  FUNCTION  - buildXYRotated *************************************************************************************//
-	public void buildXYRotated(int p, int q, int r, int[] block, boolean rotated) {
+	public void buildXYRotated(int p, int q, int r, BlockAndMeta block, boolean rotated) {
 		if (rotated)
 			buffer[r][q][p] = block;
 		else
@@ -230,13 +231,13 @@ public class BuildingTower extends Building {
 					support[x][z][y] = 0;
 		for (int x = 0; x < xLim; x++)
 			for (int y = 0; y < yLim; y++)
-				if (buffer[x][0][y][0] > 0 && buffer[x][0][y][0] != 0)
+				if (buffer[x][0][y].get() != Blocks.air)
 					support[x][0][y] = 2;
 		for (int z = 1; z < zLim; z++) {
 			boolean levelCollapsed = true;
 			for (int x = 0; x < xLim; x++) {
 				for (int y = 0; y < yLim; y++) {
-					if (buffer[x][z][y][0] > 0 && buffer[x][z][y][0] != 0 && IS_LOAD_TRASMITER_BLOCK[buffer[x][z - 1][y][0]] && support[x][z - 1][y] > 0) {
+					if (buffer[x][z][y].get() != Blocks.air && BlockProperties.get(buffer[x][z - 1][y].get()).isLoaded && support[x][z - 1][y] > 0) {
 						support[x][z][y] = 2;
 						levelCollapsed = false;
 					}
@@ -247,15 +248,15 @@ public class BuildingTower extends Building {
 			for (int m = 0; m < 4; m++) {
 				for (int x = 0; x < xLim; x++) {
 					for (int y = 0; y < yLim; y++) {
-						if (buffer[x][z][y][0] > 0 && support[x][z][y] == 0) {
+						if (buffer[x][z][y].get() != Blocks.air && support[x][z][y] == 0) {
 							int neighbors = 0;
-							if (x < xLim - 1 && IS_LOAD_TRASMITER_BLOCK[buffer[x + 1][z][y][0]])
+							if (x < xLim - 1 && BlockProperties.get(buffer[x + 1][z][y].get()).isLoaded)
 								neighbors += support[x + 1][z][y];
-							if (x > 0 && IS_LOAD_TRASMITER_BLOCK[buffer[x - 1][z][y][0]])
+							if (x > 0 && BlockProperties.get(buffer[x - 1][z][y].get()).isLoaded)
 								neighbors += support[x - 1][z][y];
-							if (y < yLim - 1 && IS_LOAD_TRASMITER_BLOCK[buffer[x][z][y + 1][0]])
+							if (y < yLim - 1 && BlockProperties.get(buffer[x][z][y + 1].get()).isLoaded)
 								neighbors += support[x][z][y + 1];
-							if (y > 0 && IS_LOAD_TRASMITER_BLOCK[buffer[x][z][y - 1][0]])
+							if (y > 0 && BlockProperties.get(buffer[x][z][y - 1].get()).isLoaded)
 								neighbors += support[x][z][y - 1];
 							if (neighbors > random.nextInt(4))
 								support[x][z][y] = 1;
@@ -266,7 +267,7 @@ public class BuildingTower extends Building {
 			//remove blocks if no support
 			for (int x = 0; x < xLim; x++) {
 				for (int y = 0; y < yLim; y++) {
-					if (support[x][z][y] == 0 && buffer[x][z][y][0] != Building.PRESERVE_ID)
+					if (support[x][z][y] == 0 && !buffer[x][z][y].equals(Building.PRESERVE_BLOCK))
 						buffer[x][z][y] = HOLE_BLOCK_LIGHTING;
 					//else buffer[x][z][y]=new int[]{40+support[x][z][y],0};
 				}
@@ -313,16 +314,16 @@ public class BuildingTower extends Building {
 		//If roofRule=sandstone/step, do wooden for steep roofstyle and sandstone/step otherwise
 		//Otherwise do wooden for sloped roofstyles, and roofRule otherwise
 		if (roofRule == TemplateRule.RULE_NOT_PROVIDED) {
-			roofRule = (roofStyle == ROOF_STEEP || roofStyle == ROOF_SHALLOW || roofStyle == ROOF_TRIM || roofStyle == ROOF_TWO_SIDED) ? new TemplateRule(new int[] { WOOD_ID, 0 }) : bRule;
+			roofRule = (roofStyle == ROOF_STEEP || roofStyle == ROOF_SHALLOW || roofStyle == ROOF_TRIM || roofStyle == ROOF_TWO_SIDED) ? new TemplateRule(Blocks.planks, 0) : bRule;
 		}
-		int stepMeta = blockToStepMeta(roofRule.primaryBlock)[1];
-		TemplateRule stepRule = new TemplateRule(new int[] { STEP_ID, stepMeta }, roofRule.chance);
-		TemplateRule doubleStepRule = (stepMeta == 2) ? new TemplateRule(new int[] { WOOD_ID, 0 }, roofRule.chance) : new TemplateRule(new int[] { DOUBLE_STEP_ID, stepMeta }, roofRule.chance);
-		TemplateRule trimRule = roofStyle == ROOF_TRIM ? new TemplateRule(new int[] { bRule.primaryBlock[0] == COBBLESTONE_ID ? LOG_ID : COBBLESTONE_ID, 0 }, roofRule.chance) : stepRule;
-		TemplateRule northStairsRule = new TemplateRule(new int[] { blockToStairs(roofRule.primaryBlock), STAIRS_DIR_TO_META[DIR_NORTH] }, roofRule.chance);
-		TemplateRule southStairsRule = new TemplateRule(new int[] { blockToStairs(roofRule.primaryBlock), STAIRS_DIR_TO_META[DIR_SOUTH] }, roofRule.chance);
-		TemplateRule eastStairsRule = new TemplateRule(new int[] { blockToStairs(roofRule.primaryBlock), STAIRS_DIR_TO_META[DIR_EAST] }, roofRule.chance);
-		TemplateRule westStairsRule = new TemplateRule(new int[] { blockToStairs(roofRule.primaryBlock), STAIRS_DIR_TO_META[DIR_WEST] }, roofRule.chance);
+		int stepMeta = blockToStepMeta(roofRule.primaryBlock).getMeta();
+		TemplateRule stepRule = new TemplateRule(Blocks.stone_slab, stepMeta, roofRule.chance);
+		TemplateRule doubleStepRule = (stepMeta == 2) ? new TemplateRule(Blocks.planks, 0, roofRule.chance) : new TemplateRule(Blocks.double_stone_slab, stepMeta, roofRule.chance);
+		TemplateRule trimRule = roofStyle == ROOF_TRIM ? new TemplateRule(bRule.primaryBlock.get() == Blocks.cobblestone ? Blocks.log : Blocks.cobblestone, 0, roofRule.chance) : stepRule;
+		TemplateRule northStairsRule = new TemplateRule(blockToStairs(roofRule.primaryBlock), STAIRS_DIR_TO_META[DIR_NORTH], roofRule.chance);
+		TemplateRule southStairsRule = new TemplateRule(blockToStairs(roofRule.primaryBlock), STAIRS_DIR_TO_META[DIR_SOUTH], roofRule.chance);
+		TemplateRule eastStairsRule = new TemplateRule(blockToStairs(roofRule.primaryBlock), STAIRS_DIR_TO_META[DIR_EAST], roofRule.chance);
+		TemplateRule westStairsRule = new TemplateRule(blockToStairs(roofRule.primaryBlock), STAIRS_DIR_TO_META[DIR_WEST], roofRule.chance);
 		//======================================== build it! ================================================
 		if (roofStyle == ROOF_CRENEL) { //crenelated
 			if (circular) {
@@ -339,15 +340,15 @@ public class BuildingTower extends Building {
 					for (int x1 = 0; x1 < bWidth; x1++)
 						buffer[x1 + 1][bHeight + 1][y1 + 1] = bRule.getBlockOrHole(world.rand);
 				for (int m = 0; m < bWidth; m += 2) {
-					if (!(getBlockIdLocal(m, bHeight, -1) == bRule.primaryBlock[0] || getBlockIdLocal(m, bHeight - 1, -1) == bRule.primaryBlock[0]))
+					if (!(getBlockIdLocal(m, bHeight, -1) == bRule.primaryBlock.get() || getBlockIdLocal(m, bHeight - 1, -1) == bRule.primaryBlock.get()))
 						buffer[m + 1][bHeight + 1 + 1][0 + 1] = (m + 1) % 2 == 0 ? HOLE_BLOCK_LIGHTING : bRule.getBlockOrHole(world.rand);
-					if (!(getBlockIdLocal(m, bHeight, bLength) == bRule.primaryBlock[0] || getBlockIdLocal(m, bHeight - 1, bLength) == bRule.primaryBlock[0]))
+					if (!(getBlockIdLocal(m, bHeight, bLength) == bRule.primaryBlock.get() || getBlockIdLocal(m, bHeight - 1, bLength) == bRule.primaryBlock.get()))
 						buffer[m + 1][bHeight + 1 + 1][bLength - 1 + 1] = (m + 1) % 2 == 0 ? HOLE_BLOCK_LIGHTING : bRule.getBlockOrHole(world.rand);
 				}
 				for (int m = 0; m < bLength; m += 2) {
-					if (!(getBlockIdLocal(-1, bHeight, m) == bRule.primaryBlock[0] || getBlockIdLocal(-1, bHeight - 1, m) == bRule.primaryBlock[0]))
+					if (!(getBlockIdLocal(-1, bHeight, m) == bRule.primaryBlock.get() || getBlockIdLocal(-1, bHeight - 1, m) == bRule.primaryBlock.get()))
 						buffer[0 + 1][bHeight + 1 + 1][m + 1] = (m + 1) % 2 == 0 ? HOLE_BLOCK_LIGHTING : bRule.getBlockOrHole(world.rand);
-					if (!(getBlockIdLocal(bWidth, bHeight, m) == bRule.primaryBlock[0] || getBlockIdLocal(bWidth, bHeight - 1, m) == bRule.primaryBlock[0]))
+					if (!(getBlockIdLocal(bWidth, bHeight, m) == bRule.primaryBlock.get() || getBlockIdLocal(bWidth, bHeight - 1, m) == bRule.primaryBlock.get()))
 						buffer[bWidth - 1 + 1][bHeight + 1 + 1][m + 1] = (m + 1) % 2 == 0 ? HOLE_BLOCK_LIGHTING : bRule.getBlockOrHole(world.rand);
 				}
 				for (int y1 = 1; y1 < bLength - 1; y1++)
@@ -357,7 +358,7 @@ public class BuildingTower extends Building {
 							buffer[x1 + 1][bHeight + 1 - 1 + 1][y1 + 1] = HOLE_BLOCK_LIGHTING;
 			}
 			buffer[2][bHeight + 1][bLength / 2] = EAST_FACE_LADDER_BLOCK;
-			buffer[2][bHeight + 2][bLength / 2] = new int[] { TRAP_DOOR_ID, 3 };
+			buffer[2][bHeight + 2][bLength / 2] = new BlockAndMeta(Blocks.trapdoor, 3);
 		} else if (roofStyle == ROOF_STEEP || roofStyle == ROOF_TRIM || (roofStyle == ROOF_SHALLOW && (bWidth < 6 || bLength < 6))) { //45 degrees sloped
 			for (int m = 0; m < (minHorizDim + 1) / 2; m++) {
 				for (int x1 = m; x1 < bWidth - m; x1++) {
@@ -448,7 +449,7 @@ public class BuildingTower extends Building {
 			//if X-axis is the major axis, rot will be false, minAxLen==bLength, maxAxLen==bWidth, and p==x1, r==y1.
 			boolean rot = bLength > minHorizDim;
 			int minAxLen = rot ? bWidth : bLength, maxAxLen = rot ? bLength : bWidth;
-			int[] forwardsStairsRule = rot ? eastStairsRule.getBlockOrHole(world.rand) : northStairsRule.getBlockOrHole(world.rand), backwardsStirRule = rot ? westStairsRule
+			BlockAndMeta forwardsStairsRule = rot ? eastStairsRule.getBlockOrHole(world.rand) : northStairsRule.getBlockOrHole(world.rand), backwardsStirRule = rot ? westStairsRule
 					.getBlockOrHole(world.rand) : southStairsRule.getBlockOrHole(world.rand);
 					for (int m = 0; m <= minHorizDim / 2; m++) {
 						for (int p = 0; p < maxAxLen; p++) {
@@ -524,8 +525,8 @@ public class BuildingTower extends Building {
 		while (true) {
 			if (x1 < 1 || x1 >= bWidth - 1 || y1 < 1 || y1 >= bLength - 1 || !isFloor(x1, z, y1))
 				return;
-			if (IS_ARTIFICAL_BLOCK[getBlockIdLocal(x1 + xinc, z, y1 + yinc)] && IS_ARTIFICAL_BLOCK[getBlockIdLocal(x1 + xinc, z - 1, y1 + yinc)]
-					&& getBlockIdLocal(x1 + xinc, z - 1, y1 + yinc) != LADDER_ID) {
+			if (BlockProperties.get(getBlockIdLocal(x1 + xinc, z, y1 + yinc)).isArtificial && BlockProperties.get(getBlockIdLocal(x1 + xinc, z - 1, y1 + yinc)).isArtificial
+					&& getBlockIdLocal(x1 + xinc, z - 1, y1 + yinc) != Blocks.ladder) {
 				break;
 			}
 			x1 += xinc;
@@ -533,9 +534,9 @@ public class BuildingTower extends Building {
 		}
 		for (int m = 0; m < 2; m++) {
 			for (int z1 = z; z1 < z + 1 + random.nextInt(3); z1++) {
-				if (getBlockIdLocal(x1, z1, y1) != 0 || !isWallBlock(x1 + xinc, z1, y1 + yinc))
+				if (getBlockIdLocal(x1, z1, y1) != Blocks.air || !isWallBlock(x1 + xinc, z1, y1 + yinc))
 					break;
-				setBlockLocal(x1, z1, y1, BOOKSHELF_ID);
+				setBlockLocal(x1, z1, y1, Blocks.bookshelf);
 			}
 			x1 += DIR_TO_X[(dir + 1) % 4];
 			y1 += DIR_TO_Y[(dir + 1) % 4];
@@ -552,22 +553,22 @@ public class BuildingTower extends Building {
 			return false;
 		boolean hasSupport = false;
 		for (int y1 = bLength / 2 - 2; y1 < bLength / 2 + 2; y1++) {
-			if (getBlockIdLocal(bWidth / 2, z, y1) != 0)
+			if (getBlockIdLocal(bWidth / 2, z, y1) != Blocks.air)
 				return false;
-			if (getBlockIdLocal(bWidth / 2, z - 1, y1) != 0)
+			if (getBlockIdLocal(bWidth / 2, z - 1, y1) != Blocks.air)
 				hasSupport = true;
 		}
 		if (!hasSupport)
 			return false;
 		for (int y1 = bLength / 2 - 2; y1 < bLength / 2 + 2; y1++) {
-			setBlockLocal(bWidth / 2, z, y1, OBSIDIAN_ID);
-			setBlockLocal(bWidth / 2, z + 4, y1, OBSIDIAN_ID);
+			setBlockLocal(bWidth / 2, z, y1, Blocks.obsidian);
+			setBlockLocal(bWidth / 2, z + 4, y1, Blocks.obsidian);
 		}
 		for (int z1 = z + 1; z1 < z + 4; z1++) {
-			setBlockLocal(bWidth / 2, z1, bLength / 2 - 2, OBSIDIAN_ID);
-			setBlockLocal(bWidth / 2, z1, bLength / 2 - 1, PORTAL_ID);
-			setBlockLocal(bWidth / 2, z1, bLength / 2, PORTAL_ID);
-			setBlockLocal(bWidth / 2, z1, bLength / 2 + 1, OBSIDIAN_ID);
+			setBlockLocal(bWidth / 2, z1, bLength / 2 - 2, Blocks.obsidian);
+			setBlockLocal(bWidth / 2, z1, bLength / 2 - 1, Blocks.portal);
+			setBlockLocal(bWidth / 2, z1, bLength / 2, Blocks.portal);
+			setBlockLocal(bWidth / 2, z1, bLength / 2 + 1, Blocks.obsidian);
 		}
 		return true;
 	}
@@ -578,7 +579,7 @@ public class BuildingTower extends Building {
 	}
 	public int baseHeight, roofStyle, minHorizDim;
 	public boolean PopulateFurniture, MakeDoors, circular;
-	private int[][][][] buffer;
+	private BlockAndMeta[][][] buffer;
 	private int[][] circle_shape;
 	private TemplateRule roofRule, SpawnerRule, ChestRule;
 
@@ -644,12 +645,12 @@ public class BuildingTower extends Building {
 			if (MakeDoors)
 				buildWoodDoor = true;
 		}
-		if (!IS_WALLABLE[getBlockIdLocal(x, z + height - 2, y + yFace)])
+		if (!BlockProperties.get(getBlockIdLocal(x, z + height - 2, y + yFace)).isWallable)
 			return;
 		if (buildWoodDoor) {
 			int metadata = xFace == 0 ? (yFace > 0 ? SOUTH_FACE_DOOR_META : NORTH_FACE_DOOR_META) : (xFace > 0 ? WEST_FACE_DOOR_META : EAST_FACE_DOOR_META);
-			buffer[x + 1][z + 1][y + 1] = new int[] { WOODEN_DOOR_ID, metadata };
-			buffer[x + 1][z + 1 + 1][y + 1] = new int[] { WOODEN_DOOR_ID, random.nextBoolean() ? 8 : 9 };
+			buffer[x + 1][z + 1][y + 1] = new BlockAndMeta(Blocks.wooden_door, metadata);
+			buffer[x + 1][z + 1 + 1][y + 1] = new BlockAndMeta(Blocks.wooden_door, random.nextBoolean() ? 8 : 9);
 			if (isFloor(x + xFace, z - 1, y + yFace) && x + xFace + 1 >= 0 && x + xFace + 1 < buffer.length && y + yFace + 1 >= 0 && y + yFace + 1 < buffer[0][0].length) {
 				buffer[x + xFace + 1][z - 1 + 1][y + yFace + 1] = blockToStepMeta(bRule.primaryBlock);//build a step-up
 			}
@@ -669,12 +670,12 @@ public class BuildingTower extends Building {
 		int y1 = random.nextInt(bLength - 2) + 1;
 		int x2 = x1 + DIR_TO_X[dir], y2 = y1 + DIR_TO_Y[dir];
 		if (isFloor(x1, z, y1) && !isNextToDoorway(x1, z, y1) && isFloor(x2, z, y2) && !isNextToDoorway(x2, z, y2)) {
-			setBlockLocal(x1, z, y1, BED_BLOCK_ID, dir + 8);
-			setBlockLocal(x2, z, y2, BED_BLOCK_ID, dir);
+			setBlockLocal(x1, z, y1, Blocks.bed, dir + 8);
+			setBlockLocal(x2, z, y2, Blocks.bed, dir);
 		}
 	}
 
-	private void populateFurnitureColumn(int z, int[][] block) {
+	private void populateFurnitureColumn(int z, BlockAndMeta[] block) {
 		int x1 = random.nextInt(bWidth - 2) + 1;
 		int y1 = random.nextInt(bLength - 2) + 1;
 		if (isFloor(x1, z, y1) && !isNextToDoorway(x1, z, y1)) {
@@ -688,7 +689,7 @@ public class BuildingTower extends Building {
 			int x1 = random.nextInt(bWidth - 2) + 1;
 			int y1 = random.nextInt(bLength - 2) + 1;
 			if (isFloor(x1, z, y1)) {
-				setBlockLocal(x1, z, y1, GHAST_SPAWNER_ID);
+				setBlockLocal(x1, z, y1, GHAST_SPAWNER);
 				return true;
 			}
 		}

@@ -28,9 +28,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
+import cpw.mods.fml.common.registry.GameData;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldProviderEnd;
 import net.minecraft.world.biome.BiomeGenBase;
@@ -41,24 +40,25 @@ import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.IWorldGenerator;
 import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.relauncher.Side;
+import org.apache.logging.log4j.Level;
+import scala.Int;
 
 public abstract class BuildingExplorationHandler implements IWorldGenerator {
 	protected final static int MAX_TRIES_PER_CHUNK = 100;
 	protected final static File CONFIG_DIRECTORY = new File(Loader.instance().getConfigDir(), "generatormods");
 	protected final static File LOG = new File(getMinecraftBaseDir(), "generatormods_log.txt");
 	protected String settingsFileName, templateFolderName;
-	public Logger logger;
+	public org.apache.logging.log4j.Logger logger;
 	public PrintWriter lw = null;
 	public float GlobalFrequency = 0.025F;
 	public int TriesPerChunk = 1;
 	protected int[] chestTries = new int[] { 4, 6, 6, 6 };
-	protected int[][][] chestItems = new int[][][] { null, null, null, null };
+	protected Object[][][] chestItems = new Object[][][] { null, null, null, null };
 	protected boolean errFlag = false, dataFilesLoaded = false;
 	protected boolean logActivated = false;
-	private List<Integer> AllowedDimensions = new ArrayList();
+	private List<Integer> AllowedDimensions = new ArrayList<Integer>();
 	private List<World> currentWorld = new ArrayList<World>();
-	public static String[] BIOME_NAMES = new String[BiomeGenBase.biomeList.length + 1];
+	public static String[] BIOME_NAMES = new String[BiomeGenBase.func_150565_n().length + 1];
 	static {
 		BIOME_NAMES[0] = "Underground";
 	}
@@ -90,7 +90,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 
 	public void logOrPrint(String str, String lvl) {
 		if (this.logActivated)
-			logger.log(Level.parse(lvl), str);
+			logger.log(Level.toLevel(lvl), str);
 	}
 
 	//****************************  FUNCTION - chestContentsList *************************************************************************************//
@@ -111,23 +111,38 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 			ArrayList<String> lines = new ArrayList<String>();
 			for (line = br.readLine(); !(line == null || line.length() == 0); line = br.readLine())
 				lines.add(line);
-			chestItems[triesIdx] = new int[6][lines.size()];
+			chestItems[triesIdx] = new Object[6][lines.size()];
 			for (int n = 0; n < lines.size(); n++) {
 				String[] intStrs = lines.get(n).trim().split(",");
 				try {
 					chestItems[triesIdx][0][n] = n;
 					String[] idAndMeta = intStrs[0].split("-");
-					chestItems[triesIdx][1][n] = Integer.parseInt(idAndMeta[0]);
-					chestItems[triesIdx][2][n] = idAndMeta.length > 1 ? Integer.parseInt(idAndMeta[1]) : 0;
-					for (int m = 1; m < 4; m++)
-						chestItems[triesIdx][m + 2][n] = Integer.parseInt(intStrs[m]);
-					//input checking
-					if (chestItems[triesIdx][4][n] < 0)
-						chestItems[triesIdx][4][n] = 0;
-					if (chestItems[triesIdx][5][n] < chestItems[triesIdx][4][n])
-						chestItems[triesIdx][5][n] = chestItems[triesIdx][4][n];
-					if (chestItems[triesIdx][5][n] > 64)
-						chestItems[triesIdx][5][n] = 64;
+                    Object temp;
+                    try{
+                        int i = Integer.parseInt(idAndMeta[0]);
+                        temp = GameData.itemRegistry.get(i);
+                        if(temp==null){
+                            temp = GameData.blockRegistry.get(i);
+                        }
+                    }catch (Exception e){
+                        temp = GameData.itemRegistry.get(idAndMeta[0]);
+                        if(temp==null){
+                            temp = GameData.blockRegistry.get(idAndMeta[0]);
+                        }
+                    }
+                    if(temp!=null){
+                        chestItems[triesIdx][1][n] = temp;
+                        chestItems[triesIdx][2][n] = idAndMeta.length > 1 ? Integer.parseInt(idAndMeta[1]) : 0;
+                        for (int m = 1; m < 4; m++)
+                            chestItems[triesIdx][m + 2][n] = Integer.parseInt(intStrs[m]);
+                        //input checking
+                        if (Integer.class.cast(chestItems[triesIdx][4][n]) < 0)
+                            chestItems[triesIdx][4][n] = 0;
+                        if (Integer.class.cast(chestItems[triesIdx][5][n]) < Integer.class.cast(chestItems[triesIdx][4][n]))
+                            chestItems[triesIdx][5][n] = chestItems[triesIdx][4][n];
+                        if (Integer.class.cast(chestItems[triesIdx][5][n]) > 64)
+                            chestItems[triesIdx][5][n] = 64;
+                    }
 				} catch (Exception e) {
 					lw.println("Error parsing Settings file: " + e.toString());
 					lw.println("Line:" + lines.get(n));
@@ -144,8 +159,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 			int ruleId = Integer.parseInt(postSplit);
 			return rules[ruleId];
 		} catch (NumberFormatException e) {
-			TemplateRule r = new TemplateRule(postSplit, false);
-			return r;
+			return new TemplateRule(postSplit, false);
 		} catch (Exception e) {
 			throw new Exception("Error reading block rule for variable: " + e.toString() + ". Line:" + read);
 		}
@@ -162,12 +176,11 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 
 	protected void copyDefaultChestItems() {
 		chestTries = new int[Building.DEFAULT_CHEST_TRIES.length];
-		for (int n = 0; n < Building.DEFAULT_CHEST_TRIES.length; n++)
-			chestTries[n] = Building.DEFAULT_CHEST_TRIES[n];
-		chestItems = new int[Building.DEFAULT_CHEST_ITEMS.length][][];
+        System.arraycopy(Building.DEFAULT_CHEST_TRIES, 0, chestTries, 0, Building.DEFAULT_CHEST_TRIES.length);
+		chestItems = new Object[Building.DEFAULT_CHEST_ITEMS.length][][];
 		//careful, we have to flip the order of the 2nd and 3rd dimension here
 		for (int l = 0; l < Building.DEFAULT_CHEST_ITEMS.length; l++) {
-			chestItems[l] = new int[6][Building.DEFAULT_CHEST_ITEMS[l].length];
+			chestItems[l] = new Object[6][Building.DEFAULT_CHEST_ITEMS[l].length];
 			for (int m = 0; m < Building.DEFAULT_CHEST_ITEMS[l].length; m++) {
 				for (int n = 0; n < 6; n++) {
 					chestItems[l][n][m] = Building.DEFAULT_CHEST_ITEMS[l][m][n];
@@ -209,14 +222,14 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 		logOrPrint(message, "INFO");
 		if (BIOME_NAMES[1] == null || BIOME_NAMES[1].equals("")) {
 			for (int i = 0; i < BIOME_NAMES.length - 1; i++) {
-				if (BiomeGenBase.biomeList[i] != null)
-					BIOME_NAMES[i + 1] = BiomeGenBase.biomeList[i].biomeName;
+				if (BiomeGenBase.func_150565_n()[i] != null)
+					BIOME_NAMES[i + 1] = BiomeGenBase.func_150565_n()[i].biomeName;
 			}
 		}
 	}
 
 	protected boolean isNewWorld(World world) {
-		if (currentWorld == null || currentWorld.isEmpty()) {
+		if (currentWorld.isEmpty()) {
 			currentWorld.add(world);
 			return true;
 		} else if (currentWorld.contains(world)) {
@@ -246,12 +259,22 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 			pw.println(Building.CHEST_TYPE_LABELS[l]);
 			pw.println("Tries:" + chestTries[l]);
 			for (int m = 0; m < chestItems[l][0].length; m++) {
-				pw.print(chestItems[l][1][m]);
-				if (chestItems[l][2][m] != 0)
-					pw.print("-" + chestItems[l][2][m]);
-				pw.print("," + chestItems[l][3][m]);
-				pw.print("," + chestItems[l][4][m]);
-				pw.println("," + chestItems[l][5][m]);
+                try{
+                    String txt = GameData.itemRegistry.func_148750_c(chestItems[l][1][m]);
+                    if(txt==null){
+                        txt = GameData.blockRegistry.func_148750_c(chestItems[l][1][m]);
+                    }
+                    if(txt!=null){
+                        pw.print(txt);
+                        if (Integer.class.cast(chestItems[l][2][m]) != 0)
+                            pw.print("-" + chestItems[l][2][m]);
+                        pw.print("," + chestItems[l][3][m]);
+                        pw.print("," + chestItems[l][4][m]);
+                        pw.println("," + chestItems[l][5][m]);
+                    }
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
 			}
 			pw.println();
 		}
@@ -322,7 +345,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 			String[] check = (read.split(splitString)[1]).split(",");
 			Integer[] newVals = new Integer[check.length];
 			for (int i = 0; i < check.length; i++) {
-				newVals[i] = Integer.valueOf(Integer.parseInt(check[i].trim()));
+				newVals[i] = Integer.parseInt(check[i].trim());
 			}
 			return newVals;
 		} catch (Exception e) {
@@ -382,7 +405,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 	}
 
 	private static File getMinecraftBaseDir() {
-		if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
+		if (FMLCommonHandler.instance().getSide().isClient()) {
 			return FMLClientHandler.instance().getClient().getMinecraft().mcDataDir;
 		}
 		return FMLCommonHandler.instance().getMinecraftServerInstance().getFile("");

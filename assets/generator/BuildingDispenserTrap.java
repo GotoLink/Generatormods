@@ -1,6 +1,7 @@
 package assets.generator;
 
-import net.minecraft.item.Item;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntityDispenser;
 
@@ -21,8 +22,8 @@ import net.minecraft.tileentity.TileEntityDispenser;
  */
 public class BuildingDispenserTrap extends Building {
 	public final static int ARROW_MISSILE = 0, DAMAGE_POTION_MISSILE = 1;
-	private static int[][] CODE_TO_BLOCK = new int[][] { { PRESERVE_ID, 0 }, {}, { 0, 0 }, { REDSTONE_WIRE_ID, 0 }, { REDSTONE_TORCH_ON_ID, BUTTON_DIR_TO_META[DIR_NORTH] },
-			{ REDSTONE_TORCH_OFF_ID, BUTTON_DIR_TO_META[DIR_SOUTH] }, { REDSTONE_TORCH_ON_ID, 5 } };
+	private static BlockAndMeta[] CODE_TO_BLOCK = new BlockAndMeta[] { PRESERVE_BLOCK, null, new BlockAndMeta(Blocks.air, 0), new BlockAndMeta(Blocks.redstone_wire, 0), new BlockAndMeta(Blocks.redstone_torch, BUTTON_DIR_TO_META[DIR_NORTH]),
+            new BlockAndMeta(Blocks.unlit_redstone_torch, BUTTON_DIR_TO_META[DIR_SOUTH]), new BlockAndMeta(Blocks.redstone_torch, 5) };
 	private static int[][][] MECHANISM = new int[][][] { { { 0, 0, 0 }, { 0, 0, 0 }, { 0, 1, 0 }, { 0, 0, 0 } }, { { 0, 0, 0 }, { 1, 1, 1 }, { 1, 4, 1 }, { 1, 1, 1 } },
 			{ { 0, 0, 0 }, { 1, 1, 1 }, { 1, 1, 1 }, { 1, 5, 1 } }, { { 0, 1, 0 }, { 1, 1, 1 }, { 1, 3, 1 }, { 1, 1, 1 } }, { { 0, 1, 0 }, { 1, 6, 1 }, { 1, 0, 1 }, { 1, 2, 1 } },
 			{ { 0, 1, 0 }, { 1, 1, 1 }, { 1, 1, 1 }, { 1, 1, 1 } }, };
@@ -54,15 +55,15 @@ public class BuildingDispenserTrap extends Building {
 		}
 		for (int y = 0; y < bLength; y++) {
 			setBlockLocal(1, -3, y, bRule);
-			setBlockLocal(1, -2, y, REDSTONE_WIRE_ID);
+			setBlockLocal(1, -2, y, Blocks.redstone_wire);
 			setBlockLocal(0, -2, y, bRule);
 			setBlockLocal(2, -2, y, bRule);
 			setBlockLocal(1, -1, y, bRule);
-			setBlockLocal(1, 0, y, multipleTriggers && random.nextBoolean() ? STONE_PLATE_ID : 0);
-			setBlockLocal(1, 1, y, 0);
+			setBlockLocal(1, 0, y, multipleTriggers && random.nextBoolean() ? Blocks.stone_pressure_plate : Blocks.air);
+			setBlockLocal(1, 1, y, Blocks.air);
 		}
-		setBlockLocal(1, 0, 0, STONE_PLATE_ID);
-		ItemStack itemstack = missileType == ARROW_MISSILE ? new ItemStack(Item.arrow.itemID, 30 + random.nextInt(10), 0) : new ItemStack(Item.potion.itemID, 30 + random.nextInt(10), 12 | 0x4000);
+		setBlockLocal(1, 0, 0, Blocks.stone_pressure_plate);
+		ItemStack itemstack = missileType == ARROW_MISSILE ? new ItemStack(Items.arrow, 30 + random.nextInt(10), 0) : new ItemStack(Items.potionitem, 30 + random.nextInt(10), 12 | 0x4000);
 		setItemDispenser(1, 1, bLength + 1, DIR_SOUTH, itemstack);
 	}
 
@@ -89,10 +90,10 @@ public class BuildingDispenserTrap extends Building {
 
 	private void setItemDispenser(int x, int z, int y, int metaDir, ItemStack itemstack) {
 		int[] pt = getIJKPt(x, z, y);
-		world.setBlock(pt[0], pt[1], pt[2], DISPENSER_ID, 0, 2);
+		world.func_147465_d(pt[0], pt[1], pt[2], Blocks.dispenser, 0, 2);
 		world.setBlockMetadataWithNotify(pt[0], pt[1], pt[2], LADDER_DIR_TO_META[orientDirToBDir(metaDir)], 3);
 		try {
-			TileEntityDispenser tileentitychest = (TileEntityDispenser) world.getBlockTileEntity(pt[0], pt[1], pt[2]);
+			TileEntityDispenser tileentitychest = (TileEntityDispenser) world.func_147438_o(pt[0], pt[1], pt[2]);
 			if (itemstack != null && tileentitychest != null)
 				tileentitychest.setInventorySlotContents(random.nextInt(tileentitychest.getSizeInventory()), itemstack);
 		} catch (Exception e) {

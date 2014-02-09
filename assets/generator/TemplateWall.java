@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
 
@@ -227,13 +228,13 @@ public class TemplateWall extends TemplateTML {
 		if (SpawnerRule == TemplateRule.RULE_NOT_PROVIDED) {
 			//try the deprecated mob probabilities
 			if (mobProb > 0.0F)
-				SpawnerRule = new TemplateRule(new int[] { Building.UPRIGHT_SPAWNER_ID, 0 }, (int) (mobProb * 100));
+				SpawnerRule = new TemplateRule(Building.UPRIGHT_SPAWNER, (int) (mobProb * 100));
 			else if (pigZombieProb > 0.0F)
-				SpawnerRule = new TemplateRule(new int[] { Building.PIG_ZOMBIE_SPAWNER_ID, 0 }, (int) (pigZombieProb * 100));
+				SpawnerRule = new TemplateRule(Building.PIG_ZOMBIE_SPAWNER, (int) (pigZombieProb * 100));
 			else if (endermanProb > 0.0F)
-				SpawnerRule = new TemplateRule(new int[] { Building.ENDERMAN_SPAWNER_ID, 0 }, (int) (endermanProb * 100));
+				SpawnerRule = new TemplateRule(Building.ENDERMAN_SPAWNER, (int) (endermanProb * 100));
 			else if (caveSpiderProb > 0.0F)
-				SpawnerRule = new TemplateRule(new int[] { Building.CAVE_SPIDER_SPAWNER_ID, 0 }, (int) (caveSpiderProb * 100));
+				SpawnerRule = new TemplateRule(Building.CAVE_SPIDER_SPAWNER, (int) (caveSpiderProb * 100));
 		}
 		if (Biomes != ALL_BIOMES && Biomes[0] > 0) {
 			underground = true;
@@ -246,8 +247,8 @@ public class TemplateWall extends TemplateTML {
 		ArrayList<TemplateTML> childTemplates = new ArrayList<TemplateTML>();
 		if (!extraOptions.containsKey(listVarString))
 			return childTemplates;
-		String[] names = (((String) extraOptions.get(listVarString)).split("="))[1].split(",");
-		String templateListStr = (String) extraOptions.get(listVarString);
+		String[] names = ((extraOptions.get(listVarString)).split("="))[1].split(",");
+		String templateListStr = extraOptions.get(listVarString);
 		if (templateListStr == null)
 			return childTemplates;
 		for (String name : names) {
@@ -259,7 +260,7 @@ public class TemplateWall extends TemplateTML {
 				break;
 			}
 			if (childTemplateMap.containsKey(name.trim()))
-				childTemplates.add((TemplateTML) childTemplateMap.get(name.trim()));
+				childTemplates.add(childTemplateMap.get(name.trim()));
 		}
 		return childTemplates;
 	}
@@ -268,7 +269,7 @@ public class TemplateWall extends TemplateTML {
 		ArrayList<TemplateWall> childTemplates = new ArrayList<TemplateWall>();
 		if (!extraOptions.containsKey(listVarString))
 			return childTemplates;
-		String[] names = (((String) extraOptions.get(listVarString)).split("="))[1].split(",");
+		String[] names = ((extraOptions.get(listVarString)).split("="))[1].split(",");
 		for (String name : names) {
 			name = name.trim();
 			if (name.toUpperCase().equals("NONE"))
@@ -392,7 +393,7 @@ public class TemplateWall extends TemplateTML {
 
 	public static TemplateWall pickBiomeWeightedWallStyle(List<TemplateWall> styles, World world, int i, int k, Random random, boolean ignoreBiomes) {
 		int biome = world.getBiomeGenForCoordsBody(i, k).biomeID + 1;
-		if ((biome < 0 || biome > BiomeGenBase.biomeList.length) && !ignoreBiomes)
+		if ((biome < 0 || biome > BiomeGenBase.func_150565_n().length) && !ignoreBiomes)
 			return null;
 		int sum = 0;
 		for (TemplateWall ws : styles) {

@@ -1,5 +1,8 @@
 package assets.generator;
 
+import net.minecraft.block.Block;
+import net.minecraft.init.Blocks;
+
 /*
  *  Source code for the Walled City Generator and CARuins Mods for the game Minecraft
  *  Copyright (C) 2011 by formivore
@@ -43,7 +46,7 @@ public class BuildingSpiralStaircase extends Building {
 	//  |x	z=bHeight=-7, (2-in-a-row bottom stair), xfinal=2, yfinal=0
 	//
 	public void build(int extraTopStairs, int yP) {
-		int stairsBlockId = blockToStairs(bRule.primaryBlock);
+		Block stairsBlockId = blockToStairs(bRule.primaryBlock);
 		int sDir = DIR_SOUTH;
 		setBlockLocal(1, 0, 1, bRule);
 		if (yP == 1 && yP == 2)
@@ -54,7 +57,7 @@ public class BuildingSpiralStaircase extends Building {
 		for (int n = 0; n <= extraTopStairs; n++)
 			buildStairwaySegment(0, n, -n, 3, stairsBlockId, sDir);
 		int x = 0, y = 1;
-		setBlockLocal(x, 2, y, 0);
+		setBlockLocal(x, 2, y, Blocks.air);
 		for (int z = -1; z >= bHeight; z--) {
 			buildStairwaySegment(x, z, y, 2, stairsBlockId, sDir);
 			setBlockLocal(1, z, 1, bRule); //central column
@@ -107,14 +110,14 @@ public class BuildingSpiralStaircase extends Building {
 	private void buildHallwaySegment(int x, int z, int y, int height) {
 		setBlockLocal(x, z - 1, y, bRule);
 		for (int z1 = z; z1 < z + height; z1++)
-			setBlockLocal(x, z1, y, 0);
+			setBlockLocal(x, z1, y, Blocks.air);
 	}
 
-	private void buildStairwaySegment(int x, int z, int y, int height, int stairsBlockId, int sDir) {
+	private void buildStairwaySegment(int x, int z, int y, int height, Block stairsBlockId, int sDir) {
 		setBlockLocal(x, z - 1, y, bRule);
 		setBlockLocal(x, z, y, stairsBlockId, STAIRS_DIR_TO_META[sDir]);
 		for (int z1 = z + 1; z1 <= z + height; z1++)
-			setBlockLocal(x, z1, y, 0);
+			setBlockLocal(x, z1, y, Blocks.air);
 	}
 
 	//calcBottomX, calcBottomY are for use when yP==0

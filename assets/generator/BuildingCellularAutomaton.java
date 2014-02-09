@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Random;
 
+import net.minecraft.block.Block;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.EnumSkyBlock;
 
@@ -29,10 +31,12 @@ public class BuildingCellularAutomaton extends Building {
 	private final float MEAN_SIDE_LENGTH_PER_POPULATE = 15.0f;
 	private final static int HOLE_FLOOR_BUFFER = 2, UNREACHED = -1;
 	private final static int SYMMETRIC_SEED_MIN_WIDTH = 4, CIRCULAR_SEED_MIN_WIDTH = 4;
-	public final static TemplateRule DEFAULT_MEDIUM_LIGHT_NARROW_SPAWNER_RULE = new TemplateRule(new int[] { BLAZE_SPAWNER_ID, BLAZE_SPAWNER_ID, BLAZE_SPAWNER_ID, SILVERFISH_SPAWNER_ID,
-			SILVERFISH_SPAWNER_ID, LAVA_SLIME_SPAWNER_ID }), DEFAULT_MEDIUM_LIGHT_WIDE_SPAWNER_RULE = new TemplateRule(new int[] { BLAZE_SPAWNER_ID, SILVERFISH_SPAWNER_ID, SILVERFISH_SPAWNER_ID,
-					CAVE_SPIDER_SPAWNER_ID, CAVE_SPIDER_SPAWNER_ID, SPIDER_SPAWNER_ID }), DEFAULT_LOW_LIGHT_SPAWNER_RULE = new TemplateRule(new int[] { UPRIGHT_SPAWNER_ID, UPRIGHT_SPAWNER_ID,
-							SILVERFISH_SPAWNER_ID, LAVA_SLIME_SPAWNER_ID, CAVE_SPIDER_SPAWNER_ID });
+	public final static TemplateRule DEFAULT_MEDIUM_LIGHT_NARROW_SPAWNER_RULE = new TemplateRule(new Block[]{Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner},
+            new int[] { BLAZE_SPAWNER_ID, BLAZE_SPAWNER_ID, BLAZE_SPAWNER_ID, SILVERFISH_SPAWNER_ID, SILVERFISH_SPAWNER_ID, LAVA_SLIME_SPAWNER_ID }, 100);
+    public final static TemplateRule DEFAULT_MEDIUM_LIGHT_WIDE_SPAWNER_RULE = new TemplateRule(new Block[]{Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner},
+            new int[] { BLAZE_SPAWNER_ID, SILVERFISH_SPAWNER_ID, SILVERFISH_SPAWNER_ID, CAVE_SPIDER_SPAWNER_ID, CAVE_SPIDER_SPAWNER_ID, SPIDER_SPAWNER_ID }, 100);
+    public final static TemplateRule DEFAULT_LOW_LIGHT_SPAWNER_RULE = new TemplateRule(new Block[]{Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner},
+            new int[] { UPRIGHT_SPAWNER_ID, UPRIGHT_SPAWNER_ID, SILVERFISH_SPAWNER_ID, LAVA_SLIME_SPAWNER_ID, CAVE_SPIDER_SPAWNER_ID }, 100);
 	private byte[][][] layers = null;
 	public byte[][] seed = null;
 	private byte[][] caRule = null;
@@ -55,10 +59,10 @@ public class BuildingCellularAutomaton extends Building {
 	}
 
 	public void build(boolean SmoothWithStairs, boolean makeFloors) {
-		int stairsBlock = SmoothWithStairs ? blockToStairs(bRule.primaryBlock) : 0;
-		TemplateRule[] stairs = new TemplateRule[] { new TemplateRule(new int[] { stairsBlock, STAIRS_DIR_TO_META[DIR_NORTH] }, bRule.chance),
-				new TemplateRule(new int[] { stairsBlock, STAIRS_DIR_TO_META[DIR_EAST] }, bRule.chance), new TemplateRule(new int[] { stairsBlock, STAIRS_DIR_TO_META[DIR_SOUTH] }, bRule.chance),
-				new TemplateRule(new int[] { stairsBlock, STAIRS_DIR_TO_META[DIR_WEST] }, bRule.chance) };
+		Block stairsBlock = SmoothWithStairs ? blockToStairs(bRule.primaryBlock) : Blocks.air;
+		TemplateRule[] stairs = new TemplateRule[] { new TemplateRule(stairsBlock, STAIRS_DIR_TO_META[DIR_NORTH], bRule.chance),
+				new TemplateRule(stairsBlock, STAIRS_DIR_TO_META[DIR_EAST], bRule.chance), new TemplateRule(stairsBlock, STAIRS_DIR_TO_META[DIR_SOUTH], bRule.chance),
+				new TemplateRule(stairsBlock, STAIRS_DIR_TO_META[DIR_WEST], bRule.chance) };
 		int[] floorBlockCounts = new int[bHeight];
 		ArrayList<ArrayList<int[]>> floorBlocks = new ArrayList<ArrayList<int[]>>();
 		for (int m = 0; m < bHeight; m++) {
@@ -93,7 +97,7 @@ public class BuildingCellularAutomaton extends Building {
 							}
 						}
 						//try smoothing with stairs here
-						else if (stairsBlock != 0 && (z == bHeight - 1 || layers[z + 1][x][y] != ALIVE)) {
+						else if (stairsBlock != Blocks.air && (z == bHeight - 1 || layers[z + 1][x][y] != ALIVE)) {
 							if (y + 1 < bLength && layers[z][x][y + 1] == ALIVE && (y - 1 < 0 || //y+1 present and (we are at the edge or...
 									(layers[z][x][y - 1] != ALIVE //y-1 empty and..
 									&& (x + 1 == bWidth || !(layers[z][x + 1][y] != ALIVE && layers[z][x + 1][y - 1] == ALIVE)) //not obstructing gaps to the sides
@@ -121,8 +125,8 @@ public class BuildingCellularAutomaton extends Building {
 			//now clear a hole surrounding the central floor volume
 			for (int y = 0; y < bLength; y++)
 				for (int x = holeLimits[y][0] + 1; x <= holeLimits[y][1] - 1; x++)
-					if (layers[z][x][y] != ALIVE && !IS_ARTIFICAL_BLOCK[getBlockIdLocal(x, z, y)])
-						setBlockLocal(x, z, y, 0);
+					if (layers[z][x][y] != ALIVE && !BlockProperties.get(getBlockIdLocal(x, z, y)).isArtificial)
+						setBlockLocal(x, z, y, Blocks.air);
 			//then gradually taper hole limits...
 			if (z % 2 == 0) {
 				for (int y = 0; y < bLength; y++) {
@@ -361,17 +365,17 @@ public class BuildingCellularAutomaton extends Building {
 	private void makeFloorAt(int x, int z, int y, boolean[][] layout) {
 		if (layout[x][y])
 			return;
-		if (IS_ARTIFICAL_BLOCK[getBlockIdLocal(x, z, y)] && IS_ARTIFICAL_BLOCK[getBlockIdLocal(x, z + 1, y)]) { //pillar
-			if (!IS_ARTIFICAL_BLOCK[getBlockIdLocal(x, z + 2, y)])
+		if (BlockProperties.get(getBlockIdLocal(x, z, y)).isArtificial && BlockProperties.get(getBlockIdLocal(x, z + 1, y)).isArtificial) { //pillar
+			if (!BlockProperties.get(getBlockIdLocal(x, z + 2, y)).isArtificial)
 				setBlockLocal(x, z + 2, y, bRule);
 			return;
 		}
-		if (!IS_ARTIFICAL_BLOCK[getBlockIdLocal(x, z - 1, y)]) { //raise to floor
-			int[] idAndMeta = bRule.getNonAirBlock(world.rand);
-			setBlockWithLightingLocal(x, z - 1, y, idAndMeta[0], idAndMeta[1], true);
+		if (!BlockProperties.get(getBlockIdLocal(x, z - 1, y)).isArtificial) { //raise to floor
+            BlockAndMeta idAndMeta = bRule.getNonAirBlock(world.rand);
+			setBlockWithLightingLocal(x, z - 1, y, idAndMeta.get(), idAndMeta.getMeta(), true);
 		}
-		setBlockWithLightingLocal(x, z, y, 0, 0, true);
-		setBlockWithLightingLocal(x, z + 1, y, 0, 0, true);
+		setBlockWithLightingLocal(x, z, y, Blocks.air, 0, true);
+		setBlockWithLightingLocal(x, z + 1, y, Blocks.air, 0, true);
 		layout[x][y] = true;
 	}
 
@@ -423,7 +427,7 @@ public class BuildingCellularAutomaton extends Building {
 			for (int tries = 0; tries < 8; tries++) {
 				int x = random.nextInt(fWidth) + fBB[0][z], y = random.nextInt(fLength) + fBB[2][z];
 				if (isFloor(x, z, y)) {
-					setBlockLocal(x, z - 1, y, pickCAChestType(z));
+					setBlockLocal(x, z - 1, y, Blocks.chest, pickCAChestType(z));
 					setBlockLocal(x, z - 2, y, bRule);
 					if (random.nextBoolean()) {
 						break; //chance of > 1 chest. Expected # of chests is one.
@@ -436,8 +440,8 @@ public class BuildingCellularAutomaton extends Building {
 		for (int tries = 0; tries < s; tries++) {
 			int x = random.nextInt(fWidth) + fBB[0][z], y = random.nextInt(fLength) + fBB[2][z];
 			if (isFloor(x, z, y)) {
-				setBlockLocal(x, z, y, STONE_PLATE_ID);
-				setBlockLocal(x, z - 1, y, TNT_ID);
+				setBlockLocal(x, z, y, Blocks.stone_pressure_plate);
+				setBlockLocal(x, z - 1, y, Blocks.tnt);
 				setBlockLocal(x, z - 2, y, bRule);
 			}
 		}
@@ -450,9 +454,9 @@ public class BuildingCellularAutomaton extends Building {
 					for (int y1 = y - 1; y1 <= y + 2; y1++)
 						for (int z1 = z - 3; z1 <= z - 2; z1++)
 							setBlockLocal(x1, z1, y1, bRule);
-				setBlockLocal(x, z, y, STONE_PLATE_ID);
-				setBlockLocal(x, z - 2, y, TNT_ID);
-				setBlockLocal(x, z - 2, y + 1, TNT_ID);
+				setBlockLocal(x, z, y, Blocks.stone_pressure_plate);
+				setBlockLocal(x, z - 2, y, Blocks.tnt);
+				setBlockLocal(x, z - 2, y + 1, Blocks.tnt);
 			}
 		}
 		//dispenser trap
@@ -483,7 +487,7 @@ public class BuildingCellularAutomaton extends Building {
 					//ladder
 					for (int z = z1; z < z2; z++) {
 						setBlockLocal(x + DIR_TO_X[dir], z, y + DIR_TO_Y[dir], bRule);
-						setBlockLocal(x, z, y, LADDER_ID, LADDER_DIR_TO_META[flipDir(dir)]);
+						setBlockLocal(x, z, y, Blocks.ladder, LADDER_DIR_TO_META[flipDir(dir)]);
 					}
 				}
 				return;

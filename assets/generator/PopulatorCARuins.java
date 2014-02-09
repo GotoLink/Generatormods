@@ -4,8 +4,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Random;
 
+import cpw.mods.fml.common.registry.GameData;
+import net.minecraft.block.Block;
+import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
@@ -32,31 +36,31 @@ public class PopulatorCARuins extends BuildingExplorationHandler {
 	@Instance("CARuins")
 	public static PopulatorCARuins instance;
 	private final static String AUTOMATA_RULES_STRING = "AUTOMATA RULES";
-	private final static TemplateRule DEFAULT_TEMPLATE = new TemplateRule(new int[] { 4, 48, 48 }, new int[] { 0, 0, 0 }, 100);
+	private final static TemplateRule DEFAULT_TEMPLATE = new TemplateRule(new Block[] {Blocks.cobblestone, Blocks.mossy_cobblestone, Blocks.mossy_cobblestone}, new int[] { 0, 0, 0 }, 100);
 	private static TemplateRule[] DEFAULT_BLOCK_RULES = new TemplateRule[BIOME_NAMES.length];
 	static {
 		DEFAULT_BLOCK_RULES[0] = DEFAULT_TEMPLATE; //Underground, unused
 		DEFAULT_BLOCK_RULES[1] = DEFAULT_TEMPLATE; //Ocean
-		DEFAULT_BLOCK_RULES[2] = new TemplateRule(new int[] { 1, 98, 98 }, new int[] { 0, 1, 2 }, 100); //Plains                
-		DEFAULT_BLOCK_RULES[3] = new TemplateRule(new int[] { 24 }, new int[] { 0 }, 100); //Desert            
-		DEFAULT_BLOCK_RULES[4] = new TemplateRule(new int[] { 1, 98, 98 }, new int[] { 0, 0, 2 }, 100); //Hills             
+		DEFAULT_BLOCK_RULES[2] = new TemplateRule(new Block[] {Blocks.stone, Blocks.stonebrick, Blocks.stonebrick}, new int[] { 0, 1, 2 }, 100); //Plains
+		DEFAULT_BLOCK_RULES[3] = new TemplateRule(Blocks.sandstone, 0, 100); //Desert
+		DEFAULT_BLOCK_RULES[4] = new TemplateRule(new Block[] {Blocks.stone, Blocks.stonebrick, Blocks.stonebrick}, new int[] { 0, 0, 2 }, 100); //Hills
 		DEFAULT_BLOCK_RULES[5] = DEFAULT_TEMPLATE; //Forest            
 		DEFAULT_BLOCK_RULES[6] = DEFAULT_TEMPLATE; //Taiga             
 		DEFAULT_BLOCK_RULES[7] = DEFAULT_TEMPLATE; //Swampland         
 		DEFAULT_BLOCK_RULES[8] = DEFAULT_TEMPLATE; //River             
-		DEFAULT_BLOCK_RULES[9] = new TemplateRule(new int[] { 112 }, new int[] { 0 }, 100);//Nether            
-		DEFAULT_BLOCK_RULES[10] = new TemplateRule(new int[] { 121 }, new int[] { 0 }, 100); //Sky                     
-		DEFAULT_BLOCK_RULES[11] = new TemplateRule(new int[] { 79, 80, 98 }, new int[] { 0, 0, 2 }, 100); //FrozenOcean
-		DEFAULT_BLOCK_RULES[12] = new TemplateRule(new int[] { 79, 80, 98 }, new int[] { 0, 0, 2 }, 100); //FrozenRiver
-		DEFAULT_BLOCK_RULES[13] = new TemplateRule(new int[] { 80, 98, 98 }, new int[] { 0, 2, 2 }, 100); //IcePlains         
-		DEFAULT_BLOCK_RULES[14] = new TemplateRule(new int[] { 80, 98, 98 }, new int[] { 0, 2, 2 }, 100); //IceMountains      
+		DEFAULT_BLOCK_RULES[9] = new TemplateRule(Blocks.nether_brick, 0, 100);//Nether
+		DEFAULT_BLOCK_RULES[10] = new TemplateRule(Blocks.end_stone, 0, 100); //Sky
+		DEFAULT_BLOCK_RULES[11] = new TemplateRule(new Block[] {Blocks.ice, Blocks.snow, Blocks.stonebrick}, new int[] { 0, 0, 2 }, 100); //FrozenOcean
+		DEFAULT_BLOCK_RULES[12] = new TemplateRule(new Block[] {Blocks.ice, Blocks.snow, Blocks.stonebrick}, new int[] { 0, 0, 2 }, 100); //FrozenRiver
+		DEFAULT_BLOCK_RULES[13] = new TemplateRule(new Block[] {Blocks.snow, Blocks.stonebrick, Blocks.stonebrick}, new int[] { 0, 2, 2 }, 100); //IcePlains
+		DEFAULT_BLOCK_RULES[14] = new TemplateRule(new Block[] {Blocks.snow, Blocks.stonebrick, Blocks.stonebrick}, new int[] { 0, 2, 2 }, 100); //IceMountains
 		DEFAULT_BLOCK_RULES[15] = DEFAULT_TEMPLATE; //MushroomIsland    
 		DEFAULT_BLOCK_RULES[16] = DEFAULT_TEMPLATE; //Shore
 		DEFAULT_BLOCK_RULES[17] = DEFAULT_TEMPLATE; //Beach
-		DEFAULT_BLOCK_RULES[18] = new TemplateRule(new int[] { 24 }, new int[] { 0 }, 100); //DesertHills
+		DEFAULT_BLOCK_RULES[18] = new TemplateRule(Blocks.sandstone, 0, 100); //DesertHills
 		DEFAULT_BLOCK_RULES[19] = DEFAULT_TEMPLATE; //ForestHills
 		DEFAULT_BLOCK_RULES[20] = DEFAULT_TEMPLATE; //TaigaHills
-		DEFAULT_BLOCK_RULES[21] = new TemplateRule(new int[] { 1, 98, 98 }, new int[] { 0, 0, 2 }, 100);//ExtremeHillsEdge
+		DEFAULT_BLOCK_RULES[21] = new TemplateRule(new Block[] {Blocks.stone, Blocks.stonebrick, Blocks.stonebrick }, new int[] { 0, 0, 2 }, 100);//ExtremeHillsEdge
 	}
 	//WARNING! Make sure the first DEFAULT_BLOCK_RULES.length biome Strings in Building are the ones we want here.
 	private static String[] BLOCK_RULE_NAMES = new String[DEFAULT_BLOCK_RULES.length];
@@ -93,6 +97,11 @@ public class PopulatorCARuins extends BuildingExplorationHandler {
 	@EventHandler
 	public void serverStarting(FMLServerStartingEvent event) {
 		event.registerServerCommand(new CommandBuild());
+        Block i = null;
+        for (Iterator itr = GameData.blockRegistry.iterator(); itr.hasNext(); i=(Block)itr.next()) {
+            if(i!=null)
+                BlockProperties.get(i);
+        }
 	}
 
 	//****************************  FUNCTION - loadDataFiles *************************************************************************************//
@@ -283,7 +292,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler {
 		if (!dataFilesLoaded)
 			loadDataFiles();
 		if (!errFlag) {
-			GameRegistry.registerWorldGenerator(this);
+			GameRegistry.registerWorldGenerator(this, 2);
 		}
 	}
 }

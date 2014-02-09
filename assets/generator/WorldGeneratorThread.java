@@ -40,7 +40,7 @@ public abstract class WorldGeneratorThread {
 	private int min_spawn_height = 0, max_spawn_height = 127;
 	public boolean spawn_surface = true;
 	int[] chestTries = null;
-	int[][][] chestItems = null;
+	Object[][][] chestItems = null;
 	//public int ConcaveSmoothingScale=10, ConvexSmoothingScale=20, 
 	//All WorldGeneratorThreads will have these, even if not used.
 	public int backtrackLength = 9;
@@ -83,7 +83,7 @@ public abstract class WorldGeneratorThread {
 	//****************************  FUNCTION - run *************************************************************************************//
 	public void run() {
 		boolean success = false;
-		int tries = 0, j0 = 0, i0 = 0, k0 = 0;
+		int tries = 0, j0 = 0, i0, k0;
 		do {
 			if (tries == 0 || this.random.nextDouble() < chunkTryProb) {
 				i0 = chunkI + this.random.nextInt(16);
