@@ -44,6 +44,7 @@ import org.apache.logging.log4j.Level;
 import scala.Int;
 
 public abstract class BuildingExplorationHandler implements IWorldGenerator {
+    protected final static String VERSION = "0.1.5";
 	protected final static int MAX_TRIES_PER_CHUNK = 100;
 	protected final static File CONFIG_DIRECTORY = new File(Loader.instance().getConfigDir(), "generatormods");
 	protected final static File LOG = new File(getMinecraftBaseDir(), "generatormods_log.txt");

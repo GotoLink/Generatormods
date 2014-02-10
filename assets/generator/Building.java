@@ -32,7 +32,6 @@ package assets.generator;
  */
 import java.util.*;
 
-import cpw.mods.fml.common.registry.GameData;
 import net.minecraft.block.*;
 import net.minecraft.entity.item.EntityPainting;
 import net.minecraft.init.Blocks;

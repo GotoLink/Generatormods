@@ -31,7 +31,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-@Mod(modid = "CARuins", name = "Cellular Automata Generator", version = "0.1.4", dependencies = "after:ExtraBiomes,BiomesOPlenty")
+@Mod(modid = "CARuins", name = "Cellular Automata Generator", version = BuildingExplorationHandler.VERSION, dependencies = "after:ExtraBiomes,BiomesOPlenty")
 public class PopulatorCARuins extends BuildingExplorationHandler {
 	@Instance("CARuins")
 	public static PopulatorCARuins instance;

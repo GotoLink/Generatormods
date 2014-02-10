@@ -31,7 +31,7 @@ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
 
-@Mod(modid = "GreatWallMod", name = "Great Wall Mod", version = "0.1.4", dependencies = "after:ExtraBiomes,BiomesOPlenty")
+@Mod(modid = "GreatWallMod", name = "Great Wall Mod", version = BuildingExplorationHandler.VERSION, dependencies = "after:ExtraBiomes,BiomesOPlenty")
 public class PopulatorGreatWall extends BuildingExplorationHandler {
 	@Instance("GreatWallMod")
 	public static PopulatorGreatWall instance;
