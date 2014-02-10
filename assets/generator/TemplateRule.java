@@ -27,7 +27,6 @@ public class TemplateRule {
 	public final static String BLOCK_NOT_REGISTERED_ERROR_PREFIX = "Error reading rule: BlockID "; //so we can treat this error differently
 	public final static TemplateRule AIR_RULE = new TemplateRule(Blocks.air, 0);
 	public final static TemplateRule STONE_RULE = new TemplateRule(Blocks.stone, 0);
-	public final static TemplateRule NETHER_BRICK_RULE = new TemplateRule(Blocks.nether_brick, 0);
 	private Block[] blockIDs;
     private int[] blockMDs;
 	public int chance = 100, condition = 0;
@@ -46,7 +45,7 @@ public class TemplateRule {
 		String[] data;
         Block temp = null;
 		for (int i = 0; i < numblocks; i++) {
-			data = items[i + 2].trim().split("-");
+			data = items[i + 2].trim().split("-", 2);
             try{
                 temp = GameData.blockRegistry.get(Integer.parseInt(data[0]));
             }catch (Exception e){
@@ -55,13 +54,13 @@ public class TemplateRule {
             if(temp!=null){
                 blockIDs[i] = temp;
                 blockMDs[i] = data.length > 1 ? Integer.parseInt(data[1]) : 0;
-            }else if(data[0].equals("-1")||data[0].equals("PRESERVE")){//Preserve block rule
+            }else if(data[0].equalsIgnoreCase("PRESERVE")){//Preserve block rule
                 blockIDs[i] = Building.PRESERVE_BLOCK.get();
                 blockMDs[i] = Building.PRESERVE_BLOCK.getMeta();
             }else{
                 throw new Exception(BLOCK_NOT_REGISTERED_ERROR_PREFIX + data[0] + " unknown!");
             }
-			if (checkMetaValue && blockIDs[i]!=Blocks.air) {
+			if (checkMetaValue && blockIDs[i]!=Building.PRESERVE_BLOCK.get()) {
 				String checkStr = Building.metaValueCheck(blockIDs[i], blockMDs[i]);
 				if (checkStr != null)
 					throw new Exception("Error reading rule: " + rule + "\nBad meta value " + blockMDs[i] + ". " + checkStr);

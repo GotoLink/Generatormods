@@ -47,7 +47,7 @@ import net.minecraft.world.World;
 
 public class Building {
 	public final static int HIT_WATER = -666; // , HIT_SWAMP=-667;
-	public final static int EASY_CHEST = 0, MEDIUM_CHEST = 1, HARD_CHEST = 2, TOWER_CHEST = 3;
+	public final static int EASY_CHEST = 1, MEDIUM_CHEST = 2, HARD_CHEST = 3, TOWER_CHEST = 4;
 	public final static int DIR_NORTH = 0, DIR_EAST = 1, DIR_SOUTH = 2, DIR_WEST = 3;
 	public final static int ROT_R = 1, R_HAND = 1, L_HAND = -1;
 	public final static int SEA_LEVEL = 63, WORLD_MAX_Y = 255;
@@ -70,12 +70,15 @@ public class Building {
 	// liquid and wall blocks as either solid or air.
 	public final static int IGNORE_WATER = -1;
 	// Special Blocks
-	public final static int PAINTING_BLOCK_OFFSET = -3, ZOMBIE_SPAWNER_ID = 1, SKELETON_SPAWNER_ID = 2, SPIDER_SPAWNER_ID = 3, CREEPER_SPAWNER_ID = 4,
-			UPRIGHT_SPAWNER_ID = 5, EASY_SPAWNER_ID = 6, MEDIUM_SPAWNER_ID = 7, HARD_SPAWNER_ID = 8, EASY_CHEST_ID = 9, MEDIUM_CHEST_ID = 10, HARD_CHEST_ID = 11, TOWER_CHEST_ID = 12,
-			PIG_ZOMBIE_SPAWNER_ID = 13, ENDERMAN_SPAWNER_ID = 14, CAVE_SPIDER_SPAWNER_ID = 15, GHAST_SPAWNER_ID = 16, BLAZE_SPAWNER_ID = 27,
-			SLIME_SPAWNER_ID = 28, LAVA_SLIME_SPAWNER_ID = 29, VILLAGER_SPAWNER_ID = 30, SNOW_GOLEM_SPAWNER_ID = 31, MUSHROOM_COW_SPAWNER_ID = 32, SHEEP_SPAWNER_ID = 33, COW_SPAWNER_ID = 34,
-			CHICKEN_SPAWNER_ID = 35, SQUID_SPAWNER_ID = 36, WOLF_SPAWNER_ID = 37, GIANT_ZOMBIE_SPAWNER_ID = 38, SILVERFISH_SPAWNER_ID = 39, DRAGON_SPAWNER_ID = 40, OCELOT_SPAWNER_ID = 41,
-			IRON_GOLEM_SPAWNER_ID = 42, WITHERBOSS_SPAWNER_ID = 43, BAT_SPAWNER_ID = 44, WITCH_SPAWNER_ID = 45;
+	public final static int PAINTING_BLOCK_OFFSET = -3,
+            EASY_SPAWNER_ID = 28, MEDIUM_SPAWNER_ID = 29, HARD_SPAWNER_ID = 30, UPRIGHT_SPAWNER_ID = 31,
+            SPIDER_SPAWNER_ID = 3, PIG_ZOMBIE_SPAWNER_ID = 5, GHAST_SPAWNER_ID = 6, ENDERMAN_SPAWNER_ID = 7, CAVE_SPIDER_SPAWNER_ID = 8, BLAZE_SPAWNER_ID = 9,
+			LAVA_SLIME_SPAWNER_ID = 11, SILVERFISH_SPAWNER_ID = 21;
+	public final static String[] SPAWNERS = new String[]{
+            "Zombie", "Skeleton", "Spider", "Creeper", "PigZombie", "Ghast", "Enderman", "CaveSpider", "Blaze", "Slime",
+            "LavaSlime", "Villager", "SnowMan", "MushroomCow", "Sheep", "Cow", "Chicken", "Squid", "Wolf", "Giant",
+            "Silverfish", "EnderDragon", "Ozelot", "VillagerGolem", "WitherBoss", "Bat", "Witch"
+    };
 	// maps block metadata to a dir
 	public final static int[] BED_META_TO_DIR = new int[] { DIR_SOUTH, DIR_WEST, DIR_NORTH, DIR_EAST }, STAIRS_META_TO_DIR = new int[] { DIR_EAST, DIR_WEST, DIR_SOUTH, DIR_NORTH },
 			LADDER_META_TO_DIR = new int[] { DIR_NORTH, DIR_SOUTH, DIR_WEST, DIR_EAST }, TRAPDOOR_META_TO_DIR = new int[] { DIR_SOUTH, DIR_NORTH, DIR_EAST, DIR_WEST }, VINES_META_TO_DIR = new int[] {
@@ -92,9 +95,9 @@ public class Building {
 	public final static BlockAndMeta WEST_FACE_TORCH_BLOCK = new BlockAndMeta(Blocks.torch, BUTTON_DIR_TO_META[DIR_WEST]), EAST_FACE_TORCH_BLOCK = new BlockAndMeta(Blocks.torch, BUTTON_DIR_TO_META[DIR_EAST]),
 			NORTH_FACE_TORCH_BLOCK = new BlockAndMeta(Blocks.torch, BUTTON_DIR_TO_META[DIR_NORTH]), SOUTH_FACE_TORCH_BLOCK = new BlockAndMeta(Blocks.torch, BUTTON_DIR_TO_META[DIR_SOUTH]),
 			EAST_FACE_LADDER_BLOCK = new BlockAndMeta(Blocks.ladder, LADDER_DIR_TO_META[DIR_EAST]), HOLE_BLOCK_LIGHTING = new BlockAndMeta(Blocks.air, 0), HOLE_BLOCK_NO_LIGHTING = new BlockAndMeta(Blocks.air, 1),
-			PRESERVE_BLOCK = new BlockAndMeta(Blocks.air, 2), HARD_SPAWNER_BLOCK = new BlockAndMeta(Blocks.mob_spawner, HARD_SPAWNER_ID), PIG_ZOMBIE_SPAWNER = new BlockAndMeta(Blocks.mob_spawner, PIG_ZOMBIE_SPAWNER_ID),
-			ENDERMAN_SPAWNER = new BlockAndMeta(Blocks.mob_spawner, ENDERMAN_SPAWNER_ID), TOWER_CHEST_BLOCK = new BlockAndMeta(Blocks.chest, TOWER_CHEST_ID), HARD_CHEST_BLOCK = new BlockAndMeta(Blocks.chest, HARD_CHEST_ID),
-			PORTAL_BLOCK = new BlockAndMeta(Blocks.portal, 0), GHAST_SPAWNER = new BlockAndMeta(Blocks.mob_spawner, GHAST_SPAWNER_ID),CAVE_SPIDER_SPAWNER= new BlockAndMeta(Blocks.mob_spawner, CAVE_SPIDER_SPAWNER_ID), UPRIGHT_SPAWNER = new BlockAndMeta(Blocks.mob_spawner, 31), WALL_STAIR = new BlockAndMeta(Blocks.air, -1);
+			PRESERVE_BLOCK = new BlockAndMeta(Blocks.air, 2), PIG_ZOMBIE_SPAWNER = new BlockAndMeta(Blocks.mob_spawner, PIG_ZOMBIE_SPAWNER_ID),
+			ENDERMAN_SPAWNER = new BlockAndMeta(Blocks.mob_spawner, ENDERMAN_SPAWNER_ID), TOWER_CHEST_BLOCK = new BlockAndMeta(Blocks.chest, TOWER_CHEST), HARD_CHEST_BLOCK = new BlockAndMeta(Blocks.chest, HARD_CHEST),
+			GHAST_SPAWNER = new BlockAndMeta(Blocks.mob_spawner, GHAST_SPAWNER_ID),CAVE_SPIDER_SPAWNER= new BlockAndMeta(Blocks.mob_spawner, CAVE_SPIDER_SPAWNER_ID), UPRIGHT_SPAWNER = new BlockAndMeta(Blocks.mob_spawner, UPRIGHT_SPAWNER_ID);
 	protected final static Block[] STEP_TO_STAIRS = { Blocks.stone_brick_stairs, Blocks.sandstone_stairs, Blocks.oak_stairs, Blocks.stone_stairs, Blocks.brick_stairs, Blocks.stone_brick_stairs, Blocks.nether_brick_stairs,
 			Blocks.quartz_stairs };
 	public final static int MAX_SPHERE_DIAM = 40;
@@ -571,9 +574,9 @@ public class Building {
 				}
 			}
 		}else if(blockID == Blocks.mob_spawner){
-            if (metadata<28) {//Use "false" metadata for different block spawners
+            if (metadata<EASY_SPAWNER_ID) {//Use "false" metadata for different block spawners
                 setMobSpawner(pt, 1, metadata-1);
-            }else if(metadata<31){//Easy,Medium,Hard spawners
+            }else if(metadata<UPRIGHT_SPAWNER_ID){//Easy,Medium,Hard spawners
                 setMobSpawner(pt, metadata-26, 0);
             }else{//UPRIGHT_SPAWNER
                 if (random.nextInt(3) == 0)
@@ -652,12 +655,12 @@ public class Building {
 			return new ItemStack(bRule.primaryBlock.get(), random.nextInt(10), bRule.primaryBlock.getMeta());
 		}
 		Object[][] itempool = wgt.chestItems[chestType];
-		int idx = pickWeightedOption(world.rand, int[].class.cast(itempool[3]), int[].class.cast(itempool[0]));
+		int idx = pickWeightedOption(world.rand, Arrays.asList(itempool[3]), Arrays.asList(itempool[0]));
         Object obj = itempool[1][idx];
         if(obj instanceof Block){
             obj = Item.func_150898_a((Block)obj);
         }
-		return new ItemStack((Item)obj, int.class.cast(itempool[4][idx]) + random.nextInt(int.class.cast(itempool[5][idx]) - int.class.cast(itempool[4][idx]) + 1), int.class.cast(itempool[2][idx]));
+		return new ItemStack((Item)obj, Integer.class.cast(itempool[4][idx]) + random.nextInt(Integer.class.cast(itempool[5][idx]) - Integer.class.cast(itempool[4][idx]) + 1), Integer.class.cast(itempool[2][idx]));
 	}
 
 	private int getKnownBuilding() {
@@ -1096,19 +1099,17 @@ public class Building {
 	// &&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setMobSpawner
 	// &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
 	private void setMobSpawner(int[] pt, int nTypes, int offset) {
-		String mob = "Skeleton";
-		int n = random.nextInt(nTypes) + offset;
-		if(n<10){
-			mob = new String[]{"Zombie", "Skeleton", "Spider", "Creeper", "PigZombie", "Ghast", "Enderman", "CaveSpider", "Blaze", "Slime"}[n];
-        }else if(n<20){
-			mob = new String[]{"LavaSlime", "Villager", "SnowMan", "MushroomCow", "Sheep", "Cow", "Chicken", "Squid", "Wolf", "Giant"}[n-10];
-        }else if(n<27){
-			mob = new String[]{"Silverfish", "EnderDragon", "Ozelot", "VillagerGolem", "WitherBoss", "Bat", "Witch"}[n-20];
+		if(world.func_147465_d(pt[0], pt[1], pt[2], Blocks.mob_spawner, 0, 2)){
+            TileEntityMobSpawner tileentitymobspawner = (TileEntityMobSpawner) world.func_147438_o(pt[0], pt[1], pt[2]);
+            if (tileentitymobspawner != null){
+                String mob = "Pig";
+                int n = random.nextInt(nTypes) + offset;
+                if(n<SPAWNERS.length){
+                    mob = SPAWNERS[n];
+                }
+                tileentitymobspawner.func_145881_a().setMobID(mob);
+            }
         }
-		world.func_147465_d(pt[0], pt[1], pt[2], Blocks.mob_spawner, 0, 2);
-		TileEntityMobSpawner tileentitymobspawner = (TileEntityMobSpawner) world.func_147438_o(pt[0], pt[1], pt[2]);
-		if (tileentitymobspawner != null)
-			tileentitymobspawner.func_145881_a().setMobID(mob);
 	}
 
 	public static int distance(int[] pt1, int[] pt2) {
@@ -1189,6 +1190,16 @@ public class Building {
 		}
 		return null;
 	}
+
+    public static int pickWeightedOption(Random random, List<Object> weights, List<Object> options){
+        int[] w = new int[weights.size()];
+        int[] o = new int[options.size()];
+        for (int i= 0; i < w.length; i++)
+            w[i]= ((Integer)weights.get(i));
+        for (int i= 0; i < o.length; i++)
+            o[i]= ((Integer)options.get(i));
+        return pickWeightedOption(random, w, o);
+    }
 
 	public static int pickWeightedOption(Random random, int[] weights, int[] options) {
 		int sum = 0, n;

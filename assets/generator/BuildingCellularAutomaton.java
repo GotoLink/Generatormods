@@ -393,9 +393,9 @@ public class BuildingCellularAutomaton extends Building {
 
 	private int pickCAChestType(int z) {
 		if (Math.abs(zGround - z) > random.nextInt(1 + z > zGround ? (bHeight - zGround) : zGround) && (z > zGround ? (bHeight - zGround) : zGround) > 20)
-			return random.nextBoolean() ? MEDIUM_CHEST_ID : HARD_CHEST_ID;
+			return random.nextBoolean() ? MEDIUM_CHEST : HARD_CHEST;
 		else
-			return random.nextBoolean() ? EASY_CHEST_ID : MEDIUM_CHEST_ID;
+			return random.nextBoolean() ? EASY_CHEST : MEDIUM_CHEST;
 	}
 
 	private void populateFloor(int z, int floorBlocks) {
