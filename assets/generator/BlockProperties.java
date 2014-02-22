@@ -32,10 +32,10 @@ public class BlockProperties {
     public BlockProperties(Block block){
         // Lava is considered to NOT be a liquid, and is therefore not
         // wallable. This is so we can build cities on the lava surface.
-        isWater = block.func_149688_o() == Material.field_151586_h || block == Blocks.ice;
+        isWater = block.getMaterial() == Material.water || block == Blocks.ice;
         isStair = block instanceof BlockStairs;
         isDoor = block instanceof BlockDoor;
-        isFlowing = isWater ||  block.func_149688_o()== Material.field_151587_i || block instanceof BlockDynamicLiquid || block instanceof BlockSand
+        isFlowing = isWater ||  block.getMaterial() == Material.lava || block instanceof BlockDynamicLiquid || block instanceof BlockSand
                 || block instanceof BlockGravel;
         isWallable = isWater || block instanceof BlockAir || block instanceof BlockLog || block instanceof BlockWeb || block instanceof BlockSnow || block instanceof BlockPumpkin
                 || block instanceof BlockMelon || block instanceof IShearable || block instanceof BlockHugeMushroom || block instanceof IPlantable;

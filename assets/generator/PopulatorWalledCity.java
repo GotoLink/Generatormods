@@ -91,7 +91,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler {
 		if (playerList != null) {
 			for (int index = 0; index < playerList.size(); ++index) {
 				EntityPlayerMP player = (EntityPlayerMP) playerList.get(index);
-				player.func_146105_b(new ChatComponentText(chatString));
+				player.addChatComponentMessage(new ChatComponentText(chatString));
 			}
 		}
 	}
@@ -118,7 +118,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler {
 					dirStr += dK > 0 ? "south" : "north";
 				else
 					dirStr += dI > 0 ? (dK > 0 ? "southeast" : "northeast") : (dK > 0 ? "southwest" : "northwest");
-				player.func_146105_b(new ChatComponentText("** Built city " + dirStr + " (" + args[0] + "," + args[1] + "," + args[2] + ")! **"));
+				player.addChatComponentMessage(new ChatComponentText("** Built city " + dirStr + " (" + args[0] + "," + args[1] + "," + args[2] + ")! **"));
 			}
 		}
 	}

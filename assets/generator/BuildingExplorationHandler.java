@@ -59,7 +59,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 	protected boolean logActivated = false;
 	private List<Integer> AllowedDimensions = new ArrayList<Integer>();
 	private List<World> currentWorld = new ArrayList<World>();
-	public static String[] BIOME_NAMES = new String[BiomeGenBase.func_150565_n().length + 1];
+	public static String[] BIOME_NAMES = new String[BiomeGenBase.getBiomeGenArray().length + 1];
 	static {
 		BIOME_NAMES[0] = "Underground";
 	}
@@ -223,8 +223,8 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 		logOrPrint(message, "INFO");
 		if (BIOME_NAMES[1] == null || BIOME_NAMES[1].equals("")) {
 			for (int i = 0; i < BIOME_NAMES.length - 1; i++) {
-				if (BiomeGenBase.func_150565_n()[i] != null)
-					BIOME_NAMES[i + 1] = BiomeGenBase.func_150565_n()[i].biomeName;
+				if (BiomeGenBase.getBiomeGenArray()[i] != null)
+					BIOME_NAMES[i + 1] = BiomeGenBase.getBiomeGenArray()[i].biomeName;
 			}
 		}
 	}
@@ -261,9 +261,9 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 			pw.println("Tries:" + chestTries[l]);
 			for (int m = 0; m < chestItems[l][0].length; m++) {
                 try{
-                    String txt = GameData.itemRegistry.func_148750_c(chestItems[l][1][m]);
+                    String txt = GameData.itemRegistry.getNameForObject(chestItems[l][1][m]);
                     if(txt==null){
-                        txt = GameData.blockRegistry.func_148750_c(chestItems[l][1][m]);
+                        txt = GameData.blockRegistry.getNameForObject(chestItems[l][1][m]);
                     }
                     if(txt!=null){
                         pw.print(txt);

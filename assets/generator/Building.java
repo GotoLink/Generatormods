@@ -290,12 +290,12 @@ public class Building {
 	// &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
 	public void setSignOrPost(int x2, int z2, int y2, boolean post, int sDir, String[] lines) {
 		int[] pt = getIJKPt(x2, z2, y2);
-		world.func_147465_d(pt[0], pt[1], pt[2], post ? Blocks.standing_sign : Blocks.wall_sign, sDir, 2);
-		TileEntitySign tileentitysign = (TileEntitySign) world.func_147438_o(pt[0], pt[1], pt[2]);
+		world.setBlock(pt[0], pt[1], pt[2], post ? Blocks.standing_sign : Blocks.wall_sign, sDir, 2);
+		TileEntitySign tileentitysign = (TileEntitySign) world.getTileEntity(pt[0], pt[1], pt[2]);
 		if (tileentitysign == null)
 			return;
 		for (int m = 0; m < Math.min(lines.length, 4); m++) {
-			tileentitysign.field_145915_a[m] = lines[m];
+			tileentitysign.signText[m] = lines[m];
 		}
 	}
 
@@ -320,7 +320,7 @@ public class Building {
 	}
 
 	protected final Block getBlockIdLocal(int x, int z, int y) {
-		return world.func_147439_a(i0 + yI * y + xI * x, j0 + z, k0 + yK * y + xK * x);
+		return world.getBlock(i0 + yI * y + xI * x, j0 + z, k0 + yK * y + xK * x);
 	}
 
 	protected final int getBlockMetadataLocal(int x, int z, int y) {
@@ -408,22 +408,22 @@ public class Building {
 	// ******************** LOCAL COORDINATE FUNCTIONS - BLOCK TEST FUNCTIONS
 	// *************************************************************************************************************//
 	protected final boolean isWallable(int x, int z, int y) {
-		return BlockProperties.get(world.func_147439_a(i0 + yI * y + xI * x, j0 + z, k0 + yK * y + xK * x)).isWallable;
+		return BlockProperties.get(world.getBlock(i0 + yI * y + xI * x, j0 + z, k0 + yK * y + xK * x)).isWallable;
 	}
 
 	protected final boolean isWallableIJK(int pt[]) {
-		return pt!=null && BlockProperties.get(world.func_147439_a(pt[0], pt[1], pt[2])).isWallable;
+		return pt!=null && BlockProperties.get(world.getBlock(pt[0], pt[1], pt[2])).isWallable;
 	}
 
 	protected final boolean isWallBlock(int x, int z, int y) {
-		return BlockProperties.get(world.func_147439_a(i0 + yI * y + xI * x, j0 + z, k0 + yK * y + xK * x)).isArtificial;
+		return BlockProperties.get(world.getBlock(i0 + yI * y + xI * x, j0 + z, k0 + yK * y + xK * x)).isArtificial;
 	}
 
 	protected final void offer(Block blc, int[] block) {
 		// if stairs are running into ground. replace them with a solid block
 		if (BlockProperties.get(blc).isStair) {
-			Block adjId = world.func_147439_a(block[0] - DIR_TO_I[STAIRS_META_TO_DIR[block[3] % 4]], block[1], block[2] - DIR_TO_K[STAIRS_META_TO_DIR[block[3] % 4]]);
-			Block aboveID = world.func_147439_a(block[0], block[1] + 1, block[2]);
+			Block adjId = world.getBlock(block[0] - DIR_TO_I[STAIRS_META_TO_DIR[block[3] % 4]], block[1], block[2] - DIR_TO_K[STAIRS_META_TO_DIR[block[3] % 4]]);
+			Block aboveID = world.getBlock(block[0], block[1] + 1, block[2]);
 			if (BlockProperties.get(adjId).isArtificial || BlockProperties.get(aboveID).isArtificial) {
 				blc = stairToSolidBlock(blc);
 				block[3] = 0;
@@ -431,16 +431,16 @@ public class Building {
 				return; // solid or liquid non-wall block. In this case, just don't build the stair (aka preserve block).
 			}
 		} else if (blc instanceof BlockVine) {
-			if (block[3] == 0 && !isSolidBlock(world.func_147439_a(block[0], block[1] + 1, block[2])))
+			if (block[3] == 0 && !isSolidBlock(world.getBlock(block[0], block[1] + 1, block[2])))
 				block[3] = 1;
 			if (block[3] != 0) {
 				int dir = VINES_META_TO_DIR[block[3]];
 				while (true) {
-					if (isSolidBlock(world.func_147439_a(block[0] + DIR_TO_I[dir], block[1], block[2] + DIR_TO_K[dir])))
+					if (isSolidBlock(world.getBlock(block[0] + DIR_TO_I[dir], block[1], block[2] + DIR_TO_K[dir])))
 						break;
 					dir = (dir + 1) % 4;
 					if (dir == VINES_META_TO_DIR[block[3]]) { // we've looped through everything
-						if (isSolidBlock(world.func_147439_a(block[0], block[1] + 1, block[2]))) {
+						if (isSolidBlock(world.getBlock(block[0], block[1] + 1, block[2]))) {
 							dir = -1;
 							break;
 						}
@@ -458,12 +458,12 @@ public class Building {
 		else if (blc == Blocks.air && block[3]>=-PAINTING_BLOCK_OFFSET)//Remember:Paintings are not blocks
 			setPainting(block, block[3]+PAINTING_BLOCK_OFFSET);
 		else if (blc == Blocks.torch) {
-			if (Blocks.torch.func_149718_j(world, block[0], block[1], block[2]))
-				world.func_147465_d(block[0], block[1], block[2], blc, block[3], 3);// force lighting update
+			if (Blocks.torch.canPlaceBlockAt(world, block[0], block[1], block[2]))
+				world.setBlock(block[0], block[1], block[2], blc, block[3], 3);// force lighting update
 		} else if (blc == Blocks.glowstone)
-			world.func_147465_d(block[0], block[1], block[2], blc, block[3], 3);// force lighting update
+			world.setBlock(block[0], block[1], block[2], blc, block[3], 3);// force lighting update
 		else if (randLightingHash[(block[0] & 0x7) | (block[1] & 0x38) | (block[2] & 0x1c0)])
-			world.func_147465_d(block[0], block[1], block[2], blc, block[3], 3);
+			world.setBlock(block[0], block[1], block[2], blc, block[3], 3);
 		else
 			setBlockAndMetaNoLighting(world, block[0], block[1], block[2], blc, block[3]);
 	}
@@ -488,14 +488,14 @@ public class Building {
             return;
         }
         int[] pt = getIJKPt(x, z, y);
-        if (blockID == Blocks.air && metadata<-PAINTING_BLOCK_OFFSET && world.func_147437_c(pt[0], pt[1], pt[2]))
+        if (blockID == Blocks.air && metadata<-PAINTING_BLOCK_OFFSET && world.isAirBlock(pt[0], pt[1], pt[2]))
             return;
         if (blockID != Blocks.chest)
             emptyIfChest(pt);
         if (BlockProperties.get(blockID).isDelayed){
             offer(blockID, new int[] { pt[0], pt[1], pt[2], rotateMetadata(blockID, metadata) });
         }else if (randLightingHash[(x & 0x7) | (y & 0x38) | (z & 0x1c0)]) {
-            world.func_147465_d(pt[0], pt[1], pt[2], blockID, rotateMetadata(blockID, metadata), 2);
+            world.setBlock(pt[0], pt[1], pt[2], blockID, rotateMetadata(blockID, metadata), 2);
         } else {
             if (metadata == 0)
                 setBlockNoLighting(world, pt[0], pt[1], pt[2], blockID);
@@ -532,7 +532,7 @@ public class Building {
 		if (BlockProperties.get(blockID).isDelayed)
 			offer(blockID, new int[] { pt[0], pt[1], pt[2], rotateMetadata(blockID, metadata) });
 		else if (lighting)
-			world.func_147465_d(pt[0], pt[1], pt[2], blockID, rotateMetadata(blockID, metadata), 3);
+			world.setBlock(pt[0], pt[1], pt[2], blockID, rotateMetadata(blockID, metadata), 3);
 		else
 			setBlockAndMetaNoLighting(world, pt[0], pt[1], pt[2], blockID, rotateMetadata(blockID, metadata));
 		if (BlockProperties.get(blockID).isDoor) {
@@ -561,15 +561,15 @@ public class Building {
 		int[] pt = getIJKPt(x, z, y);
 		if (blockID == Blocks.air) {
             if(metadata<0){//WALL_STAIR
-                world.func_147465_d(pt[0], pt[1], pt[2], Blocks.stone_slab, rotateMetadata(Blocks.stone_slab, -metadata), 2);
+                world.setBlock(pt[0], pt[1], pt[2], Blocks.stone_slab, rotateMetadata(Blocks.stone_slab, -metadata), 2);
                 return;
             }
-			Block presentBlock = world.func_147439_a(pt[0], pt[1], pt[2]);
+			Block presentBlock = world.getBlock(pt[0], pt[1], pt[2]);
 			if (!BlockProperties.get(presentBlock).isWater) {
-				if (!(BlockProperties.get(world.func_147439_a(pt[0] - 1, pt[1], pt[2])).isWater || BlockProperties.get(world.func_147439_a(pt[0], pt[1], pt[2] - 1)).isWater
-						|| BlockProperties.get(world.func_147439_a(pt[0] + 1, pt[1], pt[2])).isWater || BlockProperties.get(world.func_147439_a(pt[0], pt[1], pt[2] + 1)).isWater || BlockProperties.get(world.func_147439_a(pt[0], pt[1] + 1,
+				if (!(BlockProperties.get(world.getBlock(pt[0] - 1, pt[1], pt[2])).isWater || BlockProperties.get(world.getBlock(pt[0], pt[1], pt[2] - 1)).isWater
+						|| BlockProperties.get(world.getBlock(pt[0] + 1, pt[1], pt[2])).isWater || BlockProperties.get(world.getBlock(pt[0], pt[1], pt[2] + 1)).isWater || BlockProperties.get(world.getBlock(pt[0], pt[1] + 1,
 						pt[2])).isWater)) {// don't adjacent to a water block
-					world.func_147468_f(pt[0], pt[1], pt[2]);
+					world.setBlockToAir(pt[0], pt[1], pt[2]);
 				}
 			}
 		}else if(blockID == Blocks.mob_spawner){
@@ -587,10 +587,10 @@ public class Building {
 			setLootChest(pt, metadata-1);
         }
 		/*case WALL_STAIR_ID:
-			world.func_147465_d(pt[0], pt[1], pt[2], STEP_ID, rotateMetadata(STEP_ID, metadata), 2);
+			world.setBlock(pt[0], pt[1], pt[2], STEP_ID, rotateMetadata(STEP_ID, metadata), 2);
 			return;*/
 		else{
-			world.func_147465_d(pt[0], pt[1], pt[2], blockID, metadata, 2);
+			world.setBlock(pt[0], pt[1], pt[2], blockID, metadata, 2);
 		}
 	}
 
@@ -642,8 +642,8 @@ public class Building {
 	// *************************************************************************************************************//
 	private void emptyIfChest(int[] pt) {
 		// if block is a chest empty it
-		if (pt != null && world.func_147439_a(pt[0], pt[1], pt[2]) == Blocks.chest) {
-			TileEntityChest tileentitychest = (TileEntityChest) world.func_147438_o(pt[0], pt[1], pt[2]);
+		if (pt != null && world.getBlock(pt[0], pt[1], pt[2]) == Blocks.chest) {
+			TileEntityChest tileentitychest = (TileEntityChest) world.getTileEntity(pt[0], pt[1], pt[2]);
 			for (int m = 0; m < tileentitychest.getSizeInventory(); m++)
 				tileentitychest.setInventorySlotContents(m, null);
 		}
@@ -657,7 +657,7 @@ public class Building {
 		int idx = pickWeightedOption(world.rand, Arrays.asList(itempool[3]), Arrays.asList(itempool[0]));
         Object obj = itempool[1][idx];
         if(obj instanceof Block){
-            obj = Item.func_150898_a((Block)obj);
+            obj = Item.getItemFromBlock((Block)obj);
         }
 		return new ItemStack((Item)obj, Integer.class.cast(itempool[4][idx]) + random.nextInt(Integer.class.cast(itempool[5][idx]) - Integer.class.cast(itempool[4][idx]) + 1), Integer.class.cast(itempool[2][idx]));
 	}
@@ -1081,8 +1081,8 @@ public class Building {
 	// &&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setLootChest
 	// &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
 	private void setLootChest(int[] pt, int chestType) {
-		if (world.func_147465_d(pt[0], pt[1], pt[2], Blocks.chest, 0, 2)) {
-			TileEntityChest chest = (TileEntityChest) world.func_147438_o(pt[0], pt[1], pt[2]);
+		if (world.setBlock(pt[0], pt[1], pt[2], Blocks.chest, 0, 2)) {
+			TileEntityChest chest = (TileEntityChest) world.getTileEntity(pt[0], pt[1], pt[2]);
 			if (wgt.chestTries != null && chestType<wgt.chestTries.length) {
 				for (int m = 0; m < wgt.chestTries[chestType]; m++) {
 					if (random.nextBoolean()) {
@@ -1098,15 +1098,15 @@ public class Building {
 	// &&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setMobSpawner
 	// &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
 	private void setMobSpawner(int[] pt, int nTypes, int offset) {
-		if(world.func_147465_d(pt[0], pt[1], pt[2], Blocks.mob_spawner, 0, 2)){
-            TileEntityMobSpawner tileentitymobspawner = (TileEntityMobSpawner) world.func_147438_o(pt[0], pt[1], pt[2]);
+		if(world.setBlock(pt[0], pt[1], pt[2], Blocks.mob_spawner, 0, 2)){
+            TileEntityMobSpawner tileentitymobspawner = (TileEntityMobSpawner) world.getTileEntity(pt[0], pt[1], pt[2]);
             if (tileentitymobspawner != null){
                 String mob = "Pig";
                 int n = random.nextInt(nTypes) + offset;
                 if(n<SPAWNERS.length){
                     mob = SPAWNERS[n];
                 }
-                tileentitymobspawner.func_145881_a().setMobID(mob);
+                tileentitymobspawner.func_145881_a().setEntityName(mob);
             }
         }
 	}
@@ -1122,14 +1122,14 @@ public class Building {
 			if (world.provider.isHellWorld) {// the Nether
 				if ((i % 2 == 1) ^ (k % 2 == 1)) {
 					for (int j = (int) (WORLD_MAX_Y * 0.5); j > -1; j--) {
-						if (world.func_147437_c(i, j, k))
+						if (world.isAirBlock(i, j, k))
 							for (; j > -1; j--)
-								if (!BlockProperties.get(world.func_147439_a(i, j, k)).isWallable)
+								if (!BlockProperties.get(world.getBlock(i, j, k)).isWallable)
 									return j;
 					}
 				} else {
 					for (int j = 0; j <= (int) (WORLD_MAX_Y * 0.5); j++)
-						if (world.func_147437_c(i, j, k))
+						if (world.isAirBlock(i, j, k))
 							return j;
 				}
 				return -1;
@@ -1138,11 +1138,11 @@ public class Building {
 				if (minecraftHeight < jinit)
 					jinit = minecraftHeight;
 				for (int j = jinit; j >= 0; j--) {
-					blockId = world.func_147439_a(i, j, k);
+					blockId = world.getBlock(i, j, k);
 					if (!BlockProperties.get(blockId).isWallable && (wallIsSurface || !BlockProperties.get(blockId).isArtificial))
 						return j;
 					if (waterSurfaceBuffer != IGNORE_WATER && BlockProperties.get(blockId).isWater)
-						return BlockProperties.get(world.func_147439_a(i, j - waterSurfaceBuffer, k)).isWater ? HIT_WATER : j;
+						return BlockProperties.get(world.getBlock(i, j - waterSurfaceBuffer, k)).isWater ? HIT_WATER : j;
 					// so we can still build in swamps...
 				}
 			}
@@ -1167,7 +1167,7 @@ public class Building {
             return null;
 		if (metadata < 0 || metadata >= 16)
 			return "All Minecraft meta values should be between 0 and 15";
-		String fail = blockID.func_149739_a() + " meta value should be between";
+		String fail = blockID.getUnlocalizedName() + " meta value should be between";
 		if (BlockProperties.get(blockID).isStair)
 			return metadata < 8 ? null : fail + " 0 and 7";
 		// orientation metas
@@ -1235,7 +1235,7 @@ public class Building {
 	public static void setBlockNoLighting(World world, int i, int j, int k, Block blockId) {
 		if (i < 0xfe363c80 || k < 0xfe363c80 || i >= 0x1c9c380 || k >= 0x1c9c380 || j < 0 || j > Building.WORLD_MAX_Y)
 			return;
-		world.func_147465_d(i, j, k, blockId, 0, 2);
+		world.setBlock(i, j, k, blockId, 0, 2);
 	}
 
 	protected static Block blockToStairs(BlockAndMeta idAndMeta) {
@@ -1295,9 +1295,9 @@ public class Building {
 	}
 
 	protected static void fillDown(int[] lowPt, int jtop, World world) {
-		while (BlockProperties.get(world.func_147439_a(lowPt[0], lowPt[1], lowPt[2])).isArtificial)
+		while (BlockProperties.get(world.getBlock(lowPt[0], lowPt[1], lowPt[2])).isArtificial)
 			lowPt[1]--;
-		Block oldSurfaceBlockId = world.func_147439_a(lowPt[0], lowPt[1], lowPt[2]);
+		Block oldSurfaceBlockId = world.getBlock(lowPt[0], lowPt[1], lowPt[2]);
 		if (BlockProperties.get(oldSurfaceBlockId).isOre)
 			oldSurfaceBlockId = Blocks.stone;
 		if (oldSurfaceBlockId == Blocks.dirt || (lowPt[1] <= SEA_LEVEL && oldSurfaceBlockId == Blocks.sand))
@@ -1397,6 +1397,6 @@ public class Building {
 	}
 
 	private static boolean isSolidBlock(Block blockID) {
-		return blockID.func_149688_o().isSolid();
+		return blockID.getMaterial().isSolid();
 	}
 }

@@ -753,15 +753,15 @@ public class BuildingWall extends Building {
 			setBlockLocal(bWidth - 1, WalkHeight, 0, Blocks.stone_slab, halfStairValue);
 		//clean up stairs descending into this wall
 		int[] pt = getIJKPt(-1, WalkHeight - 1, 0);
-		Block id = world.func_147439_a(pt[0], pt[1], pt[2]);
+		Block id = world.getBlock(pt[0], pt[1], pt[2]);
 		int meta = world.getBlockMetadata(pt[0], pt[1], pt[2]);
 		if (BlockProperties.get(id).isStair && STAIRS_META_TO_DIR[meta < 4 ? meta : (meta - 4)] == rotDir(bDir, -bHand))
-			world.func_147465_d(pt[0], pt[1], pt[2], stairToSolidBlock(id), 0, 2);
+			world.setBlock(pt[0], pt[1], pt[2], stairToSolidBlock(id), 0, 2);
 		pt = getIJKPt(bWidth, WalkHeight - 1, 0);
-		id = world.func_147439_a(pt[0], pt[1], pt[2]);
+		id = world.getBlock(pt[0], pt[1], pt[2]);
 		meta = world.getBlockMetadata(pt[0], pt[1], pt[2]);
 		if (BlockProperties.get(id).isStair && STAIRS_META_TO_DIR[meta < 4 ? meta : (meta - 4)] == rotDir(bDir, bHand))
-			world.func_147465_d(pt[0], pt[1], pt[2], stairToSolidBlock(id), 0, 2);
+			world.setBlock(pt[0], pt[1], pt[2], stairToSolidBlock(id), 0, 2);
 	}
 
 	private void pickTowers(boolean circular_, boolean endTowers) {

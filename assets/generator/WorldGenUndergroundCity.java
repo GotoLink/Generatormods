@@ -168,8 +168,8 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread {
 					if (Building.CIRCLE_SHAPE[top_diam][x1][y1] >= 0) {
 						//keep gravel and water from pouring in
 						for (int z2 = z1 + 1; z2 <= z1 + 3; z2++)
-							if (BlockProperties.get(world.func_147439_a(i + offset + x1, j + z2, k + offset + y1)).isFlowing) {
-								world.func_147465_d(i + offset + x1, j + z2, k + offset + y1, Blocks.stone, 0, 2);
+							if (BlockProperties.get(world.getBlock(i + offset + x1, j + z2, k + offset + y1)).isFlowing) {
+								world.setBlock(i + offset + x1, j + z2, k + offset + y1, Blocks.stone, 0, 2);
 							}
 					}
 				}
@@ -188,9 +188,9 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread {
 				for (int y1 = 0; y1 < bottom_diam; y1++) {
 					for (int x1 = 0; x1 < bottom_diam; x1++) {
 						if (Building.CIRCLE_SHAPE[bottom_diam][x1][y1] >= 0) {
-							Block blockId = world.func_147439_a(i + offset + x1, j - z1 - 1, k + offset + y1);
+							Block blockId = world.getBlock(i + offset + x1, j - z1 - 1, k + offset + y1);
 							if (BlockProperties.get(blockId).isOre && blockId != Blocks.coal_ore)
-								world.func_147465_d(i + offset + x1, j - z1 - 1, k + offset + y1, Blocks.stone, 0, 2);
+								world.setBlock(i + offset + x1, j - z1 - 1, k + offset + y1, Blocks.stone, 0, 2);
 						}
 					}
 				}

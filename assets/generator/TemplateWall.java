@@ -393,7 +393,7 @@ public class TemplateWall extends TemplateTML {
 
 	public static TemplateWall pickBiomeWeightedWallStyle(List<TemplateWall> styles, World world, int i, int k, Random random, boolean ignoreBiomes) {
 		int biome = world.getBiomeGenForCoordsBody(i, k).biomeID + 1;
-		if ((biome < 0 || biome > BiomeGenBase.func_150565_n().length) && !ignoreBiomes)
+		if ((biome < 0 || biome > BiomeGenBase.getBiomeGenArray().length) && !ignoreBiomes)
 			return null;
 		int sum = 0;
 		for (TemplateWall ws : styles) {

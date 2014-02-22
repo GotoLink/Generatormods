@@ -160,7 +160,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread {
 					cityArea++;
 					if (j2 == Building.HIT_WATER)
 						waterArea++;
-					if (((PopulatorWalledCity) master).RejectOnPreexistingArtifacts && ows.LevelInterior && BlockProperties.get(world.func_147439_a(i2, j2, k2)).isArtificial) {
+					if (((PopulatorWalledCity) master).RejectOnPreexistingArtifacts && ows.LevelInterior && BlockProperties.get(world.getBlock(i2, j2, k2)).isArtificial) {
 						master.logOrPrint("Rejected " + ows.name + " city " + ID + ", found previous construction in city zone!", "WARNING");
 						return false;
 					}
@@ -406,15 +406,15 @@ public class WorldGenWalledCity extends WorldGeneratorThread {
 						enclosed = false;
 				if (enclosed) {
 					pt[1] = Building.findSurfaceJ(world, pt[0], pt[2], Building.WORLD_MAX_Y, false, Building.IGNORE_WATER);
-					Block oldSurfaceBlockId = world.func_147439_a(pt[0], pt[1], pt[2]);
+					Block oldSurfaceBlockId = world.getBlock(pt[0], pt[1], pt[2]);
 					if (pt[1] > jmax) {
-						while (!world.func_147437_c(pt[0], pt[1] + 1, pt[2]))
+						while (!world.isAirBlock(pt[0], pt[1] + 1, pt[2]))
 							pt[1]++; //go back up to grab any trees or whatnot
 						pt[1] += 10; //just to try to catch any overhanging blocks
 						for (; pt[1] > jmax; pt[1]--)
-							if (!world.func_147437_c(pt[0], pt[1], pt[2]))
+							if (!world.isAirBlock(pt[0], pt[1], pt[2]))
 								Building.setBlockAndMetaNoLighting(world, pt[0], pt[1], pt[2], Blocks.air, 0);
-						if (!world.func_147437_c(pt[0], jmax - 1, pt[2]))
+						if (!world.isAirBlock(pt[0], jmax - 1, pt[2]))
 							Building.setBlockAndMetaNoLighting(world, pt[0], jmax, pt[2], oldSurfaceBlockId, 0);
 					}
 					if (pt[1] < jmin)

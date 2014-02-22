@@ -90,10 +90,10 @@ public class BuildingDispenserTrap extends Building {
 
 	private void setItemDispenser(int x, int z, int y, int metaDir, ItemStack itemstack) {
 		int[] pt = getIJKPt(x, z, y);
-		world.func_147465_d(pt[0], pt[1], pt[2], Blocks.dispenser, 0, 2);
+		world.setBlock(pt[0], pt[1], pt[2], Blocks.dispenser, 0, 2);
 		world.setBlockMetadataWithNotify(pt[0], pt[1], pt[2], LADDER_DIR_TO_META[orientDirToBDir(metaDir)], 3);
 		try {
-			TileEntityDispenser tileentitychest = (TileEntityDispenser) world.func_147438_o(pt[0], pt[1], pt[2]);
+			TileEntityDispenser tileentitychest = (TileEntityDispenser) world.getTileEntity(pt[0], pt[1], pt[2]);
 			if (itemstack != null && tileentitychest != null)
 				tileentitychest.setInventorySlotContents(random.nextInt(tileentitychest.getSizeInventory()), itemstack);
 		} catch (Exception e) {

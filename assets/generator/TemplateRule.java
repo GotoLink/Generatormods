@@ -160,7 +160,7 @@ public class TemplateRule {
 	public String toString() {
 		String str = condition + "," + chance;
 		for (int m = 0; m < blockIDs.length; m++) {
-			str += "," + GameData.blockRegistry.func_148750_c(blockIDs[m]);
+			str += "," + GameData.blockRegistry.getNameForObject(blockIDs[m]);
 			if (blockMDs[m] != 0)
 				str += "-" + blockMDs[m];
 		}
