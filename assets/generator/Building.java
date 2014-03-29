@@ -20,8 +20,8 @@ package assets.generator;
  *     x,z,y are coordinate inputs for local frame of reference functions.
  *     bHand =-1,1 determines whether X-axis points left or right respectively when facing along Y-axis.
  *
- *                           (dir=0)
- *                                (-k)
+ *               (dir=0)
+ *                (-k)
  *                 n
  *                 n
  *  (dir=3) (-i)www*eee(+i)  (dir=1)
@@ -43,6 +43,7 @@ import net.minecraft.tileentity.TileEntityMobSpawner;
 import net.minecraft.tileentity.TileEntitySign;
 import net.minecraft.village.VillageDoorInfo;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.RotationHelper;
 
 public class Building {
 	public final static int HIT_WATER = -666; // , HIT_SWAMP=-667;
@@ -56,6 +57,7 @@ public class Building {
 	protected TemplateRule bRule; // main structural blocktype
 	public int bWidth, bHeight, bLength;
 	public int bID; // Building ID number
+    private LinkedList<PlacedBlock> delayedBuildQueue;
 	protected WorldGeneratorThread wgt;
 	protected boolean centerAligned; // if true, alignPt x is the central axis of the building if false, alignPt is the origin
 	protected int i0, j0, k0; // origin coordinates (x=0,z=0,y=0). The child class may want to move the origin as it progress to use as a "cursor" position.
@@ -175,6 +177,7 @@ public class Building {
             else
                 setOrigin(alignPt[0], alignPt[1], alignPt[2]);
         }
+        delayedBuildQueue = new LinkedList<PlacedBlock>();
     }
 	// ******************** LOCAL COORDINATE FUNCTIONS - ACCESSORS
 	// *************************************************************************************************************//
@@ -303,7 +306,7 @@ public class Building {
 	// blocks + foundationDepth.
 	// if buildDown column is completely air, instead buildDown reserveDepth
 	// blocks.
-	protected final void buildDown(int x, int z, int y, TemplateRule buildRule, int maxDepth, int foundationDepth, int reserveDepth) {
+	public void buildDown(int x, int z, int y, TemplateRule buildRule, int maxDepth, int foundationDepth, int reserveDepth) {
 		int stopZ;
 		for (stopZ = z; stopZ > z - maxDepth; stopZ--) {
 			if (!isWallable(x, stopZ, y))
@@ -352,14 +355,6 @@ public class Building {
 		return isFloor(x, z, y) && (isWallBlock(x + 1, z, y) && isWallBlock(x - 1, z, y) || isWallBlock(x, z, y + 1) && isWallBlock(x - 1, z, y - 1));
 	}
 
-	// true if block is air, block below is wall block
-	protected final boolean isFloor(int x, int z, int y) {
-		Block blkId1 = getBlockIdLocal(x, z, y), blkId2 = getBlockIdLocal(x, z - 1, y);
-		// return ((blkId1==0 || blkId1==STEP_ID) && IS_WALL_BLOCK[blkId2] &&
-		// blkId2!=LADDER_ID);
-		return blkId1 == Blocks.air && BlockProperties.get(blkId2).isArtificial && blkId2 != Blocks.ladder;
-	}
-
 	protected final boolean isNextToDoorway(int x, int z, int y) {
 		return isDoorway(x - 1, z, y) || isDoorway(x + 1, z, y) || isDoorway(x, z, y - 1) || isDoorway(x - 1, z, y + 1);
 	}
@@ -400,13 +395,21 @@ public class Building {
 		return false;
 	}
 
-	protected final boolean isStairBlock(int x, int z, int y) {
-		Block blkId = getBlockIdLocal(x, z, y);
-		return blkId == Blocks.stone_slab || BlockProperties.get(blkId).isStair;
-	}
-
 	// ******************** LOCAL COORDINATE FUNCTIONS - BLOCK TEST FUNCTIONS
 	// *************************************************************************************************************//
+    // true if block is air, block below is wall block
+    protected final boolean isFloor(int x, int z, int y) {
+        Block blkId1 = getBlockIdLocal(x, z, y), blkId2 = getBlockIdLocal(x, z - 1, y);
+        // return ((blkId1==0 || blkId1==STEP_ID) && IS_WALL_BLOCK[blkId2] &&
+        // blkId2!=LADDER_ID);
+        return blkId1 == Blocks.air && BlockProperties.get(blkId2).isArtificial && blkId2 != Blocks.ladder;
+    }
+
+    protected final boolean isStairBlock(int x, int z, int y) {
+        Block blkId = getBlockIdLocal(x, z, y);
+        return blkId == Blocks.stone_slab || BlockProperties.get(blkId).isStair;
+    }
+
 	protected final boolean isWallable(int x, int z, int y) {
 		return BlockProperties.get(world.getBlock(i0 + yI * y + xI * x, j0 + z, k0 + yK * y + xK * x)).isWallable;
 	}
@@ -419,7 +422,14 @@ public class Building {
 		return BlockProperties.get(world.getBlock(i0 + yI * y + xI * x, j0 + z, k0 + yK * y + xK * x)).isArtificial;
 	}
 
-	protected final void offer(Block blc, int[] block) {
+    public final void flushDelayed(){
+        while(delayedBuildQueue.size()>0){
+            PlacedBlock block = delayedBuildQueue.poll();
+            setDelayed(block.get(), block.x, block.y, block.z, block.getMeta());
+        }
+    }
+
+	protected void setDelayed(Block blc, int...block) {
 		// if stairs are running into ground. replace them with a solid block
 		if (BlockProperties.get(blc).isStair) {
 			Block adjId = world.getBlock(block[0] - DIR_TO_I[STAIRS_META_TO_DIR[block[3] % 4]], block[1], block[2] - DIR_TO_K[STAIRS_META_TO_DIR[block[3] % 4]]);
@@ -455,7 +465,7 @@ public class Building {
 		// block[3]==REDSTONE_TORCH_OFF_ID){
 		// block[4]=1;
 		// }
-		else if (blc == Blocks.air && block[3]>=-PAINTING_BLOCK_OFFSET)//Remember:Paintings are not blocks
+		if (blc == Blocks.air && block[3]>=-PAINTING_BLOCK_OFFSET)//Remember:Paintings are not blocks
 			setPainting(block, block[3]+PAINTING_BLOCK_OFFSET);
 		else if (blc == Blocks.torch) {
 			if (Blocks.torch.canPlaceBlockAt(world, block[0], block[1], block[2]))
@@ -493,7 +503,7 @@ public class Building {
         if (blockID != Blocks.chest)
             emptyIfChest(pt);
         if (BlockProperties.get(blockID).isDelayed){
-            offer(blockID, new int[] { pt[0], pt[1], pt[2], rotateMetadata(blockID, metadata) });
+            delayedBuildQueue.offer(new PlacedBlock(blockID, new int[]{pt[0], pt[1], pt[2], rotateMetadata(blockID, metadata)}));
         }else if (randLightingHash[(x & 0x7) | (y & 0x38) | (z & 0x1c0)]) {
             world.setBlock(pt[0], pt[1], pt[2], blockID, rotateMetadata(blockID, metadata), 2);
         } else {
@@ -530,7 +540,7 @@ public class Building {
 		if (blockID != Blocks.chest)
 			emptyIfChest(pt);
 		if (BlockProperties.get(blockID).isDelayed)
-			offer(blockID, new int[] { pt[0], pt[1], pt[2], rotateMetadata(blockID, metadata) });
+            delayedBuildQueue.offer(new PlacedBlock(blockID, new int[]{pt[0], pt[1], pt[2], rotateMetadata(blockID, metadata)}));
 		else if (lighting)
 			world.setBlock(pt[0], pt[1], pt[2], blockID, rotateMetadata(blockID, metadata), 3);
 		else
@@ -673,6 +683,9 @@ public class Building {
 
 	private int rotateMetadata(Block blockID, int metadata) {
 		int tempdata = 0;
+        /*if(RotationHelper.rotateVanillaBlock(block, world, x, y, z, dir)){
+            return;
+        }*/
 		if (BlockProperties.get(blockID).isStair) {
 			if (metadata >= 4) {
 				tempdata += 4;

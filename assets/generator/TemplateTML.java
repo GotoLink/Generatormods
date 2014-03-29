@@ -136,11 +136,11 @@ public class TemplateTML {
 				leveling = BuildingExplorationHandler.readIntParam(lw, leveling, "=", line);
 			else if (line.startsWith("water_height")) {
 				readInWaterHeight = true;
-				if (line.indexOf(NO_WATER_CHECK_STR) != -1)
+				if (line.contains(NO_WATER_CHECK_STR))
 					waterHeight = NO_WATER_CHECK;
 				else
 					waterHeight = BuildingExplorationHandler.readIntParam(lw, waterHeight, "=", line);
-			} else if (line != null && line.length() > 0) {
+			} else if (line.length() > 0) {
 				String[] spl = line.split("=");
 				if (spl.length == 2 && !spl[0].equals("") && !spl[1].equals(""))
 					extraOptions.put(spl[0], line); //lazy - put line as value since we have a functions to parse

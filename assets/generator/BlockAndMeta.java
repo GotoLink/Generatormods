@@ -24,7 +24,7 @@ public class BlockAndMeta extends Tuple {
         if(obj==this){
             return true;
         }
-        if(obj.getClass().equals(BlockAndMeta.class)){
+        if(obj instanceof BlockAndMeta){
             return this.getMeta()==((BlockAndMeta) obj).getMeta() && this.get()==((BlockAndMeta) obj).get();
         }
         return false;

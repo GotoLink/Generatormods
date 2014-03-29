@@ -198,6 +198,7 @@ public class BuildingTower extends Building {
 			String[] lines = new String[] { IDString().split(" ")[0], IDString().split(" ")[1], localCoordString(bWidth / 2, baseHeight, bLength / 2) };
 			setSignOrPost(bWidth / 2, baseHeight, bLength / 2, true, 12, lines);
 		}
+        flushDelayed();
 	}
 
 	//****************************************  FUNCTION  - buildXYRotated *************************************************************************************//

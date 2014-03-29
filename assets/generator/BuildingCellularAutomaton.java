@@ -135,6 +135,7 @@ public class BuildingCellularAutomaton extends Building {
 				}
 			}
 		}
+        flushDelayed();
 		if (makeFloors)
 			buildFloors(floorBlockCounts, floorBlocks);
 	}
@@ -174,6 +175,7 @@ public class BuildingCellularAutomaton extends Building {
 					floorBlockCounts[maxFloor + 3] = 0;
 			} else
 				break;
+            flushDelayed();
 		}
 		//populate
 		Collections.sort(floors, new Comparator() {

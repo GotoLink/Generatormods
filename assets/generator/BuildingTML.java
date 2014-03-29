@@ -57,6 +57,7 @@ public class BuildingTML extends Building {
 					 */
 					setBlockLocal(x, z, y, tmlt.rules[tmlt.template[z][y][x]]);
 				}
+        flushDelayed();
 	}
 	//****************************************  FUNCTION - isObstructedBody*************************************************************************************//
 	/*

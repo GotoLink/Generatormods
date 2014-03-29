@@ -63,6 +63,7 @@ public class BuildingDispenserTrap extends Building {
 			setBlockLocal(1, 1, y, Blocks.air);
 		}
 		setBlockLocal(1, 0, 0, Blocks.stone_pressure_plate);
+        flushDelayed();
 		ItemStack itemstack = missileType == ARROW_MISSILE ? new ItemStack(Items.arrow, 30 + random.nextInt(10), 0) : new ItemStack(Items.potionitem, 30 + random.nextInt(10), 12 | 0x4000);
 		setItemDispenser(1, 1, bLength + 1, DIR_SOUTH, itemstack);
 	}

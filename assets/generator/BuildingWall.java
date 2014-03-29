@@ -193,6 +193,7 @@ public class BuildingWall extends Building {
 			 * setSignOrPost(bWidth,WalkHeight-1,0,false,2,lines); }
 			 */
 		}//end main loop
+        flushDelayed();
 		setCursor(0);
 	}
 
@@ -294,6 +295,7 @@ public class BuildingWall extends Building {
 							//following tower
 							new BuildingTower(0, this, rotDir(bDir, flankTHand), -bHand, true, tw, th + zArray[tnMid1] - zArray[tnMid2], tw, getIJKPtAtN(tnMid2, x1, 0, 0)).build(0, 0, false);
 						}
+                        flushDelayed();
 						//stairs up to wall
 						gatewayStart = n0 - gateWidth + 1;
 						gatewayEnd = n0;

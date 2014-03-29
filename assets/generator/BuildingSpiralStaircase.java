@@ -105,6 +105,7 @@ public class BuildingSpiralStaircase extends Building {
 			x -= DIR_TO_X[sDir];
 			y -= DIR_TO_Y[sDir];
 		}
+        flushDelayed();
 	}
 
 	private void buildHallwaySegment(int x, int z, int y, int height) {

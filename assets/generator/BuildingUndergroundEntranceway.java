@@ -62,6 +62,7 @@ public class BuildingUndergroundEntranceway extends Building {
 				setBlockLocal(x, z, z, random.nextInt(100) < bRule.chance ? stairsID : Blocks.air, STAIRS_DIR_TO_META[DIR_NORTH]);
 				buildDown(x, z - 1, z, TemplateRule.STONE_RULE, 20, 0, 3);
 			}
+            flushDelayed();
 			if (z % SUPPORT_INTERVAL == 0 && z <= bLength - PASSAGE_HEIGHT) {
 				for (int z1 = -1; z1 < PASSAGE_HEIGHT; z1++) {
 					setBlockLocal(0, z + z1, z, bRule);
@@ -87,6 +88,7 @@ public class BuildingUndergroundEntranceway extends Building {
 			}
 		}
 		//for(int x=0; x<PASSAGE_WIDTH; x++) buildDown(x, bLength-1, bLength, bRule,20,4,3);
+        flushDelayed();
 		street = new BuildingWall(bID, wgt, ws, flipDir(bDir), -bHand, ws.MaxL, true, getIJKPt((PASSAGE_WIDTH - ws.WWidth) / 2, 0, -1));
 		street.plan(1, 0, BuildingWall.DEFAULT_LOOKAHEAD, true);
 		return true;
