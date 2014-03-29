@@ -9,7 +9,7 @@
   "mcversion": $mcversion,
   "url": "http://www.minecraftforum.net/topic/171188-",
   "updateUrl": "",
-  "authors": ["Formivore","GotoLink"],
+  "authorList": ["Formivore","GotoLink"],
   "parent":"",
   "screenshots": [],
   "dependencies": []
@@ -24,7 +24,7 @@
   "mcversion": $mcversion,
   "url": "http://www.minecraftforum.net/topic/171188-",
   "updateUrl": "",
-  "authors": ["Formivore","GotoLink"],
+  "authorList": ["Formivore","GotoLink"],
   "parent":"",
   "screenshots": [],
   "dependencies": []
@@ -39,7 +39,7 @@
   "mcversion": $mcversion,
   "url": "http://www.minecraftforum.net/topic/171188-",
   "updateUrl": "",
-  "authors": ["Formivore","GotoLink"],
+  "authorList": ["Formivore","GotoLink"],
   "parent":"",
   "screenshots": [],
   "dependencies": []
