@@ -45,7 +45,7 @@ public class BlockProperties {
         isArtificial = !(isWallable || isOre || block == Blocks.stone || block instanceof BlockDirt || block instanceof BlockGrass
                 || block instanceof BlockGravel || block instanceof BlockSand || block instanceof BlockNetherrack || block instanceof BlockSoulSand || block instanceof BlockMycelium);
         isLight = block instanceof BlockTorch || block instanceof BlockGlowstone;
-        isDelayed = /* isStair || */isFlowing || isLight || block == Blocks.air || block instanceof BlockLever || block instanceof BlockSign
+        isDelayed = isStair || isFlowing || isLight || block == Blocks.air || block instanceof BlockLever || block instanceof BlockSign
                 || block instanceof BlockFire || block instanceof BlockButton || block instanceof BlockVine || block instanceof BlockRedstoneWire || block instanceof BlockDispenser
                 || block instanceof BlockFurnace;
         // Define by what it is not.
