@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Random;
 
 import net.minecraft.command.CommandBase;
+import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
@@ -33,7 +34,7 @@ public class CommandBuild extends CommandBase {
 	@Override
 	public void processCommand(ICommandSender var1, String[] coordinate) {
 		if (coordinate.length == 4 || coordinate.length == 3) {
-			notifyAdmins(var1, 0, "/build command used by " + var1.getCommandSenderName(), new Object[] { var1.getCommandSenderName(), coordinate });
+			notifyAdmins(var1, 0, "/build command used by " + var1.getCommandSenderName(), var1.getCommandSenderName(), coordinate);
 			int posX = parseInt(var1, coordinate[coordinate.length - 2]);
 			int posZ = parseInt(var1, coordinate[coordinate.length - 1]);
 			World world = MinecraftServer.getServer().worldServers[coordinate.length == 3 ? 0 : Integer.parseInt(coordinate[1])];
@@ -74,4 +75,9 @@ public class CommandBuild extends CommandBase {
 	public List addTabCompletionOptions(ICommandSender var1, String[] var2) {
 		return var2.length == 1 ? getListOfStringsMatchingLastWord(var2, new String[] { "ruin", "wall", "city", "undcity" }) : null;
 	}
+
+    @Override
+    public int compareTo(Object par1Obj){
+        return this.compareTo((ICommand)par1Obj);
+    }
 }
