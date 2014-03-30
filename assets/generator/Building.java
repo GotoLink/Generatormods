@@ -874,11 +874,12 @@ public class Building {
         }else if(blockID==Blocks.bed||blockID==Blocks.fence_gate||blockID==Blocks.tripwire_hook||blockID==Blocks.pumpkin||blockID==Blocks.lit_pumpkin||blockID==Blocks.powered_repeater||blockID==Blocks.unpowered_repeater){
 			while (metadata >= 4) {
 				tempdata += 4;
+                metadata -= 4;
 			}
 			if (blockID==Blocks.trapdoor)
-				return TRAPDOOR_DIR_TO_META[orientDirToBDir(TRAPDOOR_META_TO_DIR[metadata % 4])] + tempdata;
+				return TRAPDOOR_DIR_TO_META[orientDirToBDir(TRAPDOOR_META_TO_DIR[metadata])] + tempdata;
 			else
-				return BED_DIR_TO_META[orientDirToBDir(BED_META_TO_DIR[metadata % 4])] + tempdata;
+				return BED_DIR_TO_META[orientDirToBDir(BED_META_TO_DIR[metadata])] + tempdata;
         }else if(blockID==Blocks.vine){
 			if (metadata == 0)
 				return 0;
