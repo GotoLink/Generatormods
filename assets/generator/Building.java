@@ -507,10 +507,7 @@ public class Building {
         }else if (randLightingHash[(x & 0x7) | (y & 0x38) | (z & 0x1c0)]) {
             world.setBlock(pt[0], pt[1], pt[2], blockID, rotateMetadata(blockID, metadata), 2);
         } else {
-            if (metadata == 0)
-                setBlockNoLighting(world, pt[0], pt[1], pt[2], blockID);
-            else
-                setBlockAndMetaNoLighting(world, pt[0], pt[1], pt[2], blockID, rotateMetadata(blockID, metadata));
+            setBlockAndMetaNoLighting(world, pt[0], pt[1], pt[2], blockID, rotateMetadata(blockID, metadata));
         }
         if (BlockProperties.get(blockID).isDoor) {
             addDoorToNewListIfAppropriate(pt[0], pt[1], pt[2]);
