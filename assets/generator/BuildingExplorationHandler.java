@@ -46,7 +46,7 @@ import scala.Int;
 public abstract class BuildingExplorationHandler implements IWorldGenerator {
     protected final static String VERSION = "0.1.5";
 	protected final static int MAX_TRIES_PER_CHUNK = 100;
-	protected final static File CONFIG_DIRECTORY = new File(Loader.instance().getConfigDir(), "generatormods");
+	public final static File CONFIG_DIRECTORY = new File(Loader.instance().getConfigDir(), "generatormods");
 	protected final static File LOG = new File(getMinecraftBaseDir(), "generatormods_log.txt");
 	protected String settingsFileName, templateFolderName;
 	public org.apache.logging.log4j.Logger logger;
@@ -407,7 +407,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 
 	private static File getMinecraftBaseDir() {
 		if (FMLCommonHandler.instance().getSide().isClient()) {
-			return FMLClientHandler.instance().getClient().getMinecraft().mcDataDir;
+			return FMLClientHandler.instance().getClient().mcDataDir;
 		}
 		return FMLCommonHandler.instance().getMinecraftServerInstance().getFile("");
 	}

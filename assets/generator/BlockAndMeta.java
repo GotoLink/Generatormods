@@ -29,4 +29,9 @@ public class BlockAndMeta extends Tuple {
         }
         return false;
     }
+
+    @Override
+    public int hashCode(){
+        return getMeta()+31*get().hashCode();
+    }
 }

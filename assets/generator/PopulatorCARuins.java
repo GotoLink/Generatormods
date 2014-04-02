@@ -4,10 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Random;
 
-import cpw.mods.fml.common.registry.GameData;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
@@ -97,11 +95,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler {
 	@EventHandler
 	public void serverStarting(FMLServerStartingEvent event) {
 		event.registerServerCommand(new CommandBuild());
-        Block i = null;
-        for (Iterator itr = GameData.blockRegistry.iterator(); itr.hasNext(); i=(Block)itr.next()) {
-            if(i!=null)
-                BlockProperties.get(i);
-        }
+        event.registerServerCommand(new CommandScan());
 	}
 
 	//****************************  FUNCTION - loadDataFiles *************************************************************************************//
