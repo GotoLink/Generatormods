@@ -249,7 +249,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler {
 		pw.println("<-BlockRule is the template rule that controls what blocks the structure will be made out of.->");
 		pw.println("<-Default is BiomeNameBlockRule:" + DEFAULT_TEMPLATE.toString() + "->");
 		pw.println("<-Which translates into: (special condition) then,(100%=complete)ruin in either normal(1 out of 3 chance) or mossy cobblestone(2 out of 3) in said biome->");
-		pw.println("<-Metadatas are supported, use blockid-blockmetadata syntax->");
+		pw.println("<-Metadatas are supported, use blockname-blockmetadata syntax->");
 		for (int m = 0; m < DEFAULT_BLOCK_RULES.length; m++) {
 			if (BLOCK_RULE_NAMES[m] != null)
 				pw.println(BLOCK_RULE_NAMES[m] + ":" + DEFAULT_BLOCK_RULES[m].toString());

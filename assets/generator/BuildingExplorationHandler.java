@@ -155,7 +155,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 	//if an integer ruleId: try reading from rules and return.
 	//If a rule: parse the rule, add it to rules, and return.
 	public TemplateRule readRuleIdOrRule(String splitString, String read, TemplateRule[] rules) throws Exception {
-		String postSplit = read.split(splitString)[1].trim();
+		String postSplit = read.split(splitString, 2)[1].trim();
 		try {
 			int ruleId = Integer.parseInt(postSplit);
 			return rules[ruleId];

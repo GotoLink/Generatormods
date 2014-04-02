@@ -1128,7 +1128,7 @@ public class Building {
 
 	public static int findSurfaceJ(World world, int i, int k, int jinit, boolean wallIsSurface, int waterSurfaceBuffer) {
 		Block blockId;
-		// if(world.getChunkProvider().chunkExists(i>>4, k>>4))
+		//if(world.getChunkProvider().chunkExists(i>>4, k>>4))
 		{
 			if (world.provider.isHellWorld) {// the Nether
 				if ((i % 2 == 1) ^ (k % 2 == 1)) {
