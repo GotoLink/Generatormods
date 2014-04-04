@@ -19,7 +19,7 @@ minecraft {
     version = "1.7.2-10.12.0.1032"
     assetDir = "eclipse/assets"
 }
-version = "0.1.5(1.7.2)"
+version = "0.1.5"
 archivesBaseName = project.projectDir.name
 sourceSets.main.java{srcDirs project.projectDir.getPath() include("assets/**")}
 sourceSets.main.resources{srcDirs project.projectDir.getPath() include("*.info", "*.mcmeta" , "*.md")}
@@ -34,4 +34,11 @@ processResources {
     from(project.sourceSets.main.resources.srcDirs) {
         include("pack.mcmeta", "license.md")
     }
+}
+jar {
+    //Keep the jar as clean as possible
+    includeEmptyDirs = false
+    //Append with minecraft version
+    classifier = "("+minecraft.version+")"
+    archiveName = archivesBaseName + "-" + version + classifier+"."+extension
 }

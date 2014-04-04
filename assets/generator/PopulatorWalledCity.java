@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.ModContainer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
@@ -241,6 +243,16 @@ public class PopulatorWalledCity extends BuildingExplorationHandler {
 		logger = event.getModLog();
 		settingsFileName = "WalledCitySettings.txt";
 		templateFolderName = "walledcity";
+        if(event.getSourceFile().getName().endsWith(".jar") && event.getSide().isClient()){
+            try {
+                Class.forName("mods.mud.ModUpdateDetector").getDeclaredMethod("registerMod", ModContainer.class, String.class, String.class).invoke(null,
+                        FMLCommonHandler.instance().findContainerFor(this),
+                        "https://raw.github.com/GotoLink/Generatormods/master/update.xml",
+                        "https://raw.github.com/GotoLink/Generatormods/master/changelog.md"
+                );
+            } catch (Throwable e) {
+            }
+        }
 	}
 
 	//****************************  FUNCTION - saveCityLocations *************************************************************************************//

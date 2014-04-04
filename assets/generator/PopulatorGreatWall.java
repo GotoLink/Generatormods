@@ -23,6 +23,8 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Random;
 
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.ModContainer;
 import net.minecraft.world.World;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
@@ -49,6 +51,16 @@ public class PopulatorGreatWall extends BuildingExplorationHandler {
 		logger = event.getModLog();
 		settingsFileName = "GreatWallSettings.txt";
 		templateFolderName = "greatwall";
+        if(event.getSourceFile().getName().endsWith(".jar") && event.getSide().isClient()){
+            try {
+                Class.forName("mods.mud.ModUpdateDetector").getDeclaredMethod("registerMod", ModContainer.class, String.class, String.class).invoke(null,
+                        FMLCommonHandler.instance().findContainerFor(this),
+                        "https://raw.github.com/GotoLink/Generatormods/master/update.xml",
+                        "https://raw.github.com/GotoLink/Generatormods/master/changelog.md"
+                );
+            } catch (Throwable e) {
+            }
+        }
 	}
 
 	//****************************  FUNCTION - loadDataFiles *************************************************************************************//
