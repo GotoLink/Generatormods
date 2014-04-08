@@ -1,37 +1,37 @@
 <mod modid="CARuins">
     <mcVersion version="1.7.2">
         <release type="release" version="0.1.5"
-                 url="http://www.minecraftforum.net/topic/1651891-"
+                 url="http://www.minecraftforum.net/topic/1651891-/#Formivore"
                  download="http://www.mediafire.com/download/lj7zp15z4dzdu71/Generatormods-0.1.5(1.7.2).jar"
                  md5="4C59E02B6B9283B7CA25D584F92CC9F9"
                 />
     </mcVersion>
 	<mcVersion version="1.6.4">
         <release type="release" version="0.1.4"
-                 url="http://www.minecraftforum.net/topic/1651891-"
+                 url="http://www.minecraftforum.net/topic/1651891-/#Formivore"
                  download="http://www.mediafire.com/download/wbr8cocgmd84c60/Generator_mods_0.1.4(1.6.X).zip"
                  md5="A6497045D366B42A8790E29AAA537FE6"
                 />
         <release type="release" version="0.1.3"
-                 url="http://www.minecraftforum.net/topic/1651891-"
+                 url="http://www.minecraftforum.net/topic/1651891-/#Formivore"
                  download="http://www.mediafire.com/download/rctb24axmxr211u/Generator_mods_0.1.3(1.6.X).zip"
                 />
     </mcVersion>
 	<mcVersion version="1.5.2">
         <release type="release" version="0.1.3"
-                 url="http://www.minecraftforum.net/topic/1651891-"
+                 url="http://www.minecraftforum.net/topic/1651891-/#Formivore"
                  download="http://www.mediafire.com/download/h5f4rjrou7fru7r/Generator_mods_0.1.3(1.5.X).zip"
                  md5="186488B19979E8FB20CB151B5AFF186C"
                 />
         <release type="release" version="0.0.8"
-                 url="http://www.minecraftforum.net/topic/1651891-"
+                 url="http://www.minecraftforum.net/topic/1651891-/#Formivore"
                  download="http://www.mediafire.com/download.php?hc1lr6jccppe8m2"
                  md5="8D546D75E3D94CFE1B2DDFE0AAEBDB39"
                 />
     </mcVersion>
     <mcVersion version="1.4.7">
         <release type="release" version="0.0.6"
-                 url="http://www.minecraftforum.net/topic/1651891-"
+                 url="http://www.minecraftforum.net/topic/1651891-/#Formivore"
                  download="http://www.mediafire.com/download.php?8x3kfsbzug0qq1v"
                  md5="EDC4AFC03D45D0299066AD45299A1DA0"
                 />
