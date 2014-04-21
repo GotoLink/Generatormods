@@ -51,7 +51,7 @@ public class BuildingWall extends Building {
 	private int halfStairValue = 2; //metavalue of half step based on bRule
 	public int roofStyle;
 	public TemplateRule towerRule, roofRule;
-	public int Backtrack;
+	public final int Backtrack;
 
 	public BuildingWall(BuildingWall bw, int maxLength_, int i1_, int j1_, int k1_) {
 		super(bw.bID, bw.wgt, bw.bRule, bw.bDir, bw.bHand, false, new int[] { bw.bWidth, bw.bHeight, 0 }, new int[] { i1_, j1_, k1_ });
@@ -701,7 +701,7 @@ public class BuildingWall extends Building {
 	//****************************************  FUNCTION - makeBuildings *************************************************************************************//
 	private boolean makeBuilding(TemplateTML template, int tw, int ybuffer, boolean overlapTowers, int dir, int[] pt) {
 		if (template == ws.makeDefaultTower) {
-			int maxBL = bDir == dir ? endBLength : circular ? tw : ws.pickTWidth(circular, world.rand);
+			int maxBL = bDir == dir ? endBLength : circular ? tw : ws.pickTWidth(false, world.rand);
 			//FMLLog.getLogger().info("Querying "+(circular? "circular " : "square ")+(bDir==dir ? "end" : "side")+" tower, ybuffer="+ybuffer+".");
 			for (int tl = maxBL; tl >= ws.getTMinWidth(circular); tl--) {
 				BuildingTower tower = new BuildingTower(bID + n0, this, dir, 1, true, circular ? tl : tw, ws.pickTHeight(circular, world.rand), tl, pt);
@@ -757,13 +757,17 @@ public class BuildingWall extends Building {
 		int[] pt = getIJKPt(-1, WalkHeight - 1, 0);
 		Block id = world.getBlock(pt[0], pt[1], pt[2]);
 		int meta = world.getBlockMetadata(pt[0], pt[1], pt[2]);
-		if (BlockProperties.get(id).isStair && STAIRS_META_TO_DIR[meta < 4 ? meta : (meta - 4)] == rotDir(bDir, -bHand))
-			world.setBlock(pt[0], pt[1], pt[2], stairToSolidBlock(id), 0, 2);
+		if (BlockProperties.get(id).isStair && STAIRS_META_TO_DIR[meta < 4 ? meta : (meta - 4)] == rotDir(bDir, -bHand)) {
+            BlockAndMeta temp = stairToSolidBlock(id);
+            world.setBlock(pt[0], pt[1], pt[2], temp.get(), temp.getMeta(), 2);
+        }
 		pt = getIJKPt(bWidth, WalkHeight - 1, 0);
 		id = world.getBlock(pt[0], pt[1], pt[2]);
 		meta = world.getBlockMetadata(pt[0], pt[1], pt[2]);
-		if (BlockProperties.get(id).isStair && STAIRS_META_TO_DIR[meta < 4 ? meta : (meta - 4)] == rotDir(bDir, bHand))
-			world.setBlock(pt[0], pt[1], pt[2], stairToSolidBlock(id), 0, 2);
+		if (BlockProperties.get(id).isStair && STAIRS_META_TO_DIR[meta < 4 ? meta : (meta - 4)] == rotDir(bDir, bHand)) {
+            BlockAndMeta temp = stairToSolidBlock(id);
+            world.setBlock(pt[0], pt[1], pt[2], temp.get(), temp.getMeta(), 2);
+        }
 	}
 
 	private void pickTowers(boolean circular_, boolean endTowers) {
@@ -784,7 +788,7 @@ public class BuildingWall extends Building {
 
 	//smooth(int[] arry, int a, int b,int convexWindow, int concaveWindow)
 	public static void smooth(int[] arry, int a, int b, int convexWindow, int concaveWindow, boolean flattenEnds) {
-		int n, smoothStart = -1, leadSlope, shorterWinStart = a, longerWinStart = a;
+		int n, smoothStart, leadSlope, shorterWinStart = a, longerWinStart = a;
 		int shorterWinInitEnd = a + Math.min(concaveWindow, convexWindow), longerWinInitEnd = a + Math.max(concaveWindow, convexWindow);
 		for (int winEnd = a + 2; winEnd <= b; winEnd++) {
 			if (winEnd >= shorterWinInitEnd)

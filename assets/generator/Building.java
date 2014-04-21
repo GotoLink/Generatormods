@@ -52,13 +52,13 @@ public class Building {
 	public final static int ROT_R = 1, R_HAND = 1, L_HAND = -1;
 	public final static int SEA_LEVEL = 63, WORLD_MAX_Y = 255;
 	// **** WORKING VARIABLES ****
-	protected World world;
-	protected Random random;
+	protected final World world;
+	protected final Random random;
 	protected TemplateRule bRule; // main structural blocktype
 	public int bWidth, bHeight, bLength;
-	public int bID; // Building ID number
-    private LinkedList<PlacedBlock> delayedBuildQueue;
-	protected WorldGeneratorThread wgt;
+	public final int bID; // Building ID number
+    private final LinkedList<PlacedBlock> delayedBuildQueue;
+	protected final WorldGeneratorThread wgt;
 	protected boolean centerAligned; // if true, alignPt x is the central axis of the building if false, alignPt is the origin
 	protected int i0, j0, k0; // origin coordinates (x=0,z=0,y=0). The child class may want to move the origin as it progress to use as a "cursor" position.
 	private int xI, yI, xK, yK; //
@@ -297,9 +297,7 @@ public class Building {
 		TileEntitySign tileentitysign = (TileEntitySign) world.getTileEntity(pt[0], pt[1], pt[2]);
 		if (tileentitysign == null)
 			return;
-		for (int m = 0; m < Math.min(lines.length, 4); m++) {
-			tileentitysign.signText[m] = lines[m];
-		}
+        System.arraycopy(lines, 0, tileentitysign.signText, 0, Math.min(lines.length, 4));
 	}
 
 	// call with z=start of builDown, will buildDown a maximum of maxDepth
@@ -355,8 +353,8 @@ public class Building {
 		return isFloor(x, z, y) && (isWallBlock(x + 1, z, y) && isWallBlock(x - 1, z, y) || isWallBlock(x, z, y + 1) && isWallBlock(x - 1, z, y - 1));
 	}
 
-	protected final boolean isNextToDoorway(int x, int z, int y) {
-		return isDoorway(x - 1, z, y) || isDoorway(x + 1, z, y) || isDoorway(x, z, y - 1) || isDoorway(x - 1, z, y + 1);
+	protected final boolean hasNoDoorway(int x, int z, int y) {
+		return !(isDoorway(x - 1, z, y) || isDoorway(x + 1, z, y) || isDoorway(x, z, y - 1) || isDoorway(x - 1, z, y + 1));
 	}
 
 	protected boolean isObstructedFrame(int zstart, int ybuffer) {
@@ -435,8 +433,9 @@ public class Building {
 			Block adjId = world.getBlock(block[0] - DIR_TO_I[STAIRS_META_TO_DIR[block[3] % 4]], block[1], block[2] - DIR_TO_K[STAIRS_META_TO_DIR[block[3] % 4]]);
 			Block aboveID = world.getBlock(block[0], block[1] + 1, block[2]);
 			if (BlockProperties.get(adjId).isArtificial || BlockProperties.get(aboveID).isArtificial) {
-				blc = stairToSolidBlock(blc);
-				block[3] = 0;
+                BlockAndMeta temp = stairToSolidBlock(blc);
+				blc = temp.get();
+				block[3] = temp.getMeta();
 			} else if (!BlockProperties.get(adjId).isWallable || !BlockProperties.get(aboveID).isWallable || BlockProperties.get(adjId).isWater || BlockProperties.get(aboveID).isWater) {
 				return; // solid or liquid non-wall block. In this case, just don't build the stair (aka preserve block).
 			}
@@ -1262,11 +1261,8 @@ public class Building {
 			return Blocks.sandstone_stairs;
         }else if(idAndMeta.get()==Blocks.quartz_block){
 			return Blocks.quartz_stairs;
-        }else if(idAndMeta.get()==Blocks.log){
+        }else if(idAndMeta.get()==Blocks.planks){
 			int tempdata = idAndMeta.getMeta();
-			while (tempdata >= 4) {
-				tempdata -= 4;
-			}
 			switch (tempdata) {
 			case 0:
 				return Blocks.oak_stairs;
@@ -1276,6 +1272,10 @@ public class Building {
 				return Blocks.birch_stairs;
 			case 3:
 				return Blocks.jungle_stairs;
+            case 4:
+                return Blocks.acacia_stairs;
+            case 5:
+                return Blocks.dark_oak_stairs;
 			}
         }
         return idAndMeta.get();
@@ -1298,8 +1298,10 @@ public class Building {
             return new BlockAndMeta(Blocks.stone_slab, 6);
         }else if(idAndMeta.get()==Blocks.quartz_block){
             return new BlockAndMeta(Blocks.stone_slab, 7);
-        }else if(idAndMeta.get()==Blocks.stone_slab||idAndMeta.get()==Blocks.double_stone_slab||idAndMeta.get()==Blocks.double_wooden_slab||idAndMeta.get()==Blocks.wooden_slab){
+        }else if(idAndMeta.get()==Blocks.stone_slab||idAndMeta.get()==Blocks.double_stone_slab){
 			return new BlockAndMeta(Blocks.stone_slab, idAndMeta.getMeta());
+        }else if(idAndMeta.get()==Blocks.double_wooden_slab||idAndMeta.get()==Blocks.wooden_slab){
+            return new BlockAndMeta(Blocks.wooden_slab, idAndMeta.getMeta());
         }else{
 			return new BlockAndMeta(idAndMeta.get(), 0);
 		}
@@ -1341,23 +1343,40 @@ public class Building {
 		return n < 0 ? -1 : 1;
 	}
 
-	protected static Block stairToSolidBlock(Block stair) {
+	protected static BlockAndMeta stairToSolidBlock(Block stair) {
+        Block block = stair;
+        int meta = 0;
 		if(stair==Blocks.stone_stairs) {
-			return Blocks.cobblestone;
+			block = Blocks.cobblestone;
         }else if(stair==Blocks.oak_stairs) {
-			return Blocks.planks;
+            block = Blocks.planks;
+        }else if(stair==Blocks.spruce_stairs) {
+            block = Blocks.planks;
+            meta = 1;
+        }else if(stair==Blocks.birch_stairs) {
+            block = Blocks.planks;
+            meta = 2;
+        }else if(stair==Blocks.jungle_stairs) {
+            block = Blocks.planks;
+            meta = 3;
+        }else if(stair==Blocks.acacia_stairs) {
+            block = Blocks.planks;
+            meta = 4;
+        }else if(stair==Blocks.dark_oak_stairs) {
+            block = Blocks.planks;
+            meta = 5;
         }else if(stair==Blocks.brick_stairs) {
-			return Blocks.brick_block;
+            block = Blocks.brick_block;
         }else if(stair==Blocks.stone_brick_stairs) {
-			return Blocks.stonebrick;
+            block = Blocks.stonebrick;
         }else if(stair==Blocks.nether_brick_stairs) {
-			return Blocks.nether_brick;
+            block = Blocks.nether_brick;
         }else if(stair==Blocks.sandstone_stairs) {
-			return Blocks.sandstone;
+            block = Blocks.sandstone;
         }else if(stair==Blocks.quartz_stairs) {
-			return Blocks.quartz_block;
+            block = Blocks.quartz_block;
         }
-        return stair;
+        return new BlockAndMeta(block, meta);
 	}
 
 	private static void circleShape(int diam) {
@@ -1369,14 +1388,15 @@ public class Building {
 		int[] xheight = new int[diam];
 		for (int y = 0; y < diam; y++) {
 			int x = 0;
-			for (; shape_density[y][x] > 1.0F; x++) {
+			while (shape_density[y][x] > 1.0F) {
+                x++;
 			}
 			xheight[y] = x;
 		}
 		CIRCLE_SHAPE[diam] = new int[diam][diam];
 		CIRCLE_CRENEL[diam] = new int[diam][diam];
 		SPHERE_SHAPE[diam] = new int[(diam + 1) / 2];
-		int nextHeight = 0, crenel_adj = 0;
+		int nextHeight, crenel_adj = 0;
 		for (int x = 0; x < diam; x++)
 			for (int y = 0; y < diam; y++) {
 				CIRCLE_SHAPE[diam][y][x] = 0;
