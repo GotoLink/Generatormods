@@ -41,7 +41,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread {
 	private int axXHand;
 	private int[] dir = null;
 	private int Lmean, jmean;
-	private int cityType;
+	private final int cityType;
 	private int corner1[], corner2[], mincorner[];
 	public int[][] layout;
 

@@ -18,7 +18,7 @@ import net.minecraft.init.Blocks;
  * BuildingTML generates a building from a .tml template.
  */
 public class BuildingTML extends Building {
-	TemplateTML tmlt;
+	final TemplateTML tmlt;
 
 	//****************************************  CONSTRUCTOR - BuildingTML  *************************************************************************************//
 	public BuildingTML(int ID_, WorldGeneratorThread wgt, int bDir_, int axXHand_, boolean centerAligned_, TemplateTML tmlt_, int[] sourcePt) {

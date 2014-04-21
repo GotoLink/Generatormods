@@ -7,13 +7,13 @@ import net.minecraft.world.World;
 public class WorldGenCARuins extends WorldGeneratorThread {
 	private byte[][] caRule = null;
 	private int[][] caRulesWeightsAndIndex;
-	private int MinHeight, MaxHeight;
-	private float GlobalFrequency, SymmetricSeedDensity;
-	private int ContainerWidth, ContainerLength;
+	private final int MinHeight, MaxHeight;
+	private final float GlobalFrequency, SymmetricSeedDensity;
+	private final int ContainerWidth, ContainerLength;
 	private int[] seedTypeWeights;
 	private final static int[] SEED_TYPE_CODES = new int[] { 0, 1, 2, 3 };
-	private int MinHeightBeforeOscillation;
-	private boolean SmoothWithStairs, MakeFloors;
+	private final int MinHeightBeforeOscillation;
+	private final boolean SmoothWithStairs, MakeFloors;
 	private TemplateRule[] blockRules;
 
 	//****************************************  CONSTRUCTOR - WorldGenCARuins  *************************************************************************************//

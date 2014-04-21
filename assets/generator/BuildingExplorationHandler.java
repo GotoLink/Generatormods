@@ -41,7 +41,6 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.IWorldGenerator;
 import cpw.mods.fml.common.Loader;
 import org.apache.logging.log4j.Level;
-import scala.Int;
 
 public abstract class BuildingExplorationHandler implements IWorldGenerator {
     protected final static String VERSION = "0.1.5";

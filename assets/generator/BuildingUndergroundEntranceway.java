@@ -20,9 +20,9 @@ import net.minecraft.init.Blocks;
  */
 public class BuildingUndergroundEntranceway extends Building {
 	private final static int PASSAGE_HEIGHT = 6, PASSAGE_WIDTH = 4, SUPPORT_INTERVAL = 6;
-	private TemplateWall ws;
+	private final TemplateWall ws;
 	public BuildingWall street;
-	private Block stairsID;
+	private final Block stairsID;
 
 	//****************************************  CONSTRUCTOR - BuildingUndergroundEntraceway  *************************************************************************************//
 	public BuildingUndergroundEntranceway(int ID_, WorldGeneratorThread wgt_, TemplateWall ws_, int dir_, int[] sourcePt) {

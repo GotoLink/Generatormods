@@ -32,11 +32,11 @@ public abstract class WorldGeneratorThread {
 			{ 0, 0, 0, 0, 0, 0 }, //present tower	
 			{ 0, 0, 0, 0, 0, 0 } }; //present template
 	public final static char[] LAYOUT_CODE_TO_CHAR = new char[] { ' ', '#', '=', '-', '@', '&' };
-	public BuildingExplorationHandler master;
-	public World world;
-	public Random random;
-	public int chunkI, chunkK, triesPerChunk;
-	public double chunkTryProb;
+	public final BuildingExplorationHandler master;
+	public final World world;
+	public final Random random;
+	public final int chunkI, chunkK, triesPerChunk;
+	public final double chunkTryProb;
 	private int min_spawn_height = 0, max_spawn_height = 127;
 	public boolean spawn_surface = true;
 	int[] chestTries = null;

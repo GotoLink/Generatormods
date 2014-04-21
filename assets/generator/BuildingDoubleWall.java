@@ -17,7 +17,7 @@ package assets.generator;
  */
 public class BuildingDoubleWall extends Building {
 	public BuildingWall wall1, wall2;
-	public TemplateWall ws;
+	public final TemplateWall ws;
 
 	//****************************  CONSTRUCTOR - BuildingDoubleWall *************************************************************************************//
 	public BuildingDoubleWall(int ID_, WorldGeneratorThread wgt_, TemplateWall ws_, int dir_, int axXHand_, int[] sourcePt) {

@@ -43,7 +43,7 @@ public class TemplateRule {
 		blockIDs = new Block[numblocks];
 		blockMDs = new int[numblocks];
 		String[] data;
-        Block temp = null;
+        Block temp;
 		for (int i = 0; i < numblocks; i++) {
 			data = items[i + 2].trim().split("-", 2);
             try{

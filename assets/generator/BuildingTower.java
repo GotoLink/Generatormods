@@ -579,7 +579,7 @@ public class BuildingTower extends Building {
 			ROOF_STYLE_IDS[m] = m;
 	}
 	public int baseHeight, roofStyle, minHorizDim;
-	public boolean PopulateFurniture, MakeDoors, circular;
+	public final boolean PopulateFurniture, MakeDoors, circular;
 	private BlockAndMeta[][][] buffer;
 	private int[][] circle_shape;
 	private TemplateRule roofRule, SpawnerRule, ChestRule;
@@ -670,7 +670,7 @@ public class BuildingTower extends Building {
 		int x1 = random.nextInt(bWidth - 2) + 1;
 		int y1 = random.nextInt(bLength - 2) + 1;
 		int x2 = x1 + DIR_TO_X[dir], y2 = y1 + DIR_TO_Y[dir];
-		if (isFloor(x1, z, y1) && !isNextToDoorway(x1, z, y1) && isFloor(x2, z, y2) && !isNextToDoorway(x2, z, y2)) {
+		if (isFloor(x1, z, y1) && hasNoDoorway(x1, z, y1) && isFloor(x2, z, y2) && hasNoDoorway(x2, z, y2)) {
 			setBlockLocal(x1, z, y1, Blocks.bed, dir + 8);
 			setBlockLocal(x2, z, y2, Blocks.bed, dir);
 		}
@@ -679,7 +679,7 @@ public class BuildingTower extends Building {
 	private void populateFurnitureColumn(int z, BlockAndMeta[] block) {
 		int x1 = random.nextInt(bWidth - 2) + 1;
 		int y1 = random.nextInt(bLength - 2) + 1;
-		if (isFloor(x1, z, y1) && !isNextToDoorway(x1, z, y1)) {
+		if (isFloor(x1, z, y1) && hasNoDoorway(x1, z, y1)) {
 			for (int z1 = 0; z1 < block.length; z1++)
 				setBlockLocal(x1, z + z1, y1, block[z1]);
 		}

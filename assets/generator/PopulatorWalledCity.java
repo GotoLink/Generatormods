@@ -64,7 +64,6 @@ public class PopulatorWalledCity extends BuildingExplorationHandler {
 	public Map<World, List<int[]>> cityLocations;
 	public Map<Integer, List<VillageDoorInfo>> cityDoors;
 	public LinkedList<int[]> citiesBuiltMessages = new LinkedList<int[]>();
-	private File cityFile;
 	private Map<World, File> cityFiles;
 
 	//****************************  FUNCTION - addCityToVillages*************************************************************************************//
@@ -107,7 +106,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler {
 		} else {
 			for (int index = 0; index < playerList.size(); ++index) {
 				EntityPlayerMP player = (EntityPlayerMP) playerList.get(index);
-				String dirStr = "";
+				String dirStr;
 				int dI = args[0] - (int) player.posX;
 				int dK = args[2] - (int) player.posZ;
 				if (dI * dI + dK * dK < args[4] * args[4]) {
@@ -284,7 +283,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler {
 	@Override
 	public void updateWorldExplored(World world) {
 		super.updateWorldExplored(world);
-		cityFile = new File(getWorldSaveDir(world), world.provider.getDimensionName() + CITY_FILE_SAVE);
+		File cityFile = new File(getWorldSaveDir(world), world.provider.getDimensionName() + CITY_FILE_SAVE);
 		if (cityFiles.isEmpty() || !cityFiles.containsKey(world))
 			cityFiles.put(world, cityFile);
 		try {

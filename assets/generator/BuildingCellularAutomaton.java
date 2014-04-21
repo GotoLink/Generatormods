@@ -40,7 +40,7 @@ public class BuildingCellularAutomaton extends Building {
 	private byte[][][] layers = null;
 	public byte[][] seed = null;
 	private byte[][] caRule = null;
-	private TemplateRule lowLightSpawnerRule, mediumLightNarrowSpawnerRule, mediumLightWideSpawnerRule;
+	private final TemplateRule lowLightSpawnerRule, mediumLightNarrowSpawnerRule, mediumLightWideSpawnerRule;
 	int[][] fBB;
 	int zGround = 0;
 
@@ -546,7 +546,7 @@ public class BuildingCellularAutomaton extends Building {
 		return seed;
 	}
 
-	public final static byte[][] parseCARule(String str, PrintWriter lw) {
+	public static byte[][] parseCARule(String str, PrintWriter lw) {
 		try {
 			byte[][] rule = new byte[][] { { 0, 0, 0, 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0, 0, 0, 0 } };
 			String birthStr = str.split("/")[0].trim();
@@ -567,7 +567,7 @@ public class BuildingCellularAutomaton extends Building {
 		}
 	}
 
-	public final static String ruleToString(byte[][] rule) {
+	public static String ruleToString(byte[][] rule) {
 		StringBuilder sb = new StringBuilder(30);
 		sb.append("B");
 		for (int n = 0; n < 9; n++)

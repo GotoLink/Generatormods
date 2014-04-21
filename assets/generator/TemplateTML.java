@@ -35,7 +35,7 @@ public class TemplateTML {
 	public TemplateRule[] rules = null;
 	public int[][][] template = null;
 	public boolean[][] templateLayout = null;
-	public boolean buildOverStreets = false;;
+	public boolean buildOverStreets = false;
 	public HashMap<String, int[][]> namedLayers = null;
 	public HashMap<String, String> extraOptions = null;
 	public BuildingExplorationHandler explorationHandler = null;
@@ -51,7 +51,7 @@ public class TemplateTML {
 	public TemplateTML(File file, BuildingExplorationHandler beh) throws Exception {
 		// load in the given file as a template
 		explorationHandler = beh;
-		BufferedReader br = null;
+		BufferedReader br;
 		name = file.getName();
 		lw = beh.lw;
 		ArrayList<String> lines = new ArrayList<String>();
