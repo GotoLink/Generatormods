@@ -1,9 +1,7 @@
 package assets.generator;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockLog;
 import net.minecraft.init.Blocks;
-import net.minecraftforge.common.IShearable;
 
 /*
  *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
@@ -48,7 +46,7 @@ public class BuildingWall extends Building {
 	public FailType failCode = FailType.NOTHING;
 	public TemplateTML endBTemplate = null; //either a template or DEFAULT_TOWER
 	public int endBLength = 0; //length of end tower
-	private int halfStairValue = 2; //metavalue of half step based on bRule
+	private BlockAndMeta halfStairValue = new BlockAndMeta(Blocks.stone_slab, 2); // half step based on bRule
 	public int roofStyle;
 	public TemplateRule towerRule, roofRule;
 	public final int Backtrack;
@@ -167,7 +165,7 @@ public class BuildingWall extends Building {
 										&& (wallBlockPresent || isFloor(bWidth, WalkHeight - 1, 0) || isWallBlock(bWidth, WalkHeight - 2, 0)))) {
 							continue;
 						}
-						if (idAndMeta.get() == Blocks.air && z1 < bHeight)
+						if (idAndMeta.get() == Blocks.air && idAndMeta.getMeta() == 0 && z1 < bHeight)
 							setBlockWithLightingLocal(x1, z1, 0, Blocks.air, 0, true); //force lighting update for holes
 						else
 							setBlockLocal(x1, z1, 0, idAndMeta); //straightforward build from template
@@ -680,7 +678,7 @@ public class BuildingWall extends Building {
 		for (int x1 = 0; x1 < bWidth; x1++)
 			for (int z1 = bHeight + OVERHEAD_CLEARENCE; z1 < bHeight + OVERHEAD_TREE_CLEARENCE; z1++) {
 				Block block = getBlockIdLocal(x1, z1, 0);
-                if (block instanceof BlockLog || block instanceof IShearable || block == Blocks.snow)
+                if (BlockProperties.get(block).isTree)
                     setBlockLocal(x1, z1, 0, Blocks.air); //kill trees aggressively
 			}
 	}
@@ -695,7 +693,7 @@ public class BuildingWall extends Building {
 		xArray = new int[maxLength];
 		zArray = new int[maxLength];
 		bLength = 0;
-		halfStairValue = blockToStepMeta(bRule.primaryBlock).getMeta();
+		halfStairValue = blockToStepMeta(bRule.primaryBlock);
 	}
 
 	//****************************************  FUNCTION - makeBuildings *************************************************************************************//
@@ -743,16 +741,16 @@ public class BuildingWall extends Building {
 	private void mergeWallLayer() {
 		//if side is a floor one below, add a step down
 		if (isFloor(-1, WalkHeight - 1, 0))
-			setBlockLocal(-1, WalkHeight - 1, 0, Blocks.stone_slab, halfStairValue);
+			setBlockLocal(-1, WalkHeight - 1, 0, halfStairValue.get(), halfStairValue.getMeta());
 		if (isFloor(bWidth, WalkHeight - 1, 0))
-			setBlockLocal(bWidth, WalkHeight - 1, 0, Blocks.stone_slab, halfStairValue);
+			setBlockLocal(bWidth, WalkHeight - 1, 0, halfStairValue.get(), halfStairValue.getMeta());
 		//      x
 		// if  xxo are floors one above, add a step up
 		//      x
 		if (isFloor(-1, WalkHeight + 1, 0) && isFloor(-2, WalkHeight + 2, 0) && isFloor(-2, WalkHeight + 2, 1) && isFloor(-2, WalkHeight + 2, -1))
-			setBlockLocal(0, WalkHeight, 0, Blocks.stone_slab, halfStairValue);
+			setBlockLocal(0, WalkHeight, 0, halfStairValue.get(), halfStairValue.getMeta());
 		if (isFloor(bWidth, WalkHeight + 1, 0) && isFloor(bWidth + 1, WalkHeight + 2, 0) && isFloor(bWidth + 1, WalkHeight + 2, 1) && isFloor(bWidth + 1, WalkHeight + 2, -1))
-			setBlockLocal(bWidth - 1, WalkHeight, 0, Blocks.stone_slab, halfStairValue);
+			setBlockLocal(bWidth - 1, WalkHeight, 0, halfStairValue.get(), halfStairValue.getMeta());
 		//clean up stairs descending into this wall
 		int[] pt = getIJKPt(-1, WalkHeight - 1, 0);
 		Block id = world.getBlock(pt[0], pt[1], pt[2]);

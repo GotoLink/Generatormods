@@ -23,7 +23,7 @@ public class BlockProperties {
     /**
      * All the studied block properties
      */
-    public final boolean isWater,isStair,isDoor,isFlowing,isWallable,isOre,isArtificial,isLight,isLoaded,isDelayed;
+    public final boolean isWater,isStair,isDoor,isTree,isFlowing,isWallable,isOre,isGround,isArtificial,isLight,isLoaded,isDelayed;
 
     /**
      * Build the properties for the given block and store them into the internal map
@@ -35,15 +35,16 @@ public class BlockProperties {
         isWater = block.getMaterial() == Material.water || block == Blocks.ice;
         isStair = block instanceof BlockStairs;
         isDoor = block instanceof BlockDoor;
-        isFlowing = isWater ||  block.getMaterial() == Material.lava || block instanceof BlockDynamicLiquid || block instanceof BlockSand
-                || block instanceof BlockGravel;
-        isWallable = isWater || block instanceof BlockAir || block instanceof BlockLog || block instanceof BlockWeb || block instanceof BlockSnow || block instanceof BlockPumpkin
-                || block instanceof BlockMelon || block instanceof IShearable || block instanceof BlockHugeMushroom || block instanceof IPlantable;
+        isTree = block instanceof BlockLog || block instanceof IShearable || block instanceof BlockSnow;
+        isFlowing = isWater ||  block.getMaterial() == Material.lava || block instanceof BlockDynamicLiquid || block instanceof BlockFalling;
+        isWallable = isWater || block instanceof BlockAir || isTree || block instanceof BlockWeb || block instanceof BlockPumpkin
+                || block instanceof BlockMelon || block instanceof BlockHugeMushroom || block instanceof IPlantable;
         isOre = block == Blocks.clay || block instanceof BlockRedstoneOre || block instanceof BlockOre;
+        isGround = block == Blocks.stone || block instanceof BlockDirt || block instanceof BlockGrass
+                || block instanceof BlockGravel || block instanceof BlockSand || block instanceof BlockNetherrack || block instanceof BlockSoulSand || block instanceof BlockMycelium;
         // Define by what it is not. Not IS_WALLABLE and not a naturally
         // occurring solid block (obsidian/bedrock are exceptions)
-        isArtificial = !(isWallable || isOre || block == Blocks.stone || block instanceof BlockDirt || block instanceof BlockGrass
-                || block instanceof BlockGravel || block instanceof BlockSand || block instanceof BlockNetherrack || block instanceof BlockSoulSand || block instanceof BlockMycelium);
+        isArtificial = !(isWallable || isOre || isGround);
         isLight = block instanceof BlockTorch || block instanceof BlockGlowstone;
         isDelayed = isStair || isFlowing || isLight || block == Blocks.air || block instanceof BlockLever || block instanceof BlockSign
                 || block instanceof BlockFire || block instanceof BlockButton || block instanceof BlockVine || block instanceof BlockRedstoneWire || block instanceof BlockDispenser
