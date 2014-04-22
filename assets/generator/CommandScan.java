@@ -25,6 +25,7 @@ import java.util.*;
  * Scan command for players to get templates from structures built in game in the specified location
  */
 public class CommandScan extends CommandBase{
+    public final String[] modes = {"wall", "building"};
     @Override
     public boolean canCommandSenderUseCommand(ICommandSender commandSender){
         return commandSender instanceof EntityPlayer;
@@ -43,27 +44,18 @@ public class CommandScan extends CommandBase{
     @Override
     public void processCommand(ICommandSender var1, String[] command) {
         if(command.length == 5){
-            int minX = parseInt(var1, command[2].split(",")[0]);
-            int maxX = parseInt(var1, command[2].split(",")[1]);
-            if(minX>maxX){
-                int temp = maxX;
-                maxX = minX;
-                minX = temp;
-            }
-            int minY = parseInt(var1, command[3].split(",")[0]);
-            int maxY = parseInt(var1, command[3].split(",")[1]);
-            if(minY>maxY){
-                int temp = maxY;
-                maxY = minY;
-                minY = temp;
-            }
-            int minZ = parseInt(var1, command[4].split(",")[0]);
-            int maxZ = parseInt(var1, command[4].split(",")[1]);
-            if(minZ>maxZ){
-                int temp = maxZ;
-                maxZ = minZ;
-                minZ = temp;
-            }
+            int a = parseInt(var1, command[2].split(",")[0]);
+            int b = parseInt(var1, command[2].split(",")[1]);
+            int maxX = Math.max(a,b);
+            int minX = Math.min(a,b);
+            a = parseInt(var1, command[3].split(",")[0]);
+            b = parseInt(var1, command[3].split(",")[1]);
+            int maxY = Math.max(a,b);
+            int minY = Math.min(a,b);
+            a = parseInt(var1, command[4].split(",")[0]);
+            b = parseInt(var1, command[4].split(",")[1]);
+            int maxZ = Math.max(a,b);
+            int minZ = Math.min(a,b);
             File template = new File(BuildingExplorationHandler.CONFIG_DIRECTORY, command[1]+".tml");
             try{
             if(template.createNewFile()){
@@ -72,22 +64,23 @@ public class CommandScan extends CommandBase{
                 HashMap<Integer, List<Integer>> layers = new HashMap<Integer, List<Integer>>();
                 List<String> rules = new ArrayList<String>();
                 HashSet<String> biomes = new HashSet<String>();
-                if(command[0].equals("building")) {
+                if(command[0].equals(modes[1])) {
                     for (int y = minY; y <= maxY; y++) {
                         layers.put(y - minY, new ArrayList<Integer>());
-                        for (int z = minZ; z <= maxZ; z++) {
-                            for (int x = minX; x <= maxX; x++) {
+                        for (int x = minX; x <= maxX; x++) {
+                            for (int z = minZ; z <= maxZ; z++) {
                                 BlockAndMeta blc = new BlockAndMeta(var1.getEntityWorld().getBlock(x, y, z), var1.getEntityWorld().getBlockMetadata(x, y, z));
                                 if (!blocks.contains(blc)) {
                                     rules.add("rule" + blocks.size() + "=0,100," + GameData.blockRegistry.getNameForObject(blc.get()) + "-" + blc.getMeta());
                                     blocks.add(blc);
                                 }
                                 layers.get(y - minY).add(blocks.indexOf(blc));
-                                biomes.add(var1.getEntityWorld().getBiomeGenForCoords(x, z).biomeName);
+                                if(y==minY)
+                                    biomes.add(var1.getEntityWorld().getBiomeGenForCoords(x, z).biomeName);
                             }
                         }
                     }
-                }else if(command[0].equals("wall")){
+                }else if(command[0].equals(modes[0])){
                     for (int x = minX; x <= maxX; x++) {
                         layers.put(x - minX, new ArrayList<Integer>());
                         for (int z = minZ; z <= maxZ; z++) {
@@ -98,7 +91,8 @@ public class CommandScan extends CommandBase{
                                     blocks.add(blc);
                                 }
                                 layers.get(x - minX).add(blocks.indexOf(blc));
-                                biomes.add(var1.getEntityWorld().getBiomeGenForCoords(x, z).biomeName);
+                                if(y==minY)
+                                    biomes.add(var1.getEntityWorld().getBiomeGenForCoords(x, z).biomeName);
                             }
                         }
                     }
@@ -106,11 +100,20 @@ public class CommandScan extends CommandBase{
                     throw new WrongUsageException(getCommandUsage(var1));
                 }
                 PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(template)));
+                writer.println("# Author: "+var1.getCommandSenderName());
+                writer.println("# Generated by in-game template scanner");
                 writer.println("weight=1");
                 writer.println("embed_into_distance=4");
                 writer.println("max_leveling=2");
-                int SIZE_0 = command[0].equals("wall")?maxX-minX+1:command[0].equals("building")?maxY-minY+1:0;
-                int SIZE_1 = command[0].equals("wall")?maxY-minY+1:command[0].equals("building")?maxX-minX+1:0;
+                int SIZE_0 = 0;
+                int SIZE_1 = 0;
+                if(command[0].equals(modes[0])) {
+                    SIZE_0 = maxX - minX + 1;
+                    SIZE_1 = maxY - minY + 1;
+                }else if(command[0].equals(modes[1])){
+                    SIZE_0 = maxY - minY + 1;
+                    SIZE_1 = maxX - minX + 1;
+                }
                 int SIZE_2 = maxZ-minZ+1;
                 writer.println("dimensions="+SIZE_0+","+SIZE_1+","+SIZE_2);
                 StringBuffer buf = new StringBuffer("biomes=");
@@ -119,7 +122,7 @@ public class CommandScan extends CommandBase{
                 }
                 buf.deleteCharAt(buf.length()-1);
                 writer.println(buf.toString());
-                if(command[0].equals("wall")){
+                if(command[0].equals(modes[0])){
                     writer.println("building_templates=NONE");
                     writer.println("min_length=100");
                     writer.println("building_interval=45");
@@ -171,7 +174,7 @@ public class CommandScan extends CommandBase{
 
     @Override
     public List addTabCompletionOptions(ICommandSender var1, String[] var2) {
-        return var2.length == 0 ? getListOfStringsMatchingLastWord(var2, "wall", "building") : var2.length == 1 ? getListOfStringsMatchingLastWord(var2, "TemplateDefault") : null;
+        return var2.length == 1 ? getListOfStringsMatchingLastWord(var2, modes) : var2.length == 2 ? getListOfStringsMatchingLastWord(var2, "TemplateDefault") : null;
     }
 
     @Override
