@@ -166,9 +166,9 @@ public class BuildingTower extends Building {
 		//*** prettify any stairs outside entrance/exit ***
 		for (int x1 = 1; x1 < bWidth - 1; x1++) {
 			if (isStairBlock(x1, baseHeight, -1) && getBlockIdLocal(x1, baseHeight, -2) == bRule.primaryBlock.get())
-				setBlockLocal(x1, baseHeight, -1, bRule.primaryBlock.get());
+				setBlockLocal(x1, baseHeight, -1, bRule.primaryBlock);
 			if (isStairBlock(x1, baseHeight, bLength) && getBlockIdLocal(x1, baseHeight, bLength + 1) == bRule.primaryBlock.get())
-				setBlockLocal(x1, baseHeight, bLength, bRule.primaryBlock.get());
+				setBlockLocal(x1, baseHeight, bLength, bRule.primaryBlock);
 		}
 		//furniture
 		if (PopulateFurniture) {
