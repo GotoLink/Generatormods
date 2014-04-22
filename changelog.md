@@ -6,7 +6,8 @@
 * Added read-me file in templates download
 * Allowed block names in template rules
 * Added template scanner (/scantml)
-* Fixed rotations for GreatWalls and CAruins (some city buildings still need fixing)
+* Fixed rotations for GreatWalls and CAruins
+* Templates fixes by Igfig (MinecraftForums)
 
 == CARuins, GreatWall and WalledCity Generator 0.1.4 ==
 * Fixed MCPC+ crash (re add awesome lags)

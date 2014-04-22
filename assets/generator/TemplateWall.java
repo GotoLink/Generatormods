@@ -85,7 +85,7 @@ public class TemplateWall extends TemplateTML {
 
 	//****************************************  FUNCTION - loadTowerParameters *************************************************************************************//
 	public void readTowerParameters() throws Exception {
-		float mobProb = 0.0F, pigZombieProb = 0.0F, endermanProb = 0.0F, caveSpiderProb = 0.0F; //deprecated, for backwards compatability
+		float mobProb = 0.0F, pigZombieProb = 0.0F, endermanProb = 0.0F, caveSpiderProb = 0.0F; //deprecated, for backwards compatibility
 		if (extraOptions.containsKey("biomes"))
 			Biomes = BuildingExplorationHandler.readNamedCheckList(lw, Biomes, "=", extraOptions.get("biomes"), BuildingExplorationHandler.BIOME_NAMES, "ALL");
 		if (extraOptions.containsKey("street_density"))
