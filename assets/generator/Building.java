@@ -430,15 +430,19 @@ public class Building {
 	protected void setDelayed(Block blc, int...block) {
 		// if stairs are running into ground. replace them with a solid block
 		if (BlockProperties.get(blc).isStair) {
-			Block adjId = world.getBlock(block[0] - DIR_TO_I[STAIRS_META_TO_DIR[block[3] % 4]], block[1], block[2] - DIR_TO_K[STAIRS_META_TO_DIR[block[3] % 4]]);
-			Block aboveID = world.getBlock(block[0], block[1] + 1, block[2]);
-			if (BlockProperties.get(adjId).isArtificial || BlockProperties.get(aboveID).isArtificial) {
-                BlockAndMeta temp = stairToSolidBlock(blc);
-				blc = temp.get();
-				block[3] = temp.getMeta();
-			} else if (!BlockProperties.get(adjId).isWallable || !BlockProperties.get(aboveID).isWallable || BlockProperties.get(adjId).isWater || BlockProperties.get(aboveID).isWater) {
-				return; // solid or liquid non-wall block. In this case, just don't build the stair (aka preserve block).
-			}
+            int dirX = block[0] - DIR_TO_I[STAIRS_META_TO_DIR[block[3] % 4]];
+            int dirZ = block[2] - DIR_TO_K[STAIRS_META_TO_DIR[block[3] % 4]];
+            if(world.getHeightValue(dirX, dirZ)>block[1]) {
+                Block adjId = world.getBlock(dirX, block[1], dirZ);
+                Block aboveID = world.getBlock(block[0], block[1] + 1, block[2]);
+                if (BlockProperties.get(aboveID).isGround && BlockProperties.get(adjId).isGround) {
+                    BlockAndMeta temp = stairToSolidBlock(blc);
+                    blc = temp.get();
+                    block[3] = temp.getMeta();
+                } else if (!BlockProperties.get(adjId).isWallable || !BlockProperties.get(aboveID).isWallable) {
+                    return; // solid or liquid non-wall block. In this case, just don't build the stair (aka preserve block).
+                }
+            }
 		} else if (blc instanceof BlockVine) {
 			if (block[3] == 0 && !isSolidBlock(world.getBlock(block[0], block[1] + 1, block[2])))
 				block[3] = 1;
@@ -525,8 +529,7 @@ public class Building {
 		setBlockLocal(x, z, y, rule.getBlock(random));
 	}
 
-	// allows control of lighting. Also will build even if replacing air with
-	// air.
+	// allows control of lighting. Also will build even if replacing air with air.
 	protected final void setBlockWithLightingLocal(int x, int z, int y, Block blockID, int metadata, boolean lighting) {
 		if (isSpecialBlock(blockID, metadata)) {
 			setSpecialBlockLocal(x, z, y, blockID, metadata);
