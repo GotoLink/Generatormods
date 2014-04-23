@@ -93,4 +93,9 @@ public class BuildingUndergroundEntranceway extends Building {
 		street.plan(1, 0, BuildingWall.DEFAULT_LOOKAHEAD, true);
 		return true;
 	}
+
+    @Override
+    protected BlockAndMeta getDelayedStair(Block blc, int...block){
+        return new BlockAndMeta(blc, block[3]);
+    }
 }

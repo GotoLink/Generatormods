@@ -1,5 +1,6 @@
 package assets.generator;
 
+import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 
 /*
@@ -104,4 +105,9 @@ public class BuildingTML extends Building {
 		}
 		return true;
 	}
+
+    @Override
+    protected BlockAndMeta getDelayedStair(Block blc, int...block){
+        return new BlockAndMeta(blc, block[3]);
+    }
 }

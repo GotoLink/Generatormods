@@ -133,4 +133,9 @@ public class BuildingSpiralStaircase extends Building {
 			return 1;
 		return 2 * (-height / 2 % 2);
 	}
+
+    @Override
+    protected BlockAndMeta getDelayedStair(Block blc, int...block){
+        return new BlockAndMeta(blc, block[3]);
+    }
 }

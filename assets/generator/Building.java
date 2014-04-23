@@ -428,21 +428,10 @@ public class Building {
     }
 
 	protected void setDelayed(Block blc, int...block) {
-		// if stairs are running into ground. replace them with a solid block
 		if (BlockProperties.get(blc).isStair) {
-            int dirX = block[0] - DIR_TO_I[STAIRS_META_TO_DIR[block[3] % 4]];
-            int dirZ = block[2] - DIR_TO_K[STAIRS_META_TO_DIR[block[3] % 4]];
-            if(world.getHeightValue(dirX, dirZ)>block[1]) {
-                Block adjId = world.getBlock(dirX, block[1], dirZ);
-                Block aboveID = world.getBlock(block[0], block[1] + 1, block[2]);
-                if (BlockProperties.get(aboveID).isGround && BlockProperties.get(adjId).isGround) {
-                    BlockAndMeta temp = stairToSolidBlock(blc);
-                    blc = temp.get();
-                    block[3] = temp.getMeta();
-                } else if (!BlockProperties.get(adjId).isWallable || !BlockProperties.get(aboveID).isWallable) {
-                    return; // solid or liquid non-wall block. In this case, just don't build the stair (aka preserve block).
-                }
-            }
+            BlockAndMeta temp = getDelayedStair(blc, block);
+            blc = temp.get();
+            block[3] = temp.getMeta();
 		} else if (blc instanceof BlockVine) {
 			if (block[3] == 0 && !isSolidBlock(world.getBlock(block[0], block[1] + 1, block[2])))
 				block[3] = 1;
@@ -475,11 +464,29 @@ public class Building {
 				world.setBlock(block[0], block[1], block[2], blc, block[3], 3);// force lighting update
 		} else if (blc == Blocks.glowstone)
 			world.setBlock(block[0], block[1], block[2], blc, block[3], 3);// force lighting update
-		else if (randLightingHash[(block[0] & 0x7) | (block[1] & 0x38) | (block[2] & 0x1c0)])
-			world.setBlock(block[0], block[1], block[2], blc, block[3], 3);
-		else
-			setBlockAndMetaNoLighting(world, block[0], block[1], block[2], blc, block[3]);
+		else if(blc!=null) {
+            if((randLightingHash[(block[0] & 0x7) | (block[1] & 0x38) | (block[2] & 0x1c0)]))
+                world.setBlock(block[0], block[1], block[2], blc, block[3], 3);
+            else
+                setBlockAndMetaNoLighting(world, block[0], block[1], block[2], blc, block[3]);
+        }
 	}
+
+    protected BlockAndMeta getDelayedStair(Block blc, int...block){
+        // if stairs are running into ground. replace them with a solid block
+        int dirX = block[0] - DIR_TO_I[STAIRS_META_TO_DIR[block[3] % 4]];
+        int dirZ = block[2] - DIR_TO_K[STAIRS_META_TO_DIR[block[3] % 4]];
+        if(world.getHeightValue(dirX, dirZ)>block[1]) {
+            Block adjId = world.getBlock(dirX, block[1], dirZ);
+            Block aboveID = world.getBlock(block[0], block[1] + 1, block[2]);
+            if (BlockProperties.get(aboveID).isGround && BlockProperties.get(adjId).isGround) {
+                return stairToSolidBlock(blc);
+            } else if (!BlockProperties.get(adjId).isWallable || !BlockProperties.get(aboveID).isWallable) {
+                return new BlockAndMeta(null, 0); // solid or liquid non-wall block. In this case, just don't build the stair (aka preserve block).
+            }
+        }
+        return new BlockAndMeta(blc, block[3]);
+    }
 
 	// The origin of this building was placed to match a centerline.
 	// The building previously had bWidth=oldWidth, now it has the current
