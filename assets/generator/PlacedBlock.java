@@ -1,6 +1,7 @@
 package assets.generator;
 
 import net.minecraft.block.Block;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class PlacedBlock extends BlockAndMeta{
     public final int x, y, z;
@@ -25,5 +26,10 @@ public class PlacedBlock extends BlockAndMeta{
             return this.x == ((PlacedBlock) obj).x && this.y == ((PlacedBlock) obj).y && this.z == ((PlacedBlock) obj).z;
         }
         return false;
+    }
+
+    @Override
+    public int hashCode(){
+        return new HashCodeBuilder().append(getMeta()).append(get()).append(x).append(y).append(z).toHashCode();
     }
 }

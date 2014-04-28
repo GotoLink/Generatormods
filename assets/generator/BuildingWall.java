@@ -143,20 +143,20 @@ public class BuildingWall extends Building {
 						continue;
 					} else
 						keepWallFromAbove = false;
-					if (idAndMeta.get() == Blocks.air && idAndMeta.getMeta()<0) {
+					if (idAndMeta.get() == Blocks.air && idAndMeta instanceof BlockExtended && ((BlockExtended) idAndMeta).info.equals(TemplateRule.SPECIAL_STAIR)) {
 						if (!wallBlockPresent && !BlockProperties.get(getBlockIdLocal(x1, z1, 0)).isWater) {
 							if (n0 > 0 && zArray[n0 - 1] > zArray[n0]) { //stairs, going down
 								if ((n0 == 1 || zArray[n0 - 2] == zArray[n0 - 1]) && (n0 == bLength - 1 || zArray[n0] == zArray[n0 + 1]))
-									setBlockLocal(x1, z1, 0, Blocks.stone_slab, -idAndMeta.getMeta());
+									setSpecialBlockLocal(x1, z1, 0, idAndMeta.get(), idAndMeta.getMeta(), ((BlockExtended) idAndMeta).info);
 								else
 									setBlockLocal(x1, z1, 0, STEP_TO_STAIRS[-idAndMeta.getMeta() > 7 ? -idAndMeta.getMeta() - 8 : -idAndMeta.getMeta()], 2);
 							} else if (n0 < bLength - 1 && zArray[n0] < zArray[n0 + 1]) { //stairs, going up
 								if ((n0 == 0 || zArray[n0 - 1] == zArray[n0]) && (n0 == bLength - 2 || zArray[n0 + 1] == zArray[n0 + 2]))
-									setBlockLocal(x1, z1, 0, Blocks.stone_slab, -idAndMeta.getMeta());
+									setSpecialBlockLocal(x1, z1, 0, idAndMeta.get(), idAndMeta.getMeta(), ((BlockExtended) idAndMeta).info);
 								else
 									setBlockLocal(x1, z1, 0, STEP_TO_STAIRS[-idAndMeta.getMeta() > 7 ? -idAndMeta.getMeta() - 8 : -idAndMeta.getMeta()], 3);
 							} else
-								setBlockLocal(x1, z1, 0, Blocks.air);
+								setBlockLocal(x1, z1, 0, idAndMeta.get());
 						}
 					} else { //not a stair
 						// if merging walls, don't clutter with crenelations etc.
@@ -166,7 +166,7 @@ public class BuildingWall extends Building {
 							continue;
 						}
 						if (idAndMeta.get() == Blocks.air && idAndMeta.getMeta() == 0 && z1 < bHeight)
-							setBlockWithLightingLocal(x1, z1, 0, Blocks.air, 0, true); //force lighting update for holes
+                            removeBlockWithLighting(x1, z1, 0); //force lighting update for holes
 						else
 							setBlockLocal(x1, z1, 0, idAndMeta); //straightforward build from template
 					}

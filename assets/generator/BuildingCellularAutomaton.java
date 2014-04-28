@@ -32,11 +32,11 @@ public class BuildingCellularAutomaton extends Building {
 	private final static int HOLE_FLOOR_BUFFER = 2, UNREACHED = -1;
 	private final static int SYMMETRIC_SEED_MIN_WIDTH = 4, CIRCULAR_SEED_MIN_WIDTH = 4;
 	public final static TemplateRule DEFAULT_MEDIUM_LIGHT_NARROW_SPAWNER_RULE = new TemplateRule(new Block[]{Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner},
-            new int[] { BLAZE_SPAWNER_ID, BLAZE_SPAWNER_ID, BLAZE_SPAWNER_ID, SILVERFISH_SPAWNER_ID, SILVERFISH_SPAWNER_ID, LAVA_SLIME_SPAWNER_ID }, 100);
+            new int[]{0, 0, 0, 0, 0, 0}, new String[] { "Blaze", "Blaze", "Blaze", "Silverfish", "Silverfish", "LavaSlime" }, 100);
     public final static TemplateRule DEFAULT_MEDIUM_LIGHT_WIDE_SPAWNER_RULE = new TemplateRule(new Block[]{Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner},
-            new int[] { BLAZE_SPAWNER_ID, SILVERFISH_SPAWNER_ID, SILVERFISH_SPAWNER_ID, CAVE_SPIDER_SPAWNER_ID, CAVE_SPIDER_SPAWNER_ID, SPIDER_SPAWNER_ID }, 100);
+            new int[]{0, 0, 0, 0, 0, 0}, new String[] { "Blaze", "Silverfish", "Silverfish", "CaveSpider", "CaveSpider", "Spider" }, 100);
     public final static TemplateRule DEFAULT_LOW_LIGHT_SPAWNER_RULE = new TemplateRule(new Block[]{Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner},
-            new int[] { UPRIGHT_SPAWNER_ID, UPRIGHT_SPAWNER_ID, SILVERFISH_SPAWNER_ID, LAVA_SLIME_SPAWNER_ID, CAVE_SPIDER_SPAWNER_ID }, 100);
+            new int[]{0, 0, 0, 0, 0}, new String[] { "UPRIGHT", "UPRIGHT", "Silverfish", "LavaSlime", "CaveSpider" }, 100);
 	private byte[][][] layers = null;
 	public byte[][] seed = null;
 	private byte[][] caRule = null;
@@ -374,10 +374,10 @@ public class BuildingCellularAutomaton extends Building {
 		}
 		if (!BlockProperties.get(getBlockIdLocal(x, z - 1, y)).isArtificial) { //raise to floor
             BlockAndMeta idAndMeta = bRule.getNonAirBlock(world.rand);
-			setBlockWithLightingLocal(x, z - 1, y, idAndMeta.get(), idAndMeta.getMeta(), true);
+			setBlockWithLightingLocal(x, z - 1, y, idAndMeta, true);
 		}
-		setBlockWithLightingLocal(x, z, y, Blocks.air, 0, true);
-		setBlockWithLightingLocal(x, z + 1, y, Blocks.air, 0, true);
+        removeBlockWithLighting(x, z, y);
+        removeBlockWithLighting(x, z + 1, y);
 		layout[x][y] = true;
 	}
 
@@ -393,7 +393,7 @@ public class BuildingCellularAutomaton extends Building {
 			makeFloorAt(x, z, y + 1, layout);
 	}
 
-	private int pickCAChestType(int z) {
+	private String pickCAChestType(int z) {
 		if (Math.abs(zGround - z) > random.nextInt(1 + z > zGround ? (bHeight - zGround) : zGround) && (z > zGround ? (bHeight - zGround) : zGround) > 20)
 			return random.nextBoolean() ? MEDIUM_CHEST : HARD_CHEST;
 		else
@@ -429,7 +429,7 @@ public class BuildingCellularAutomaton extends Building {
 			for (int tries = 0; tries < 8; tries++) {
 				int x = random.nextInt(fWidth) + fBB[0][z], y = random.nextInt(fLength) + fBB[2][z];
 				if (isFloor(x, z, y)) {
-					setBlockLocal(x, z - 1, y, Blocks.chest, pickCAChestType(z));
+					setBlockLocal(x, z - 1, y, new BlockExtended(Blocks.chest, 0, pickCAChestType(z)));
 					setBlockLocal(x, z - 2, y, bRule);
 					if (random.nextBoolean()) {
 						break; //chance of > 1 chest. Expected # of chests is one.

@@ -19,16 +19,21 @@ import java.util.Random;
 
 import cpw.mods.fml.common.registry.GameData;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockAir;
+import net.minecraft.block.BlockChest;
+import net.minecraft.block.BlockMobSpawner;
 import net.minecraft.init.Blocks;
 
 public class TemplateRule {
 	public final static int FIXED_FOR_BUILDING = 5;
 	public final static TemplateRule RULE_NOT_PROVIDED = null;
 	public final static String BLOCK_NOT_REGISTERED_ERROR_PREFIX = "Error reading rule: BlockID "; //so we can treat this error differently
-	public final static TemplateRule AIR_RULE = new TemplateRule(Blocks.air, 0);
-	public final static TemplateRule STONE_RULE = new TemplateRule(Blocks.stone, 0);
+	public final static String SPECIAL_AIR = "PRESERVE", SPECIAL_STAIR = "WALL_STAIR", SPECIAL_PAINT = "PAINTING";
+    public final static TemplateRule AIR_RULE = new TemplateRule(Blocks.air, 0, "");
+	public final static TemplateRule STONE_RULE = new TemplateRule(Blocks.stone, 0, "");
 	private Block[] blockIDs;
     private int[] blockMDs;
+    private String[] extraData;
 	public int chance = 100, condition = 0;
 	public BlockAndMeta primaryBlock = null;
 	private BlockAndMeta fixedRuleChosen = null;
@@ -42,25 +47,56 @@ public class TemplateRule {
 		chance = Integer.parseInt(items[1].trim());
 		blockIDs = new Block[numblocks];
 		blockMDs = new int[numblocks];
+        extraData = new String[numblocks];
 		String[] data;
         Block temp;
 		for (int i = 0; i < numblocks; i++) {
 			data = items[i + 2].trim().split("-", 2);
-            try{
-                temp = GameData.blockRegistry.get(Integer.parseInt(data[0]));
-            }catch (Exception e){
-                temp = GameData.blockRegistry.get(data[0]);
-            }
-            if(temp!=null){
-                blockIDs[i] = temp;
-                blockMDs[i] = data.length > 1 ? Integer.parseInt(data[1]) : 0;
-            }else if(data[0].equalsIgnoreCase("PRESERVE")){//Preserve block rule
+            if(data[0].equals(SPECIAL_AIR)){//Preserve block rule
                 blockIDs[i] = Building.PRESERVE_BLOCK.get();
                 blockMDs[i] = Building.PRESERVE_BLOCK.getMeta();
-            }else{
-                throw new Exception(BLOCK_NOT_REGISTERED_ERROR_PREFIX + data[0] + " unknown!");
+                extraData[i] = data[0];
+            }else if(data[0].equals(SPECIAL_STAIR)||data[0].equals(SPECIAL_PAINT)){//Walls stairs or paintings block rule
+                blockIDs[i] = Blocks.air;
+                int x = 0;
+                if (data.length > 1) {
+                    try {
+                        x = Integer.parseInt(data[1]);
+                    } catch (Exception e) {
+                    }
+                }
+                if(data[0].startsWith("W")){
+                    blockMDs[i] = -x;
+                }else{
+                    blockMDs[i] = Building.PAINTING_BLOCK_OFFSET + x;
+                }
+                extraData[i] = data[0];
+            }else {
+                try {
+                    temp = GameData.blockRegistry.getObjectById(Integer.parseInt(data[0]));
+                } catch (Exception e) {
+                    temp = GameData.blockRegistry.getObject(data[0]);
+                }
+                if (temp != null) {
+                    blockIDs[i] = temp;
+                    if (data.length > 1) {
+                        String[] txt = data[1].split("-", 2);
+                        try {
+                            blockMDs[i] = Integer.parseInt(txt[0]);
+                        } catch (Exception e) {
+                            blockMDs[i] = 0;
+                        }
+                        if (txt.length > 1 && isSpecial(temp)) {
+                            extraData[i] = txt[1];
+                        }
+                    } else {
+                        blockMDs[i] = 0;
+                    }
+                } else {
+                    throw new Exception(BLOCK_NOT_REGISTERED_ERROR_PREFIX + data[0] + " unknown!");
+                }
             }
-			if (checkMetaValue && blockIDs[i]!=Building.PRESERVE_BLOCK.get()) {
+			if (checkMetaValue && !(blockIDs[i] instanceof BlockAir)) {
 				String checkStr = Building.metaValueCheck(blockIDs[i], blockMDs[i]);
 				if (checkStr != null)
 					throw new Exception("Error reading rule: " + rule + "\nBad meta value " + blockMDs[i] + ". " + checkStr);
@@ -69,30 +105,38 @@ public class TemplateRule {
 		primaryBlock = getPrimaryBlock();
 	}
 
-	public TemplateRule(int block, int meta) {
-		blockIDs = new Block[] { GameData.blockRegistry.get(block) };
-		blockMDs = new int[] { meta };
-		primaryBlock = getPrimaryBlock();
-	}
-
-    public TemplateRule(Block block, int meta) {
+    public TemplateRule(Block block, int meta, String extra) {
         blockIDs = new Block[] { block };
         blockMDs = new int[] { meta };
+        extraData = new String[]{ extra };
         primaryBlock = getPrimaryBlock();
     }
 
-	public TemplateRule(Block block, int meta, int chance_) {
-        this(block, meta);
+    public TemplateRule(Block block, int meta, int chance_) {
+        this(block, meta, "", chance_);
+    }
+
+	public TemplateRule(Block block, int meta, String extra, int chance_) {
+        this(block, meta, extra);
 		chance = chance_;
 	}
 
-    public TemplateRule(BlockAndMeta blockAndMeta, int chance_) {
-        this(blockAndMeta.get(), blockAndMeta.getMeta(), chance_);
+    public TemplateRule(BlockAndMeta blockAndMeta, String extra, int chance_) {
+        this(blockAndMeta.get(), blockAndMeta.getMeta(), extra, chance_);
     }
 
-	public TemplateRule(Block[] blockIDs_, int[] blockMDs_, int chance_) {
+    public TemplateRule(Block[] blockIDs_, int[] blockMDs_, int chance_) {
+        blockIDs = blockIDs_;
+        blockMDs = blockMDs_;
+        extraData = new String[blockIDs_.length];
+        chance = chance_;
+        primaryBlock = getPrimaryBlock();
+    }
+
+	public TemplateRule(Block[] blockIDs_, int[] blockMDs_, String[] extra, int chance_) {
 		blockIDs = blockIDs_;
 		blockMDs = blockMDs_;
+        extraData = extra;
 		chance = chance_;
 		primaryBlock = getPrimaryBlock();
 	}
@@ -100,7 +144,10 @@ public class TemplateRule {
 	public void setFixedRule(Random random) {
 		if (condition == FIXED_FOR_BUILDING) {
 			int m = random.nextInt(blockIDs.length);
-			fixedRuleChosen = new BlockAndMeta(blockIDs[m], blockMDs[m]);
+            if(extraData!=null && extraData[m]!=null && !extraData[m].equals(""))
+                fixedRuleChosen = new BlockExtended(blockIDs[m], blockMDs[m], extraData[m]);
+            else
+                fixedRuleChosen = new BlockAndMeta(blockIDs[m], blockMDs[m]);
 		} else
 			fixedRuleChosen = null;
 	}
@@ -109,17 +156,7 @@ public class TemplateRule {
 		if (condition != FIXED_FOR_BUILDING)
 			return this;
 		int m = random.nextInt(blockIDs.length);
-		return new TemplateRule(blockIDs[m], blockMDs[m], chance);
-	}
-
-	public BlockAndMeta getBlock(Random random) {
-		if (chance >= 100 || random.nextInt(100) < chance) {
-			if (fixedRuleChosen != null)
-				return fixedRuleChosen;
-			int m = random.nextInt(blockIDs.length);
-			return new BlockAndMeta(blockIDs[m], blockMDs[m]);
-		}
-		return new BlockAndMeta(Blocks.air, 0);
+		return new TemplateRule(blockIDs[m], blockMDs[m], extraData[m], chance);
 	}
 
 	public BlockAndMeta getBlockOrHole(Random random) {
@@ -127,17 +164,22 @@ public class TemplateRule {
 			if (fixedRuleChosen != null)
 				return fixedRuleChosen;
 			int m = random.nextInt(blockIDs.length);
-			return new BlockAndMeta(blockIDs[m], blockMDs[m]);
+            if(extraData!=null && extraData[m]!=null && !extraData[m].equals(""))
+                return new BlockExtended(blockIDs[m], blockMDs[m], extraData[m]);
+            else
+                return new BlockAndMeta(blockIDs[m], blockMDs[m]);
 		}
 		return Building.HOLE_BLOCK_LIGHTING;
 	}
 
 	public boolean isPreserveRule() {
 		for (int i = 0; i<blockIDs.length; i++){
-			if(blockIDs[i] != Blocks.air)
+			if(blockIDs[i] != Building.PRESERVE_BLOCK.get())
 				return false;
-            if(blockMDs[i] != 1)
-                return  false;
+            if(blockMDs[i] != Building.PRESERVE_BLOCK.getMeta())
+                return false;
+            if(extraData[i] == null || !extraData[i].equals(SPECIAL_AIR))
+                return false;
         }
 		return true;
 	}
@@ -145,15 +187,24 @@ public class TemplateRule {
     public boolean hasUndeadSpawner(){
         for (int i = 0; i<blockIDs.length; i++){
             //Zombie, Skeleton, Creeper, EASY, UPRIGHT spawners
-            if(blockIDs[i] == Blocks.mob_spawner && (blockMDs[i]==1||blockMDs[i]==2||blockMDs[i]==4||blockMDs[i]==28||blockMDs[i]==31))
-                return true;
+            if(blockIDs[i] instanceof BlockMobSpawner)
+                if(blockMDs[i]==0){
+                    String txt = extraData[i];
+                    if(txt!=null && (txt.equals("Zombie")||txt.equals("Skeleton")||txt.equals("Creeper")||txt.equals("EASY")||txt.equals("UPRIGHT")))
+                        return true;
+                }
+                else if(blockMDs[i]==1||blockMDs[i]==2||blockMDs[i]==4||blockMDs[i]==28||blockMDs[i]==31)//Backward compatibility
+                    return true;
         }
         return false;
     }
 
 	public BlockAndMeta getNonAirBlock(Random random) {
 		int m = random.nextInt(blockIDs.length);
-		return new BlockAndMeta(blockIDs[m], blockMDs[m]);
+        if(extraData!=null && extraData[m]!=null && !extraData[m].equals(""))
+            return new BlockExtended(blockIDs[m], blockMDs[m], extraData[m]);
+        else
+            return new BlockAndMeta(blockIDs[m], blockMDs[m]);
 	}
 
 	@Override
@@ -181,6 +232,13 @@ public class TemplateRule {
                 pos = l;
 			}
 		}
-		return new BlockAndMeta(blockIDs[pos], blockMDs[pos]);
+        if(extraData!=null && extraData[pos]!=null && !extraData[pos].equals(""))
+		    return new BlockExtended(blockIDs[pos], blockMDs[pos], extraData[pos]);
+        else
+            return new BlockAndMeta(blockIDs[pos], blockMDs[pos]);
 	}
+
+    public boolean isSpecial(Block block){
+        return block instanceof BlockAir || block instanceof BlockMobSpawner || block instanceof BlockChest;
+    }
 }

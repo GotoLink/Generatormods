@@ -2,6 +2,7 @@ package assets.generator;
 
 import net.minecraft.block.Block;
 import net.minecraft.util.Tuple;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class BlockAndMeta extends Tuple {
     public BlockAndMeta(Block block, int meta){
@@ -29,6 +30,6 @@ public class BlockAndMeta extends Tuple {
 
     @Override
     public int hashCode(){
-        return getMeta()+31*get().hashCode();
+        return new HashCodeBuilder().append(getMeta()).append(get()).toHashCode();
     }
 }

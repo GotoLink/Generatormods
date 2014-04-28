@@ -43,11 +43,10 @@ import net.minecraft.tileentity.TileEntityMobSpawner;
 import net.minecraft.tileentity.TileEntitySign;
 import net.minecraft.village.VillageDoorInfo;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.RotationHelper;
 
 public class Building {
 	public final static int HIT_WATER = -666; // , HIT_SWAMP=-667;
-	public final static int EASY_CHEST = 1, MEDIUM_CHEST = 2, HARD_CHEST = 3, TOWER_CHEST = 4;
+	public final static String EASY_CHEST = "EASY", MEDIUM_CHEST = "MEDIUM", HARD_CHEST = "HARD", TOWER_CHEST = "TOWER";
 	public final static int DIR_NORTH = 0, DIR_EAST = 1, DIR_SOUTH = 2, DIR_WEST = 3;
 	public final static int ROT_R = 1, R_HAND = 1, L_HAND = -1;
 	public final static int SEA_LEVEL = 63, WORLD_MAX_Y = 255;
@@ -71,10 +70,7 @@ public class Building {
 	// liquid and wall blocks as either solid or air.
 	public final static int IGNORE_WATER = -1;
 	// Special Blocks
-	public final static int PAINTING_BLOCK_OFFSET = -3,
-            EASY_SPAWNER_ID = 28, MEDIUM_SPAWNER_ID = 29, HARD_SPAWNER_ID = 30, UPRIGHT_SPAWNER_ID = 31,
-            SPIDER_SPAWNER_ID = 3, PIG_ZOMBIE_SPAWNER_ID = 5, GHAST_SPAWNER_ID = 6, ENDERMAN_SPAWNER_ID = 7, CAVE_SPIDER_SPAWNER_ID = 8, BLAZE_SPAWNER_ID = 9,
-			LAVA_SLIME_SPAWNER_ID = 11, SILVERFISH_SPAWNER_ID = 21;
+	public final static int PAINTING_BLOCK_OFFSET = 3;
 	public final static String[] SPAWNERS = new String[]{
             "Zombie", "Skeleton", "Spider", "Creeper", "PigZombie", "Ghast", "Enderman", "CaveSpider", "Blaze", "Slime",
             "LavaSlime", "Villager", "SnowMan", "MushroomCow", "Sheep", "Cow", "Chicken", "Squid", "Wolf", "Giant",
@@ -96,9 +92,9 @@ public class Building {
 	public final static BlockAndMeta WEST_FACE_TORCH_BLOCK = new BlockAndMeta(Blocks.torch, BUTTON_DIR_TO_META[DIR_WEST]), EAST_FACE_TORCH_BLOCK = new BlockAndMeta(Blocks.torch, BUTTON_DIR_TO_META[DIR_EAST]),
 			NORTH_FACE_TORCH_BLOCK = new BlockAndMeta(Blocks.torch, BUTTON_DIR_TO_META[DIR_NORTH]), SOUTH_FACE_TORCH_BLOCK = new BlockAndMeta(Blocks.torch, BUTTON_DIR_TO_META[DIR_SOUTH]),
 			EAST_FACE_LADDER_BLOCK = new BlockAndMeta(Blocks.ladder, LADDER_DIR_TO_META[DIR_EAST]), HOLE_BLOCK_LIGHTING = new BlockAndMeta(Blocks.air, 0), HOLE_BLOCK_NO_LIGHTING = new BlockAndMeta(Blocks.air, 1),
-			PRESERVE_BLOCK = new BlockAndMeta(Blocks.air, 2), PIG_ZOMBIE_SPAWNER = new BlockAndMeta(Blocks.mob_spawner, PIG_ZOMBIE_SPAWNER_ID),
-			ENDERMAN_SPAWNER = new BlockAndMeta(Blocks.mob_spawner, ENDERMAN_SPAWNER_ID), TOWER_CHEST_BLOCK = new BlockAndMeta(Blocks.chest, TOWER_CHEST), HARD_CHEST_BLOCK = new BlockAndMeta(Blocks.chest, HARD_CHEST),
-			GHAST_SPAWNER = new BlockAndMeta(Blocks.mob_spawner, GHAST_SPAWNER_ID),CAVE_SPIDER_SPAWNER= new BlockAndMeta(Blocks.mob_spawner, CAVE_SPIDER_SPAWNER_ID), UPRIGHT_SPAWNER = new BlockAndMeta(Blocks.mob_spawner, UPRIGHT_SPAWNER_ID);
+			PRESERVE_BLOCK = new BlockExtended(Blocks.air, 0, "PRESERVE"),
+			TOWER_CHEST_BLOCK = new BlockExtended(Blocks.chest, 0, TOWER_CHEST), HARD_CHEST_BLOCK = new BlockExtended(Blocks.chest, 0, HARD_CHEST),
+			GHAST_SPAWNER = new BlockExtended(Blocks.mob_spawner, 0, "Ghast");
 	protected final static Block[] STEP_TO_STAIRS = { Blocks.stone_brick_stairs, Blocks.sandstone_stairs, Blocks.oak_stairs, Blocks.stone_stairs, Blocks.brick_stairs, Blocks.stone_brick_stairs, Blocks.nether_brick_stairs,
 			Blocks.quartz_stairs };
 	public final static int MAX_SPHERE_DIAM = 40;
@@ -119,18 +115,16 @@ public class Building {
 		for (int m = 0; m < randLightingHash.length; m++)
 			randLightingHash[m] = rand.nextInt(LIGHTING_INVERSE_DENSITY) == 0;
 	}
-	// TODO:Extend chest_type_labels as config option
-	public static String[] CHEST_TYPE_LABELS = new String[] { "CHEST_EASY", "CHEST_MEDIUM", "CHEST_HARD", "CHEST_TOWER" };
-	public static List<String> CHEST_LABELS = new ArrayList<String>();
-	public static int[] DEFAULT_CHEST_TRIES = new int[] { 4, 6, 6, 6 };
+	public final static String[] CHEST_TYPE_LABELS = new String[] { "EASY", "MEDIUM", "HARD", "TOWER" };
+	public final static int[] DEFAULT_CHEST_TRIES = new int[] { 4, 6, 6, 6 };
 	// chest items[n] format is array of 6 arrays
 	// 0array - idx
 	// 1array - blockId
 	// 2array - block damage/meta
 	// 3array - block weight
 	// 4array - block min stacksize
-	// 5array block max stacksize
-	public static Object[][][] DEFAULT_CHEST_ITEMS = new Object[][][] { { // Easy
+	// 5array - block max stacksize
+	public final static Object[][][] DEFAULT_CHEST_ITEMS = new Object[][][] { { // Easy
 			{ 0, Items.arrow, 0, 2, 1, 12 }, { 1, Items.iron_sword, 0, 2, 1, 1 }, { 2, Items.leather_leggings, 0, 1, 1, 1 }, { 3, Items.iron_shovel, 0, 1, 1, 1 },
 					{ 4, Items.string, 0, 1, 1, 1 }, { 5, Items.iron_pickaxe, 0, 2, 1, 1 }, { 6, Items.leather_boots, 0, 1, 1, 1 }, { 7, Items.bucket, 0, 1, 1, 1 },
 					{ 8, Items.leather_helmet, 0, 1, 1, 1 }, { 9, Items.wheat_seeds, 0, 1, 10, 15 }, { 10, Items.gold_nugget, 0, 2, 3, 8 }, { 11, Items.potionitem, 5, 2, 1, 1 }, // healing I
@@ -315,8 +309,7 @@ public class Building {
 		else
 			stopZ -= foundationDepth;
 		for (int z1 = z; z1 > stopZ; z1--) {
-            BlockAndMeta idAndMeta = buildRule.getBlock(world.rand);
-			setBlockWithLightingLocal(x, z1, y, idAndMeta.get(), idAndMeta.getMeta(), false);
+			setBlockWithLightingLocal(x, z1, y, buildRule, false);
 		}
 	}
 
@@ -457,8 +450,8 @@ public class Building {
 		// block[3]==REDSTONE_TORCH_OFF_ID){
 		// block[4]=1;
 		// }
-		if (blc == Blocks.air && block[3]>=-PAINTING_BLOCK_OFFSET)//Remember:Paintings are not blocks
-			setPainting(block, block[3]+PAINTING_BLOCK_OFFSET);
+		if (blc == Blocks.air && block[3]>=PAINTING_BLOCK_OFFSET)//Remember:Paintings are not blocks
+			setPainting(block, block[3]-PAINTING_BLOCK_OFFSET);
 		else if (blc == Blocks.torch) {
 			if (Blocks.torch.canPlaceBlockAt(world, block[0], block[1], block[2]))
 				world.setBlock(block[0], block[1], block[2], blc, block[3], 3);// force lighting update
@@ -503,14 +496,10 @@ public class Building {
 	}
 
 	protected final void setBlockLocal(int x, int z, int y, Block blockID, int metadata) {
-        if (isSpecialBlock(blockID, metadata)) {
-            setSpecialBlockLocal(x, z, y, blockID, metadata);
-            return;
-        }
         int[] pt = getIJKPt(x, z, y);
-        if (blockID == Blocks.air && metadata<-PAINTING_BLOCK_OFFSET && world.isAirBlock(pt[0], pt[1], pt[2]))
+        if (blockID == Blocks.air && world.isAirBlock(pt[0], pt[1], pt[2]))
             return;
-        if (blockID != Blocks.chest)
+        if (!(blockID instanceof BlockChest))
             emptyIfChest(pt);
         if (BlockProperties.get(blockID).isDelayed){
             delayedBuildQueue.offer(new PlacedBlock(blockID, new int[]{pt[0], pt[1], pt[2], rotateMetadata(blockID, metadata)}));
@@ -525,23 +514,35 @@ public class Building {
 	}
 
 	protected final void setBlockLocal(int x, int z, int y, BlockAndMeta block) {
-        setBlockLocal(x, z, y, block.get(), block.getMeta());
+        if(block instanceof BlockExtended){
+            setSpecialBlockLocal(x, z, y, block.get(), block.getMeta(), ((BlockExtended) block).info);
+        }else{
+            setBlockLocal(x, z, y, block.get(), block.getMeta());
+        }
 	}
-
-    private static boolean isSpecialBlock(Block blockID, int metadata){
-        return metadata != 0 && (blockID == Blocks.mob_spawner || blockID == Blocks.chest || (blockID == Blocks.air && metadata < -PAINTING_BLOCK_OFFSET));
-    }
 
 	protected final void setBlockLocal(int x, int z, int y, TemplateRule rule) {
-		setBlockLocal(x, z, y, rule.getBlock(random));
+		setBlockLocal(x, z, y, rule.getBlockOrHole(random));
 	}
+
+    protected final void setBlockWithLightingLocal(int x, int z, int y, TemplateRule rule, boolean lighting) {
+        setBlockWithLightingLocal(x, z, y, rule.getBlockOrHole(random), lighting);
+    }
+
+    protected final void removeBlockWithLighting(int x, int z, int y){
+        setBlockWithLightingLocal(x, z, y, TemplateRule.AIR_RULE, true);
+    }
+
+    protected final void setBlockWithLightingLocal(int x, int z, int y, BlockAndMeta block, boolean lighting) {
+        if(block instanceof BlockExtended){
+            setSpecialBlockLocal(x, z, y, block.get(), block.getMeta(), ((BlockExtended) block).info);
+        }else{
+            setBlockWithLightingLocal(x, z, y, block.get(), block.getMeta(), lighting);
+        }
+    }
 
 	// allows control of lighting. Also will build even if replacing air with air.
 	protected final void setBlockWithLightingLocal(int x, int z, int y, Block blockID, int metadata, boolean lighting) {
-		if (isSpecialBlock(blockID, metadata)) {
-			setSpecialBlockLocal(x, z, y, blockID, metadata);
-			return;
-		}
 		int[] pt = getIJKPt(x, z, y);
 		if (blockID != Blocks.chest)
 			emptyIfChest(pt);
@@ -571,13 +572,17 @@ public class Building {
 	// ******************** LOCAL COORDINATE FUNCTIONS - SPECIAL BLOCK FUNCTIONS
 	// *************************************************************************************************************//
 	// &&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setSpecialBlockLocal &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
-	protected final void setSpecialBlockLocal(int x, int z, int y, Block blockID, int metadata) {
-		if (new BlockAndMeta(blockID, metadata).equals(PRESERVE_BLOCK))
+	protected final void setSpecialBlockLocal(int x, int z, int y, Block blockID, int metadata, String extra) {
+		if (extra.equals(TemplateRule.SPECIAL_AIR))
 			return; // preserve existing world block
 		int[] pt = getIJKPt(x, z, y);
-		if (blockID == Blocks.air) {
-            if(metadata<0){//WALL_STAIR
+		if (blockID instanceof BlockAir) {
+            if(extra.equals(TemplateRule.SPECIAL_STAIR) && metadata<=0){
                 world.setBlock(pt[0], pt[1], pt[2], Blocks.stone_slab, rotateMetadata(Blocks.stone_slab, -metadata), 2);
+                return;
+            }
+            if (extra.equals(TemplateRule.SPECIAL_PAINT) && metadata>=PAINTING_BLOCK_OFFSET) {//Remember:Paintings are not blocks
+                delayedBuildQueue.offer(new PlacedBlock(blockID, new int[]{pt[0], pt[1], pt[2], metadata}));
                 return;
             }
 			Block presentBlock = world.getBlock(pt[0], pt[1], pt[2]);
@@ -588,24 +593,11 @@ public class Building {
 					world.setBlockToAir(pt[0], pt[1], pt[2]);
 				}
 			}
-		}else if(blockID == Blocks.mob_spawner){
-            if (metadata<EASY_SPAWNER_ID) {//Use "false" metadata for different block spawners
-                setMobSpawner(pt, 1, metadata-1);
-            }else if(metadata<UPRIGHT_SPAWNER_ID){//Easy,Medium,Hard spawners
-                setMobSpawner(pt, metadata-26, 0);
-            }else{//UPRIGHT_SPAWNER
-                if (random.nextInt(3) == 0)
-                    setMobSpawner(pt, 1, 3);
-                else
-                    setMobSpawner(pt, 2, 0);
-            }
-        }else if(blockID == Blocks.chest){
-			setLootChest(pt, metadata-1);
-        }
-		/*case WALL_STAIR_ID:
-			world.setBlock(pt[0], pt[1], pt[2], STEP_ID, rotateMetadata(STEP_ID, metadata), 2);
-			return;*/
-		else{
+		}else if(blockID instanceof BlockMobSpawner){
+            setMobSpawner(pt, blockID, metadata, extra);
+        }else if(blockID instanceof BlockChest){
+			setLootChest(pt, blockID, metadata, extra);
+        }else{
 			world.setBlock(pt[0], pt[1], pt[2], blockID, metadata, 2);
 		}
 	}
@@ -658,18 +650,18 @@ public class Building {
 	// *************************************************************************************************************//
 	private void emptyIfChest(int[] pt) {
 		// if block is a chest empty it
-		if (pt != null && world.getBlock(pt[0], pt[1], pt[2]) == Blocks.chest) {
+		if (pt != null && world.getBlock(pt[0], pt[1], pt[2]) instanceof BlockChest) {
 			TileEntityChest tileentitychest = (TileEntityChest) world.getTileEntity(pt[0], pt[1], pt[2]);
 			for (int m = 0; m < tileentitychest.getSizeInventory(); m++)
 				tileentitychest.setInventorySlotContents(m, null);
 		}
 	}
 
-	private ItemStack getChestItemstack(int chestType) {
-		if (chestType == TOWER_CHEST && random.nextInt(4) == 0) { // for tower chests, chance of returning the tower block
+	private ItemStack getChestItemstack(String chestType) {
+		if (chestType.equals(TOWER_CHEST) && random.nextInt(4) == 0) { // for tower chests, chance of returning the tower block
 			return new ItemStack(bRule.primaryBlock.get(), random.nextInt(10), bRule.primaryBlock.getMeta());
 		}
-		Object[][] itempool = wgt.chestItems[chestType];
+		Object[][] itempool = wgt.chestItems.get(chestType);
 		int idx = pickWeightedOption(world.rand, Arrays.asList(itempool[3]), Arrays.asList(itempool[0]));
         Object obj = itempool[1][idx];
         if(obj instanceof Block){
@@ -689,9 +681,6 @@ public class Building {
 
 	private int rotateMetadata(Block blockID, int metadata) {
 		int tempdata = 0;
-        /*if(RotationHelper.rotateVanillaBlock(block, world, x, y, z, dir)){
-            return;
-        }*/
 		if (BlockProperties.get(blockID).isStair) {
 			if (metadata >= 4) {
 				tempdata += 4;
@@ -1100,11 +1089,11 @@ public class Building {
 
 	// &&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setLootChest
 	// &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
-	private void setLootChest(int[] pt, int chestType) {
-		if (world.setBlock(pt[0], pt[1], pt[2], Blocks.chest, 0, 2)) {
+	private void setLootChest(int[] pt, Block chestBlock, int meta, String chestType) {
+		if (world.setBlock(pt[0], pt[1], pt[2], chestBlock, meta, 2)) {
 			TileEntityChest chest = (TileEntityChest) world.getTileEntity(pt[0], pt[1], pt[2]);
-			if (wgt.chestTries != null && chestType<wgt.chestTries.length) {
-				for (int m = 0; m < wgt.chestTries[chestType]; m++) {
+			if (wgt.chestTries != null && wgt.chestTries.containsKey(chestType)) {
+				for (int m = 0; m < wgt.chestTries.get(chestType); m++) {
 					if (random.nextBoolean()) {
 						ItemStack itemstack = getChestItemstack(chestType);
 						if (itemstack != null && chest != null)
@@ -1117,19 +1106,35 @@ public class Building {
 
 	// &&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setMobSpawner
 	// &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
-	private void setMobSpawner(int[] pt, int nTypes, int offset) {
-		if(world.setBlock(pt[0], pt[1], pt[2], Blocks.mob_spawner, 0, 2)){
+	private void setMobSpawner(int[] pt, Block spawner, int metadata, String info) {
+		if(world.setBlock(pt[0], pt[1], pt[2], spawner, metadata, 2)){
             TileEntityMobSpawner tileentitymobspawner = (TileEntityMobSpawner) world.getTileEntity(pt[0], pt[1], pt[2]);
             if (tileentitymobspawner != null){
-                String mob = "Pig";
-                int n = random.nextInt(nTypes) + offset;
-                if(n<SPAWNERS.length){
-                    mob = SPAWNERS[n];
-                }
-                tileentitymobspawner.func_145881_a().setEntityName(mob);
+                if(info.equals("UPRIGHT")) {
+                    if (random.nextInt(3) == 0)
+                        setMobSpawner(tileentitymobspawner, 1, 3);
+                    else
+                        setMobSpawner(tileentitymobspawner, 2, 0);
+                }else if(info.equals("EASY")){
+                    setMobSpawner(tileentitymobspawner, 2, 0);
+                }else if(info.equals("MEDIUM")){
+                    setMobSpawner(tileentitymobspawner, 3, 0);
+                }else if(info.equals("HARD")){
+                    setMobSpawner(tileentitymobspawner, 4, 0);
+                }else
+                    tileentitymobspawner.func_145881_a().setEntityName(info);
             }
         }
 	}
+
+    private void setMobSpawner(TileEntityMobSpawner spawner, int nTypes, int offset) {
+        String mob = "Pig";
+        int n = random.nextInt(nTypes) + offset;
+        if(n<SPAWNERS.length){
+            mob = SPAWNERS[n];
+        }
+        spawner.func_145881_a().setEntityName(mob);
+    }
 
 	public static int distance(int[] pt1, int[] pt2) {
 		return (int) Math.sqrt((pt1[0] - pt2[0]) * (pt1[0] - pt2[0]) + (pt1[1] - pt2[1]) * (pt1[1] - pt2[1]) + (pt1[2] - pt2[2]) * (pt1[2] - pt2[2]));
@@ -1174,17 +1179,7 @@ public class Building {
 		return (dir + 2) % 4;
 	}
 
-	public static String globalCoordString(int i, int j, int k) {
-		return "(" + i + "," + j + "," + k + ")";
-	}
-
-	public static String globalCoordString(int[] pt) {
-		return "(" + pt[0] + "," + pt[1] + "," + pt[2] + ")";
-	}
-
 	public static String metaValueCheck(Block blockID, int metadata) {
-        if(isSpecialBlock(blockID, metadata))
-            return null;
 		if (metadata < 0 || metadata >= 16)
 			return "All Minecraft meta values should be between 0 and 15";
 		String fail = blockID.getUnlocalizedName() + " meta value should be between";
@@ -1252,12 +1247,6 @@ public class Building {
 
 	// ******************** STATIC FUNCTIONS
 	// ******************************************************************************************************************************************//
-	public static void setBlockNoLighting(World world, int i, int j, int k, Block blockId) {
-		if (i < 0xfe363c80 || k < 0xfe363c80 || i >= 0x1c9c380 || k >= 0x1c9c380 || j < 0 || j > Building.WORLD_MAX_Y)
-			return;
-		world.setBlock(i, j, k, blockId, 0, 2);
-	}
-
 	protected static Block blockToStairs(BlockAndMeta idAndMeta) {
 		if(idAndMeta.get()==Blocks.cobblestone||idAndMeta.get()==Blocks.mossy_cobblestone){
 			return Blocks.stone_stairs;

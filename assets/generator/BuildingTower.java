@@ -45,7 +45,7 @@ public class BuildingTower extends Building {
 		if (SpawnerRule != TemplateRule.RULE_NOT_PROVIDED) {
 			if(SpawnerRule.hasUndeadSpawner())
                 undeadTower = true;
-			ghastTower = roofStyle == ROOF_CRENEL && SpawnerRule.getBlock(world.rand).equals(GHAST_SPAWNER);
+			ghastTower = roofStyle == ROOF_CRENEL && SpawnerRule.getBlockOrHole(world.rand).equals(GHAST_SPAWNER);
 			if (ghastTower || random.nextInt(100) > SpawnerRule.chance)
 				undeadTower = false;
 		}
@@ -315,7 +315,7 @@ public class BuildingTower extends Building {
 		//If roofRule=sandstone/step, do wooden for steep roofstyle and sandstone/step otherwise
 		//Otherwise do wooden for sloped roofstyles, and roofRule otherwise
 		if (roofRule == TemplateRule.RULE_NOT_PROVIDED) {
-			roofRule = (roofStyle == ROOF_STEEP || roofStyle == ROOF_SHALLOW || roofStyle == ROOF_TRIM || roofStyle == ROOF_TWO_SIDED) ? new TemplateRule(Blocks.planks, 0) : bRule;
+			roofRule = (roofStyle == ROOF_STEEP || roofStyle == ROOF_SHALLOW || roofStyle == ROOF_TRIM || roofStyle == ROOF_TWO_SIDED) ? new TemplateRule(Blocks.planks, 0, "") : bRule;
 		}
 		int stepMeta = blockToStepMeta(roofRule.primaryBlock).getMeta();
 		TemplateRule stepRule = new TemplateRule(Blocks.stone_slab, stepMeta, roofRule.chance);

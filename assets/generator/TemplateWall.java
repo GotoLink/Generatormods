@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
 
@@ -227,13 +228,13 @@ public class TemplateWall extends TemplateTML {
 		if (SpawnerRule == TemplateRule.RULE_NOT_PROVIDED) {
 			//try the deprecated mob probabilities
 			if (mobProb > 0.0F)
-				SpawnerRule = new TemplateRule(Building.UPRIGHT_SPAWNER, (int) (mobProb * 100));
+				SpawnerRule = new TemplateRule(Blocks.mob_spawner, 0, "UPRIGHT", (int) (mobProb * 100));
 			else if (pigZombieProb > 0.0F)
-				SpawnerRule = new TemplateRule(Building.PIG_ZOMBIE_SPAWNER, (int) (pigZombieProb * 100));
+				SpawnerRule = new TemplateRule(Blocks.mob_spawner, 0, "PigZombie", (int) (pigZombieProb * 100));
 			else if (endermanProb > 0.0F)
-				SpawnerRule = new TemplateRule(Building.ENDERMAN_SPAWNER, (int) (endermanProb * 100));
+				SpawnerRule = new TemplateRule(Blocks.mob_spawner, 0, "Enderman", (int) (endermanProb * 100));
 			else if (caveSpiderProb > 0.0F)
-				SpawnerRule = new TemplateRule(Building.CAVE_SPIDER_SPAWNER, (int) (caveSpiderProb * 100));
+				SpawnerRule = new TemplateRule(Blocks.mob_spawner, 0, "CaveSpider", (int) (caveSpiderProb * 100));
 		}
 		if (Biomes != ALL_BIOMES && Biomes[0] > 0) {
 			underground = true;

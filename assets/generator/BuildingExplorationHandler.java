@@ -24,10 +24,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 import cpw.mods.fml.common.registry.GameData;
 import net.minecraft.world.World;
@@ -43,17 +40,17 @@ import cpw.mods.fml.common.Loader;
 import org.apache.logging.log4j.Level;
 
 public abstract class BuildingExplorationHandler implements IWorldGenerator {
-    protected final static String VERSION = "0.1.5";
+    protected final static String VERSION = "0.1.6";
 	protected final static int MAX_TRIES_PER_CHUNK = 100;
 	public final static File CONFIG_DIRECTORY = new File(Loader.instance().getConfigDir(), "generatormods");
-	protected final static File LOG = new File(getMinecraftBaseDir(), "generatormods_log.txt");
+	protected final static File LOG = new File(new File(getMinecraftBaseDir(), "logs"), "generatormods_log.txt");
 	protected String settingsFileName, templateFolderName;
 	public org.apache.logging.log4j.Logger logger;
 	public PrintWriter lw = null;
 	public float GlobalFrequency = 0.025F;
 	public int TriesPerChunk = 1;
-	protected int[] chestTries = new int[] { 4, 6, 6, 6 };
-	protected Object[][][] chestItems = new Object[][][] { null, null, null, null };
+	protected HashMap<String, Integer> chestTries = new HashMap<String, Integer>();
+	protected HashMap<String, Object[][]> chestItems = new HashMap<String, Object[][]>();
 	protected boolean errFlag = false, dataFilesLoaded = false;
 	protected boolean logActivated = false;
 	private List<Integer> AllowedDimensions = new ArrayList<Integer>();
@@ -95,59 +92,50 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 
 	//****************************  FUNCTION - chestContentsList *************************************************************************************//
 	public void readChestItemsList(PrintWriter lw, String line, BufferedReader br) throws IOException {
-		int triesIdx = -1;
-		for (int l = 0; l < Building.CHEST_TYPE_LABELS.length; l++) {
-			if (line.startsWith(Building.CHEST_TYPE_LABELS[l])) {
-				triesIdx = l;
-				break;
-			}
-		}
-		/*
-		 * if(line.startsWith("CHEST_")){ TODO:to implement
-		 * Building.CHEST_LABELS.add(line); triesIdx++; }
-		 */
-		if (triesIdx != -1) {
-			chestTries[triesIdx] = readIntParam(lw, 1, ":", br.readLine());
+        if(line.startsWith("CHEST_")){
+            String chestType = line.substring(6);
+			chestTries.put(chestType, readIntParam(lw, 1, ":", br.readLine()));
 			ArrayList<String> lines = new ArrayList<String>();
 			for (line = br.readLine(); !(line == null || line.length() == 0); line = br.readLine())
 				lines.add(line);
-			chestItems[triesIdx] = new Object[6][lines.size()];
+			Object[][] tempArray = new Object[6][lines.size()];
 			for (int n = 0; n < lines.size(); n++) {
 				String[] intStrs = lines.get(n).trim().split(",");
 				try {
-					chestItems[triesIdx][0][n] = n;
+                    tempArray[0][n] = n;
 					String[] idAndMeta = intStrs[0].split("-");
                     Object temp;
                     try{
                         int i = Integer.parseInt(idAndMeta[0]);
-                        temp = GameData.itemRegistry.get(i);
+                        temp = GameData.itemRegistry.getObjectById(i);
                         if(temp==null){
-                            temp = GameData.blockRegistry.get(i);
+                            temp = GameData.blockRegistry.getObjectById(i);
                         }
                     }catch (Exception e){
-                        temp = GameData.itemRegistry.get(idAndMeta[0]);
+                        temp = GameData.itemRegistry.getObject(idAndMeta[0]);
                         if(temp==null){
-                            temp = GameData.blockRegistry.get(idAndMeta[0]);
+                            temp = GameData.blockRegistry.getObject(idAndMeta[0]);
                         }
                     }
                     if(temp!=null){
-                        chestItems[triesIdx][1][n] = temp;
-                        chestItems[triesIdx][2][n] = idAndMeta.length > 1 ? Integer.parseInt(idAndMeta[1]) : 0;
+                        tempArray[1][n] = temp;
+                        tempArray[2][n] = idAndMeta.length > 1 ? Integer.parseInt(idAndMeta[1]) : 0;
                         for (int m = 1; m < 4; m++)
-                            chestItems[triesIdx][m + 2][n] = Integer.parseInt(intStrs[m]);
+                            tempArray[m + 2][n] = Integer.parseInt(intStrs[m]);
                         //input checking
-                        if (Integer.class.cast(chestItems[triesIdx][4][n]) < 0)
-                            chestItems[triesIdx][4][n] = 0;
-                        if (Integer.class.cast(chestItems[triesIdx][5][n]) < Integer.class.cast(chestItems[triesIdx][4][n]))
-                            chestItems[triesIdx][5][n] = chestItems[triesIdx][4][n];
-                        if (Integer.class.cast(chestItems[triesIdx][5][n]) > 64)
-                            chestItems[triesIdx][5][n] = 64;
+                        if (Integer.class.cast(tempArray[4][n]) < 0)
+                            tempArray[4][n] = 0;
+                        if (Integer.class.cast(tempArray[5][n]) < Integer.class.cast(tempArray[4][n]))
+                            tempArray[5][n] = tempArray[4][n];
+                        if (Integer.class.cast(tempArray[5][n]) > 64)
+                            tempArray[5][n] = 64;
                     }
 				} catch (Exception e) {
 					lw.println("Error parsing Settings file: " + e.toString());
 					lw.println("Line:" + lines.get(n));
 				}
 			}
+            chestItems.put(chestType, tempArray);
 		}
 	}
 
@@ -175,9 +163,10 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 	abstract public void writeGlobalOptions(PrintWriter pw);
 
 	protected void copyDefaultChestItems() {
-		chestTries = new int[Building.DEFAULT_CHEST_TRIES.length];
-        System.arraycopy(Building.DEFAULT_CHEST_TRIES, 0, chestTries, 0, Building.DEFAULT_CHEST_TRIES.length);
-		chestItems = new Object[Building.DEFAULT_CHEST_ITEMS.length][][];
+        for(int i = 0; i < Building.CHEST_TYPE_LABELS.length; i++){
+            chestTries.put(Building.CHEST_TYPE_LABELS[i], Building.DEFAULT_CHEST_TRIES[i]);
+        }
+		Object[][][] chestItems = new Object[Building.DEFAULT_CHEST_ITEMS.length][][];
 		//careful, we have to flip the order of the 2nd and 3rd dimension here
 		for (int l = 0; l < Building.DEFAULT_CHEST_ITEMS.length; l++) {
 			chestItems[l] = new Object[6][Building.DEFAULT_CHEST_ITEMS[l].length];
@@ -186,6 +175,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 					chestItems[l][n][m] = Building.DEFAULT_CHEST_ITEMS[l][m][n];
 				}
 			}
+            this.chestItems.put(Building.CHEST_TYPE_LABELS[l], chestItems[l]);
 		}
 	}
 
@@ -255,22 +245,22 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 		pw.println("<-Tries is the number of selections that will be made for this chest type.->");
 		pw.println("<-Format for items is <itemID>,<selection weight>,<min stack size>,<max stack size> ->");
 		pw.println("<-So e.g. 262,1,1,12 means a stack of between 1 and 12 arrows, with a selection weight of 1.->");
-		for (int l = 0; l < chestItems.length; l++) {
-			pw.println(Building.CHEST_TYPE_LABELS[l]);
-			pw.println("Tries:" + chestTries[l]);
-			for (int m = 0; m < chestItems[l][0].length; m++) {
+		for (int l = 0; l < Building.CHEST_TYPE_LABELS.length; l++) {
+			pw.println("CHEST_" + Building.CHEST_TYPE_LABELS[l]);
+			pw.println("Tries:" + Building.DEFAULT_CHEST_TRIES[l]);
+			for (int m = 0; m < Building.DEFAULT_CHEST_ITEMS[l][0].length; m++) {
                 try{
-                    String txt = GameData.itemRegistry.getNameForObject(chestItems[l][1][m]);
+                    String txt = GameData.itemRegistry.getNameForObject(Building.DEFAULT_CHEST_ITEMS[l][1][m]);
                     if(txt==null){
-                        txt = GameData.blockRegistry.getNameForObject(chestItems[l][1][m]);
+                        txt = GameData.blockRegistry.getNameForObject(Building.DEFAULT_CHEST_ITEMS[l][1][m]);
                     }
                     if(txt!=null){
                         pw.print(txt);
-                        if (Integer.class.cast(chestItems[l][2][m]) != 0)
-                            pw.print("-" + chestItems[l][2][m]);
-                        pw.print("," + chestItems[l][3][m]);
-                        pw.print("," + chestItems[l][4][m]);
-                        pw.println("," + chestItems[l][5][m]);
+                        if (Integer.class.cast(Building.DEFAULT_CHEST_ITEMS[l][2][m]) != 0)
+                            pw.print("-" + Building.DEFAULT_CHEST_ITEMS[l][2][m]);
+                        pw.print("," + Building.DEFAULT_CHEST_ITEMS[l][3][m]);
+                        pw.print("," + Building.DEFAULT_CHEST_ITEMS[l][4][m]);
+                        pw.println("," + Building.DEFAULT_CHEST_ITEMS[l][5][m]);
                     }
                 }catch(Exception e){
                     e.printStackTrace();

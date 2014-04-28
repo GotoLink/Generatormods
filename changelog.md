@@ -1,3 +1,9 @@
+== CARuins, GreatWall and WalledCity Generator 0.1.6 ==
+* Changed mob spawner handling to support modded mobs
+* Changed chest content definition to support user-defined chest types
+* Moved log file into logs folder
+* Changed templates and read-me file to reflect other changes
+
 == CARuins, GreatWall and WalledCity Generator 0.1.5 ==
 * Changed templates 
 * Changed "special block" rules
