@@ -28,7 +28,7 @@ public class BuildingUndergroundEntranceway extends Building {
 	public BuildingUndergroundEntranceway(int ID_, WorldGeneratorThread wgt_, TemplateWall ws_, int dir_, int[] sourcePt) {
 		super(ID_, wgt_, ws_.TowerRule, dir_, 1, false, new int[] { PASSAGE_WIDTH, PASSAGE_HEIGHT, 0 }, sourcePt);
 		ws = ws_;
-		stairsID = blockToStairs(ws.rules[ws.template[0][0][ws.WWidth / 2]].primaryBlock);
+		stairsID = ws.rules[ws.template[0][0][ws.WWidth / 2]].primaryBlock.toStair();
 		//wallBlockRule=new TemplateRule(new int[]{ws_.TowerBlock,0});
 	}
 

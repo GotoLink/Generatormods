@@ -1,5 +1,6 @@
 package assets.generator;
 
+import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 
 /*
@@ -317,14 +318,15 @@ public class BuildingTower extends Building {
 		if (roofRule == TemplateRule.RULE_NOT_PROVIDED) {
 			roofRule = (roofStyle == ROOF_STEEP || roofStyle == ROOF_SHALLOW || roofStyle == ROOF_TRIM || roofStyle == ROOF_TWO_SIDED) ? new TemplateRule(Blocks.planks, 0, "") : bRule;
 		}
-		int stepMeta = blockToStepMeta(roofRule.primaryBlock).getMeta();
+		int stepMeta = roofRule.primaryBlock.toStep().getMeta();
 		TemplateRule stepRule = new TemplateRule(Blocks.stone_slab, stepMeta, roofRule.chance);
 		TemplateRule doubleStepRule = (stepMeta == 2) ? new TemplateRule(Blocks.planks, 0, roofRule.chance) : new TemplateRule(Blocks.double_stone_slab, stepMeta, roofRule.chance);
 		TemplateRule trimRule = roofStyle == ROOF_TRIM ? new TemplateRule(bRule.primaryBlock.get() == Blocks.cobblestone ? Blocks.log : Blocks.cobblestone, 0, roofRule.chance) : stepRule;
-		TemplateRule northStairsRule = new TemplateRule(blockToStairs(roofRule.primaryBlock), STAIRS_DIR_TO_META[DIR_NORTH], roofRule.chance);
-		TemplateRule southStairsRule = new TemplateRule(blockToStairs(roofRule.primaryBlock), STAIRS_DIR_TO_META[DIR_SOUTH], roofRule.chance);
-		TemplateRule eastStairsRule = new TemplateRule(blockToStairs(roofRule.primaryBlock), STAIRS_DIR_TO_META[DIR_EAST], roofRule.chance);
-		TemplateRule westStairsRule = new TemplateRule(blockToStairs(roofRule.primaryBlock), STAIRS_DIR_TO_META[DIR_WEST], roofRule.chance);
+        Block roof = roofRule.primaryBlock.toStair();
+        TemplateRule northStairsRule = new TemplateRule(roof, STAIRS_DIR_TO_META[DIR_NORTH], roofRule.chance);
+		TemplateRule southStairsRule = new TemplateRule(roof, STAIRS_DIR_TO_META[DIR_SOUTH], roofRule.chance);
+		TemplateRule eastStairsRule = new TemplateRule(roof, STAIRS_DIR_TO_META[DIR_EAST], roofRule.chance);
+		TemplateRule westStairsRule = new TemplateRule(roof, STAIRS_DIR_TO_META[DIR_WEST], roofRule.chance);
 		//======================================== build it! ================================================
 		if (roofStyle == ROOF_CRENEL) { //crenelated
 			if (circular) {
@@ -653,7 +655,7 @@ public class BuildingTower extends Building {
 			buffer[x + 1][z + 1][y + 1] = new BlockAndMeta(Blocks.wooden_door, metadata);
 			buffer[x + 1][z + 1 + 1][y + 1] = new BlockAndMeta(Blocks.wooden_door, random.nextBoolean() ? 8 : 9);
 			if (isFloor(x + xFace, z - 1, y + yFace) && x + xFace + 1 >= 0 && x + xFace + 1 < buffer.length && y + yFace + 1 >= 0 && y + yFace + 1 < buffer[0][0].length) {
-				buffer[x + xFace + 1][z - 1 + 1][y + yFace + 1] = blockToStepMeta(bRule.primaryBlock);//build a step-up
+				buffer[x + xFace + 1][z - 1 + 1][y + yFace + 1] = bRule.primaryBlock.toStep();//build a step-up
 			}
 		} else
 			for (int z1 = z; z1 < z + height; z1++)

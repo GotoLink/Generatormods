@@ -95,8 +95,6 @@ public class Building {
 			PRESERVE_BLOCK = new BlockExtended(Blocks.air, 0, "PRESERVE"),
 			TOWER_CHEST_BLOCK = new BlockExtended(Blocks.chest, 0, TOWER_CHEST), HARD_CHEST_BLOCK = new BlockExtended(Blocks.chest, 0, HARD_CHEST),
 			GHAST_SPAWNER = new BlockExtended(Blocks.mob_spawner, 0, "Ghast");
-	protected final static Block[] STEP_TO_STAIRS = { Blocks.stone_brick_stairs, Blocks.sandstone_stairs, Blocks.oak_stairs, Blocks.stone_stairs, Blocks.brick_stairs, Blocks.stone_brick_stairs, Blocks.nether_brick_stairs,
-			Blocks.quartz_stairs };
 	public final static int MAX_SPHERE_DIAM = 40;
 	public final static int[][] SPHERE_SHAPE = new int[MAX_SPHERE_DIAM + 1][];
 	public final static int[][][] CIRCLE_SHAPE = new int[MAX_SPHERE_DIAM + 1][][], CIRCLE_CRENEL = new int[MAX_SPHERE_DIAM + 1][][];
@@ -473,7 +471,7 @@ public class Building {
             Block adjId = world.getBlock(dirX, block[1], dirZ);
             Block aboveID = world.getBlock(block[0], block[1] + 1, block[2]);
             if (BlockProperties.get(aboveID).isGround && BlockProperties.get(adjId).isGround) {
-                return stairToSolidBlock(blc);
+                return new BlockAndMeta(blc, block[3]).stairToSolid();
             } else if (!BlockProperties.get(adjId).isWallable || !BlockProperties.get(aboveID).isWallable) {
                 return new BlockAndMeta(null, 0); // solid or liquid non-wall block. In this case, just don't build the stair (aka preserve block).
             }
@@ -544,7 +542,9 @@ public class Building {
 	// allows control of lighting. Also will build even if replacing air with air.
 	protected final void setBlockWithLightingLocal(int x, int z, int y, Block blockID, int metadata, boolean lighting) {
 		int[] pt = getIJKPt(x, z, y);
-		if (blockID != Blocks.chest)
+        if (blockID == Blocks.air && world.isAirBlock(pt[0], pt[1], pt[2]))
+            return;
+		if (!(blockID instanceof BlockChest))
 			emptyIfChest(pt);
 		if (BlockProperties.get(blockID).isDelayed)
             delayedBuildQueue.offer(new PlacedBlock(blockID, new int[]{pt[0], pt[1], pt[2], rotateMetadata(blockID, metadata)}));
@@ -586,7 +586,7 @@ public class Building {
                 return;
             }
 			Block presentBlock = world.getBlock(pt[0], pt[1], pt[2]);
-			if (!BlockProperties.get(presentBlock).isWater) {
+			if (!presentBlock.isAir(world, pt[0], pt[1], pt[2]) && !BlockProperties.get(presentBlock).isWater) {
 				if (!(BlockProperties.get(world.getBlock(pt[0] - 1, pt[1], pt[2])).isWater || BlockProperties.get(world.getBlock(pt[0], pt[1], pt[2] - 1)).isWater
 						|| BlockProperties.get(world.getBlock(pt[0] + 1, pt[1], pt[2])).isWater || BlockProperties.get(world.getBlock(pt[0], pt[1], pt[2] + 1)).isWater || BlockProperties.get(world.getBlock(pt[0], pt[1] + 1,
 						pt[2])).isWater)) {// don't adjacent to a water block
@@ -664,7 +664,12 @@ public class Building {
 		Object[][] itempool = wgt.chestItems.get(chestType);
 		int idx = pickWeightedOption(world.rand, Arrays.asList(itempool[3]), Arrays.asList(itempool[0]));
         Object obj = itempool[1][idx];
+        if(obj == null){
+            return null;
+        }
         if(obj instanceof Block){
+            if(obj == Blocks.air)
+                return null;
             obj = Item.getItemFromBlock((Block)obj);
         }
 		return new ItemStack((Item)obj, Integer.class.cast(itempool[4][idx]) + random.nextInt(Integer.class.cast(itempool[5][idx]) - Integer.class.cast(itempool[4][idx]) + 1), Integer.class.cast(itempool[2][idx]));
@@ -1247,65 +1252,6 @@ public class Building {
 
 	// ******************** STATIC FUNCTIONS
 	// ******************************************************************************************************************************************//
-	protected static Block blockToStairs(BlockAndMeta idAndMeta) {
-		if(idAndMeta.get()==Blocks.cobblestone||idAndMeta.get()==Blocks.mossy_cobblestone){
-			return Blocks.stone_stairs;
-        }else if(idAndMeta.get()==Blocks.nether_brick){
-			return Blocks.nether_brick_stairs;
-        }else if(idAndMeta.get()==Blocks.stonebrick||idAndMeta.get()==Blocks.stone){
-			return Blocks.stone_brick_stairs;
-        }else if(idAndMeta.get()==Blocks.brick_block){
-			return Blocks.brick_stairs;
-        }else if(idAndMeta.get()==Blocks.sandstone){
-			return Blocks.sandstone_stairs;
-        }else if(idAndMeta.get()==Blocks.quartz_block){
-			return Blocks.quartz_stairs;
-        }else if(idAndMeta.get()==Blocks.planks){
-			int tempdata = idAndMeta.getMeta();
-			switch (tempdata) {
-			case 0:
-				return Blocks.oak_stairs;
-			case 1:
-				return Blocks.spruce_stairs;
-			case 2:
-				return Blocks.birch_stairs;
-			case 3:
-				return Blocks.jungle_stairs;
-            case 4:
-                return Blocks.acacia_stairs;
-            case 5:
-                return Blocks.dark_oak_stairs;
-			}
-        }
-        return idAndMeta.get();
-	}
-
-	protected static BlockAndMeta blockToStepMeta(BlockAndMeta idAndMeta) {
-		if (!BlockProperties.get(idAndMeta.get()).isArtificial)
-			return idAndMeta;
-        if(idAndMeta.get()==Blocks.sandstone){
-            return new BlockAndMeta(Blocks.stone_slab, 1);
-        }else if(idAndMeta.get()==Blocks.planks){
-            return new BlockAndMeta(Blocks.stone_slab, 2);
-        }else if(idAndMeta.get()==Blocks.cobblestone){
-            return new BlockAndMeta(Blocks.stone_slab, 3);
-        }else if(idAndMeta.get()==Blocks.brick_block){
-            return new BlockAndMeta(Blocks.stone_slab, 4);
-        }else if(idAndMeta.get()==Blocks.stonebrick){
-            return new BlockAndMeta(Blocks.stone_slab, 5);
-        }else if(idAndMeta.get()==Blocks.nether_brick){
-            return new BlockAndMeta(Blocks.stone_slab, 6);
-        }else if(idAndMeta.get()==Blocks.quartz_block){
-            return new BlockAndMeta(Blocks.stone_slab, 7);
-        }else if(idAndMeta.get()==Blocks.stone_slab||idAndMeta.get()==Blocks.double_stone_slab){
-			return new BlockAndMeta(Blocks.stone_slab, idAndMeta.getMeta());
-        }else if(idAndMeta.get()==Blocks.double_wooden_slab||idAndMeta.get()==Blocks.wooden_slab){
-            return new BlockAndMeta(Blocks.wooden_slab, idAndMeta.getMeta());
-        }else{
-			return new BlockAndMeta(idAndMeta.get(), 0);
-		}
-	}
-
 	protected static void fillDown(int[] lowPt, int jtop, World world) {
 		while (BlockProperties.get(world.getBlock(lowPt[0], lowPt[1], lowPt[2])).isArtificial)
 			lowPt[1]--;
@@ -1340,42 +1286,6 @@ public class Building {
 		if (n <= wiggle && -n <= wiggle)
 			return 0;
 		return n < 0 ? -1 : 1;
-	}
-
-	protected static BlockAndMeta stairToSolidBlock(Block stair) {
-        Block block = stair;
-        int meta = 0;
-		if(stair==Blocks.stone_stairs) {
-			block = Blocks.cobblestone;
-        }else if(stair==Blocks.oak_stairs) {
-            block = Blocks.planks;
-        }else if(stair==Blocks.spruce_stairs) {
-            block = Blocks.planks;
-            meta = 1;
-        }else if(stair==Blocks.birch_stairs) {
-            block = Blocks.planks;
-            meta = 2;
-        }else if(stair==Blocks.jungle_stairs) {
-            block = Blocks.planks;
-            meta = 3;
-        }else if(stair==Blocks.acacia_stairs) {
-            block = Blocks.planks;
-            meta = 4;
-        }else if(stair==Blocks.dark_oak_stairs) {
-            block = Blocks.planks;
-            meta = 5;
-        }else if(stair==Blocks.brick_stairs) {
-            block = Blocks.brick_block;
-        }else if(stair==Blocks.stone_brick_stairs) {
-            block = Blocks.stonebrick;
-        }else if(stair==Blocks.nether_brick_stairs) {
-            block = Blocks.nether_brick;
-        }else if(stair==Blocks.sandstone_stairs) {
-            block = Blocks.sandstone;
-        }else if(stair==Blocks.quartz_stairs) {
-            block = Blocks.quartz_block;
-        }
-        return new BlockAndMeta(block, meta);
 	}
 
 	private static void circleShape(int diam) {

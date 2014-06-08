@@ -22,7 +22,8 @@ public class BuildingWall extends Building {
 	public enum FailType {
 		NOTHING, OBSTRUCTED, UNDERWATER, TOOSTEEPDOWN, TOOSTEEPUP, HITWALL, CANNOTEXPLORE, HITTARGET, MAXLENGTH
 	}
-
+    protected final static Block[] STEP_TO_STAIRS = { Blocks.stone_brick_stairs, Blocks.sandstone_stairs, Blocks.oak_stairs, Blocks.stone_stairs, Blocks.brick_stairs, Blocks.stone_brick_stairs, Blocks.nether_brick_stairs,
+            Blocks.quartz_stairs };
 	public final static boolean DEBUG = false;
 	public final static boolean DEBUG_SIGNS = false;
 	public final static int SEARCHDOWN = 2, MIN_SEARCHUP = 2;
@@ -693,7 +694,7 @@ public class BuildingWall extends Building {
 		xArray = new int[maxLength];
 		zArray = new int[maxLength];
 		bLength = 0;
-		halfStairValue = blockToStepMeta(bRule.primaryBlock);
+		halfStairValue = bRule.primaryBlock.toStep();
 	}
 
 	//****************************************  FUNCTION - makeBuildings *************************************************************************************//
@@ -756,14 +757,14 @@ public class BuildingWall extends Building {
 		Block id = world.getBlock(pt[0], pt[1], pt[2]);
 		int meta = world.getBlockMetadata(pt[0], pt[1], pt[2]);
 		if (BlockProperties.get(id).isStair && STAIRS_META_TO_DIR[meta < 4 ? meta : (meta - 4)] == rotDir(bDir, -bHand)) {
-            BlockAndMeta temp = stairToSolidBlock(id);
+            BlockAndMeta temp = new BlockAndMeta(id, meta).stairToSolid();
             world.setBlock(pt[0], pt[1], pt[2], temp.get(), temp.getMeta(), 2);
         }
 		pt = getIJKPt(bWidth, WalkHeight - 1, 0);
 		id = world.getBlock(pt[0], pt[1], pt[2]);
 		meta = world.getBlockMetadata(pt[0], pt[1], pt[2]);
 		if (BlockProperties.get(id).isStair && STAIRS_META_TO_DIR[meta < 4 ? meta : (meta - 4)] == rotDir(bDir, bHand)) {
-            BlockAndMeta temp = stairToSolidBlock(id);
+            BlockAndMeta temp = new BlockAndMeta(id, meta).stairToSolid();
             world.setBlock(pt[0], pt[1], pt[2], temp.get(), temp.getMeta(), 2);
         }
 	}

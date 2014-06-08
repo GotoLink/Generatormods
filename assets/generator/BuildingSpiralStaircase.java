@@ -46,7 +46,7 @@ public class BuildingSpiralStaircase extends Building {
 	//  |x	z=bHeight=-7, (2-in-a-row bottom stair), xfinal=2, yfinal=0
 	//
 	public void build(int extraTopStairs, int yP) {
-		Block stairsBlockId = blockToStairs(bRule.primaryBlock);
+		Block stairsBlockId = bRule.primaryBlock.toStair();
 		int sDir = DIR_SOUTH;
 		setBlockLocal(1, 0, 1, bRule);
 		if (yP == 1 && yP == 2)

@@ -59,7 +59,7 @@ public class BuildingCellularAutomaton extends Building {
 	}
 
 	public void build(boolean SmoothWithStairs, boolean makeFloors) {
-		Block stairsBlock = SmoothWithStairs ? blockToStairs(bRule.primaryBlock) : Blocks.air;
+		Block stairsBlock = SmoothWithStairs ? bRule.primaryBlock.toStair() : Blocks.air;
 		TemplateRule[] stairs = new TemplateRule[] { new TemplateRule(stairsBlock, STAIRS_DIR_TO_META[DIR_NORTH], bRule.chance),
 				new TemplateRule(stairsBlock, STAIRS_DIR_TO_META[DIR_EAST], bRule.chance), new TemplateRule(stairsBlock, STAIRS_DIR_TO_META[DIR_SOUTH], bRule.chance),
 				new TemplateRule(stairsBlock, STAIRS_DIR_TO_META[DIR_WEST], bRule.chance) };
