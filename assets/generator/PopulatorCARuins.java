@@ -249,7 +249,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler {
 		pw.println();
 		pw.println("<-These spawner rule variables control what spawners will be used depending on the light level and floor width.->");
 		for (int m = 0; m < spawnerRules.length; m++) {
-			pw.println(SPAWNER_RULE_NAMES[m] + ":" + spawnerRules[m].toString());
+			pw.println(SPAWNER_RULE_NAMES[m] + ":" + spawnerRules[m]);
 		}
 		pw.println();
 		pw.println("<-BlockRule is the template rule that controls what blocks the structure will be made out of.->");
@@ -258,7 +258,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler {
 		pw.println("<-Metadatas are supported, use blockname-blockmetadata syntax->");
 		for (int m = 0; m < DEFAULT_BLOCK_RULES.length; m++) {
 			if (BLOCK_RULE_NAMES[m] != null)
-				pw.println(BLOCK_RULE_NAMES[m] + ":" + DEFAULT_BLOCK_RULES[m].toString());
+				pw.println(BLOCK_RULE_NAMES[m] + ":" + DEFAULT_BLOCK_RULES[m]);
 		}
 		pw.println();
 		pw.println("<-An automata rule should be in the form B<neighbor digits>/S<neighbor digits>, where B stands for \"birth\" and S stands->");

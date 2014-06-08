@@ -243,24 +243,23 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 		pw.println();
 		pw.println("<-Chest contents->");
 		pw.println("<-Tries is the number of selections that will be made for this chest type.->");
-		pw.println("<-Format for items is <itemID>,<selection weight>,<min stack size>,<max stack size> ->");
-		pw.println("<-So e.g. 262,1,1,12 means a stack of between 1 and 12 arrows, with a selection weight of 1.->");
+		pw.println("<-Format for items is <item name>,<selection weight>,<min stack size>,<max stack size> ->");
+		pw.println("<-So e.g. minecraft:arrow,2,1,12 means a stack of between 1 and 12 arrows, with a selection weight of 2.->");
 		for (int l = 0; l < Building.CHEST_TYPE_LABELS.length; l++) {
 			pw.println("CHEST_" + Building.CHEST_TYPE_LABELS[l]);
 			pw.println("Tries:" + Building.DEFAULT_CHEST_TRIES[l]);
-			for (int m = 0; m < Building.DEFAULT_CHEST_ITEMS[l][0].length; m++) {
+			for (int m = 0; m < Building.DEFAULT_CHEST_ITEMS[l].length; m++) {
                 try{
-                    String txt = GameData.itemRegistry.getNameForObject(Building.DEFAULT_CHEST_ITEMS[l][1][m]);
+                    String txt = GameData.itemRegistry.getNameForObject(Building.DEFAULT_CHEST_ITEMS[l][m][1]);
                     if(txt==null){
-                        txt = GameData.blockRegistry.getNameForObject(Building.DEFAULT_CHEST_ITEMS[l][1][m]);
+                        txt = GameData.blockRegistry.getNameForObject(Building.DEFAULT_CHEST_ITEMS[l][m][1]);
                     }
                     if(txt!=null){
                         pw.print(txt);
-                        if (Integer.class.cast(Building.DEFAULT_CHEST_ITEMS[l][2][m]) != 0)
-                            pw.print("-" + Building.DEFAULT_CHEST_ITEMS[l][2][m]);
-                        pw.print("," + Building.DEFAULT_CHEST_ITEMS[l][3][m]);
-                        pw.print("," + Building.DEFAULT_CHEST_ITEMS[l][4][m]);
-                        pw.println("," + Building.DEFAULT_CHEST_ITEMS[l][5][m]);
+                        pw.print("-" + Building.DEFAULT_CHEST_ITEMS[l][m][2]);
+                        pw.print("," + Building.DEFAULT_CHEST_ITEMS[l][m][3]);
+                        pw.print("," + Building.DEFAULT_CHEST_ITEMS[l][m][4]);
+                        pw.println("," + Building.DEFAULT_CHEST_ITEMS[l][m][5]);
                     }
                 }catch(Exception e){
                     e.printStackTrace();

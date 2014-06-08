@@ -29,8 +29,8 @@ public class TemplateRule {
 	public final static TemplateRule RULE_NOT_PROVIDED = null;
 	public final static String BLOCK_NOT_REGISTERED_ERROR_PREFIX = "Error reading rule: BlockID "; //so we can treat this error differently
 	public final static String SPECIAL_AIR = "PRESERVE", SPECIAL_STAIR = "WALL_STAIR", SPECIAL_PAINT = "PAINTING";
-    public final static TemplateRule AIR_RULE = new TemplateRule(Blocks.air, 0, "");
-	public final static TemplateRule STONE_RULE = new TemplateRule(Blocks.stone, 0, "");
+    public final static TemplateRule AIR_RULE = new TemplateRule(Blocks.air, 0, null);
+	public final static TemplateRule STONE_RULE = new TemplateRule(Blocks.stone, 0, null);
 	private Block[] blockIDs;
     private int[] blockMDs;
     private String[] extraData;
@@ -65,7 +65,7 @@ public class TemplateRule {
                     } catch (Exception e) {
                     }
                 }
-                if(data[0].startsWith("W")){
+                if(data[0].startsWith(SPECIAL_STAIR.substring(0, 1))){
                     blockMDs[i] = -x;
                 }else{
                     blockMDs[i] = Building.PAINTING_BLOCK_OFFSET + x;
@@ -108,12 +108,13 @@ public class TemplateRule {
     public TemplateRule(Block block, int meta, String extra) {
         blockIDs = new Block[] { block };
         blockMDs = new int[] { meta };
-        extraData = new String[]{ extra };
+        if(extra!=null)
+            extraData = new String[]{ extra };
         primaryBlock = getPrimaryBlock();
     }
 
     public TemplateRule(Block block, int meta, int chance_) {
-        this(block, meta, "", chance_);
+        this(block, meta, null, chance_);
     }
 
 	public TemplateRule(Block block, int meta, String extra, int chance_) {
@@ -121,14 +122,9 @@ public class TemplateRule {
 		chance = chance_;
 	}
 
-    public TemplateRule(BlockAndMeta blockAndMeta, String extra, int chance_) {
-        this(blockAndMeta.get(), blockAndMeta.getMeta(), extra, chance_);
-    }
-
     public TemplateRule(Block[] blockIDs_, int[] blockMDs_, int chance_) {
         blockIDs = blockIDs_;
         blockMDs = blockMDs_;
-        extraData = new String[blockIDs_.length];
         chance = chance_;
         primaryBlock = getPrimaryBlock();
     }
@@ -156,7 +152,10 @@ public class TemplateRule {
 		if (condition != FIXED_FOR_BUILDING)
 			return this;
 		int m = random.nextInt(blockIDs.length);
-		return new TemplateRule(blockIDs[m], blockMDs[m], extraData[m], chance);
+        if(extraData!=null && extraData[m]!=null && !extraData[m].equals(""))
+		    return new TemplateRule(blockIDs[m], blockMDs[m], extraData[m], chance);
+        else
+            return new TemplateRule(blockIDs[m], blockMDs[m], chance);
 	}
 
 	public BlockAndMeta getBlockOrHole(Random random) {
@@ -185,17 +184,15 @@ public class TemplateRule {
 	}
 
     public boolean hasUndeadSpawner(){
-        for (int i = 0; i<blockIDs.length; i++){
-            //Zombie, Skeleton, Creeper, EASY, UPRIGHT spawners
-            if(blockIDs[i] instanceof BlockMobSpawner)
-                if(blockMDs[i]==0){
+        if(extraData!=null)
+            for (int i = 0; i<blockIDs.length; i++){
+                //Zombie, Skeleton, Creeper, EASY, UPRIGHT spawners
+                if(blockIDs[i] instanceof BlockMobSpawner) {
                     String txt = extraData[i];
-                    if(txt!=null && (txt.equals("Zombie")||txt.equals("Skeleton")||txt.equals("Creeper")||txt.equals("EASY")||txt.equals("UPRIGHT")))
+                    if (txt != null && (txt.equals("Zombie") || txt.equals("Skeleton") || txt.equals("Creeper") || txt.equals("EASY") || txt.equals("UPRIGHT")))
                         return true;
                 }
-                else if(blockMDs[i]==1||blockMDs[i]==2||blockMDs[i]==4||blockMDs[i]==28||blockMDs[i]==31)//Backward compatibility
-                    return true;
-        }
+            }
         return false;
     }
 
@@ -211,9 +208,9 @@ public class TemplateRule {
 	public String toString() {
 		String str = condition + "," + chance;
 		for (int m = 0; m < blockIDs.length; m++) {
-			str += "," + GameData.blockRegistry.getNameForObject(blockIDs[m]);
-			if (blockMDs[m] != 0)
-				str += "-" + blockMDs[m];
+			str += "," + GameData.blockRegistry.getNameForObject(blockIDs[m]) + "-" + blockMDs[m];
+            if(extraData!=null && extraData[m]!=null && !extraData[m].equals(""))
+                str += "-" + extraData[m];
 		}
 		return str;
 	}
