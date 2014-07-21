@@ -161,7 +161,7 @@ public class CommandScan extends CommandBase{
                     writer.println("endlayer");
                 }
                 writer.close();
-                notifyAdmins(var1, "Template scanner used by " + var1.getCommandSenderName(), var1.getCommandSenderName(), command);
+                func_152373_a(var1, this, "Template scanner used by " + var1.getCommandSenderName(), var1.getCommandSenderName(), command);
             }
             }catch (IOException io){}
         } else {

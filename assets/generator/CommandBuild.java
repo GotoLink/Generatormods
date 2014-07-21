@@ -48,7 +48,7 @@ public class CommandBuild extends CommandBase {
 	@Override
 	public void processCommand(ICommandSender var1, String[] coordinate) {
 		if (coordinate.length == 4 || coordinate.length == 3) {
-			notifyAdmins(var1, 0, "/build command used by " + var1.getCommandSenderName(), var1.getCommandSenderName(), coordinate);
+            func_152373_a(var1, this, "/build command used by " + var1.getCommandSenderName(), var1.getCommandSenderName(), coordinate);
 			int posX = parseInt(var1, coordinate[coordinate.length - 2]);
 			int posZ = parseInt(var1, coordinate[coordinate.length - 1]);
 			World world = MinecraftServer.getServer().worldServers[coordinate.length == 3 ? 0 : Integer.parseInt(coordinate[1])];

@@ -45,7 +45,7 @@ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
 
-@Mod(modid = "WalledCityMod", name = "Walled City Generator", version = BuildingExplorationHandler.VERSION, dependencies = "after:ExtraBiomes,BiomesOPlenty")
+@Mod(modid = "WalledCityMod", name = "Walled City Generator", version = BuildingExplorationHandler.VERSION, dependencies = "after:ExtraBiomes,BiomesOPlenty", acceptableRemoteVersions = "*")
 public class PopulatorWalledCity extends BuildingExplorationHandler {
 	@Instance("WalledCityMod")
 	public static PopulatorWalledCity instance;
