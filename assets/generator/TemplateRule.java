@@ -73,9 +73,9 @@ public class TemplateRule {
                 extraData[i] = data[0];
             }else {
                 try {
-                    temp = GameData.blockRegistry.getObjectById(Integer.parseInt(data[0]));
+                    temp = GameData.getBlockRegistry().getObjectById(Integer.parseInt(data[0]));
                 } catch (Exception e) {
-                    temp = GameData.blockRegistry.getObject(data[0]);
+                    temp = GameData.getBlockRegistry().getObject(data[0]);
                 }
                 if (temp != null) {
                     blockIDs[i] = temp;
@@ -177,7 +177,7 @@ public class TemplateRule {
 				return false;
             if(blockMDs[i] != Building.PRESERVE_BLOCK.getMeta())
                 return false;
-            if(extraData[i] == null || !extraData[i].equals(SPECIAL_AIR))
+            if(extraData == null || extraData[i] == null || !extraData[i].equals(SPECIAL_AIR))
                 return false;
         }
 		return true;
@@ -207,11 +207,12 @@ public class TemplateRule {
 	@Override
 	public String toString() {
 		String str = condition + "," + chance;
-		for (int m = 0; m < blockIDs.length; m++) {
-			str += "," + GameData.blockRegistry.getNameForObject(blockIDs[m]) + "-" + blockMDs[m];
-            if(extraData!=null && extraData[m]!=null && !extraData[m].equals(""))
-                str += "-" + extraData[m];
-		}
+        if(blockIDs!=null)
+            for (int m = 0; m < blockIDs.length; m++) {
+                str += "," + GameData.getBlockRegistry().getNameForObject(blockIDs[m]) + "-" + blockMDs[m];
+                if(extraData!=null && extraData[m]!=null && !extraData[m].equals(""))
+                    str += "-" + extraData[m];
+            }
 		return str;
 	}
 
