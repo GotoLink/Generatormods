@@ -1,16 +1,17 @@
 package assets.generator;
 
 /*
- *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
+ *  Source code for the The Great Wall Mod, CellullarAutomata Ruins and Walled City Generator Mods for the game Minecraft
  *  Copyright (C) 2011 by formivore
-
- This program is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of
+ * the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Lesser General Public License for more details.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /*
  * BuildingExplorationHandler is a abstract superclass for PopulatorWalledCity and PopulatorGreatWall.
@@ -107,14 +108,14 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
                     Object temp;
                     try{
                         int i = Integer.parseInt(idAndMeta[0]);
-                        temp = GameData.itemRegistry.getObjectById(i);
+                        temp = GameData.getItemRegistry().getObjectById(i);
                         if(temp==null){
-                            temp = GameData.blockRegistry.getObjectById(i);
+                            temp = GameData.getBlockRegistry().getObjectById(i);
                         }
                     }catch (Exception e){
-                        temp = GameData.itemRegistry.getObject(idAndMeta[0]);
+                        temp = GameData.getItemRegistry().getObject(idAndMeta[0]);
                         if(temp==null){
-                            temp = GameData.blockRegistry.getObject(idAndMeta[0]);
+                            temp = GameData.getBlockRegistry().getObject(idAndMeta[0]);
                         }
                     }
                     if(temp!=null){
@@ -250,9 +251,9 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 			pw.println("Tries:" + Building.DEFAULT_CHEST_TRIES[l]);
 			for (int m = 0; m < Building.DEFAULT_CHEST_ITEMS[l].length; m++) {
                 try{
-                    String txt = GameData.itemRegistry.getNameForObject(Building.DEFAULT_CHEST_ITEMS[l][m][1]);
+                    String txt = GameData.getItemRegistry().getNameForObject(Building.DEFAULT_CHEST_ITEMS[l][m][1]);
                     if(txt==null){
-                        txt = GameData.blockRegistry.getNameForObject(Building.DEFAULT_CHEST_ITEMS[l][m][1]);
+                        txt = GameData.getBlockRegistry().getNameForObject(Building.DEFAULT_CHEST_ITEMS[l][m][1]);
                     }
                     if(txt!=null){
                         pw.print(txt);

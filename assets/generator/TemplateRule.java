@@ -1,17 +1,19 @@
 package assets.generator;
 
 /*
- *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
- *  Copyright (C) 2011 by formivore
-
- This program is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *  Source code for the The Great Wall Mod, CellullarAutomata Ruins and Walled City Generator Mods for the game Minecraft
+ *  Copyright (C) 2011 by Formivore - 2012 by GotoLink
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of
+ * the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Lesser General Public License for more details.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /*
  * TemplateRule reads in a rule String and defines a rule that blocks can be sampled from.
  */
