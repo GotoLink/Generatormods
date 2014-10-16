@@ -20,22 +20,23 @@ package assets.generator;
  * PopulatorGreatWall is the main class that hooks into ForgeModLoader for the Great Wall Mod.
  * It reads the globalSettings file and runs WorldGenWalledCities.
  */
+
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.Mod.EventHandler;
+import cpw.mods.fml.common.Mod.Instance;
+import cpw.mods.fml.common.ModContainer;
+import cpw.mods.fml.common.event.FMLPostInitializationEvent;
+import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.registry.GameRegistry;
+import net.minecraft.world.World;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Random;
-
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.ModContainer;
-import net.minecraft.world.World;
-import cpw.mods.fml.common.Mod;
-import cpw.mods.fml.common.Mod.EventHandler;
-import cpw.mods.fml.common.Mod.Instance;
-import cpw.mods.fml.common.event.FMLPostInitializationEvent;
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.registry.GameRegistry;
 
 @Mod(modid = "GreatWallMod", name = "Great Wall Mod", version = BuildingExplorationHandler.VERSION, dependencies = "after:ExtraBiomes,BiomesOPlenty", acceptableRemoteVersions = "*")
 public class PopulatorGreatWall extends BuildingExplorationHandler {
@@ -47,8 +48,6 @@ public class PopulatorGreatWall extends BuildingExplorationHandler {
 	public int BacktrackLength = 9;
 	//DATA VARIABLES
 	public ArrayList<TemplateWall> wallStyles = null;
-	public int[] placedCoords = null;
-	public World placedWorld = null;
 
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {

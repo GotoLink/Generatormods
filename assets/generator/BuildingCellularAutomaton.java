@@ -14,16 +14,16 @@ package assets.generator;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import net.minecraft.block.Block;
+import net.minecraft.init.Blocks;
+import net.minecraft.util.MathHelper;
+import net.minecraft.world.EnumSkyBlock;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Random;
-
-import net.minecraft.block.Block;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.MathHelper;
-import net.minecraft.world.EnumSkyBlock;
 
 /*
  * BuildingCellularAutomaton creates seed-based structures
@@ -56,9 +56,15 @@ public class BuildingCellularAutomaton extends Building {
 		if ((bLength - seed[0].length) % 2 != 0)
 			bLength++;
 		caRule = caRule_;
-		mediumLightNarrowSpawnerRule = spawnerRules != null ? spawnerRules[0] : DEFAULT_MEDIUM_LIGHT_NARROW_SPAWNER_RULE;
-		mediumLightWideSpawnerRule = spawnerRules != null ? spawnerRules[1] : DEFAULT_MEDIUM_LIGHT_WIDE_SPAWNER_RULE;
-		lowLightSpawnerRule = spawnerRules != null ? spawnerRules[2] : DEFAULT_LOW_LIGHT_SPAWNER_RULE;
+        if(spawnerRules!=null) {
+            mediumLightNarrowSpawnerRule = spawnerRules[0];
+            mediumLightWideSpawnerRule = spawnerRules[1];
+            lowLightSpawnerRule = spawnerRules[2];
+        }else{
+            mediumLightNarrowSpawnerRule = DEFAULT_MEDIUM_LIGHT_NARROW_SPAWNER_RULE;
+            mediumLightWideSpawnerRule = DEFAULT_MEDIUM_LIGHT_WIDE_SPAWNER_RULE;
+            lowLightSpawnerRule = DEFAULT_LOW_LIGHT_SPAWNER_RULE;
+        }
 	}
 
 	public void build(boolean SmoothWithStairs, boolean makeFloors) {
@@ -210,9 +216,9 @@ public class BuildingCellularAutomaton extends Building {
 		BB[1][0] = (bWidth - seed.length) / 2 + seed.length - 1;
 		BB[2][0] = (bLength - seed[0].length) / 2;
 		BB[3][0] = (bLength - seed[0].length) / 2 + seed[0].length - 1;
-		for (int x = 0; x < seed.length; x++)
-			for (int y = 0; y < seed[0].length; y++)
-				layers[0][BB[0][0] + x][BB[2][0] + y] = seed[x][y];
+		for (int x = 0; x < seed.length; x++) {
+            System.arraycopy(seed[x], 0, layers[0][BB[0][0] + x], BB[2][0], seed[0].length);
+        }
 		int crystallizationHeight = UNREACHED;
 		for (int z = 1; z < bHeight; z++) {
 			boolean layerIsAlive = false;
@@ -324,9 +330,7 @@ public class BuildingCellularAutomaton extends Building {
 		for (int z = 0; z < bHeight; z++) {
 			int lZ = bHeight - z - 1;
 			for (int x = 0; x < bWidth; x++) {
-				for (int y = 0; y < bLength; y++) {
-					layers2[z][x][y] = layers[lZ][x + minX][y + minY];
-				}
+                System.arraycopy(layers[lZ][x + minX], minY, layers2[z][x], 0, bLength);
 			}
 			//floor bounding box
 			fBB[0][z] = BB[0][lZ] - minX + (BB[1][lZ] - BB[0][lZ]) / 4;

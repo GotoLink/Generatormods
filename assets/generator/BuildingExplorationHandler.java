@@ -17,28 +17,21 @@ package assets.generator;
  * BuildingExplorationHandler is a abstract superclass for PopulatorWalledCity and PopulatorGreatWall.
  * It loads settings files and runs WorldGeneratorThreads.
  */
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.*;
 
-import cpw.mods.fml.common.registry.GameData;
+import cpw.mods.fml.client.FMLClientHandler;
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.IWorldGenerator;
+import cpw.mods.fml.common.Loader;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldProviderEnd;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.chunk.storage.AnvilChunkLoader;
 import net.minecraft.world.storage.ISaveHandler;
-import cpw.mods.fml.client.FMLClientHandler;
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.IWorldGenerator;
-import cpw.mods.fml.common.Loader;
 import org.apache.logging.log4j.Level;
+
+import java.io.*;
+import java.util.*;
 
 public abstract class BuildingExplorationHandler implements IWorldGenerator {
     protected final static String VERSION = "0.1.6";

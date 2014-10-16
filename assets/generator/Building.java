@@ -32,20 +32,22 @@ package assets.generator;
  *                (+k)
  *               (dir=2)
  */
-import java.util.*;
 
 import net.minecraft.block.*;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.item.EntityPainting;
 import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.tileentity.TileEntityMobSpawner;
 import net.minecraft.tileentity.TileEntitySign;
 import net.minecraft.village.VillageDoorInfo;
 import net.minecraft.world.World;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Random;
+import java.util.Set;
 
 public class Building {
 	public final static int HIT_WATER = -666; // , HIT_SWAMP=-667;

@@ -14,9 +14,9 @@ package assets.generator;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import java.util.Random;
-
 import net.minecraft.world.World;
+
+import java.util.Random;
 
 @SuppressWarnings("unused")
 public class WorldGenSingleWall extends WorldGeneratorThread {
@@ -32,7 +32,7 @@ public class WorldGenSingleWall extends WorldGeneratorThread {
 		TemplateWall ws = TemplateWall.pickBiomeWeightedWallStyle(((PopulatorGreatWall) master).wallStyles, world, i0, k0, world.rand, false);
 		BuildingWall wall = new BuildingWall(0, this, ws, Building.DIR_NORTH, Building.R_HAND, ws.MaxL, true, i0, j0, k0);
 		//BuildingWall(int ID_, WorldGeneratorThread wgt_,WallStyle ws_,int dir_,int axXHand_, int maxLength_,int i0_,int j0_, int k0_){
-		wall.setTarget(((PopulatorGreatWall) master).placedCoords);
+		//wall.setTarget(((PopulatorGreatWall) master).placedCoords);
 		wall.plan(1, 0, ws.MergeWalls ? ws.WWidth : BuildingWall.DEFAULT_LOOKAHEAD, false);
 		//plan(int Backtrack, int startN, int depth, int lookahead, boolean stopAtWall) throws InterruptedException {
 		if (wall.bLength >= wall.y_targ) {
