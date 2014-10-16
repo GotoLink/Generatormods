@@ -51,7 +51,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 	public float GlobalFrequency = 0.025F;
 	public int TriesPerChunk = 1;
 	protected HashMap<String, Integer> chestTries = new HashMap<String, Integer>();
-	protected HashMap<String, Object[][]> chestItems = new HashMap<String, Object[][]>();
+	protected HashMap<String, RandomLoot[]> chestItems = new HashMap<String, RandomLoot[]>();
 	protected boolean errFlag = false, dataFilesLoaded = false;
 	protected boolean logActivated = false;
 	private List<Integer> AllowedDimensions = new ArrayList<Integer>();
@@ -99,44 +99,16 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 			ArrayList<String> lines = new ArrayList<String>();
 			for (line = br.readLine(); !(line == null || line.length() == 0); line = br.readLine())
 				lines.add(line);
-			Object[][] tempArray = new Object[6][lines.size()];
+			RandomLoot[] loots = new RandomLoot[lines.size()];
 			for (int n = 0; n < lines.size(); n++) {
-				String[] intStrs = lines.get(n).trim().split(",");
 				try {
-                    tempArray[0][n] = n;
-					String[] idAndMeta = intStrs[0].split("-");
-                    Object temp;
-                    try{
-                        int i = Integer.parseInt(idAndMeta[0]);
-                        temp = GameData.getItemRegistry().getObjectById(i);
-                        if(temp==null){
-                            temp = GameData.getBlockRegistry().getObjectById(i);
-                        }
-                    }catch (Exception e){
-                        temp = GameData.getItemRegistry().getObject(idAndMeta[0]);
-                        if(temp==null){
-                            temp = GameData.getBlockRegistry().getObject(idAndMeta[0]);
-                        }
-                    }
-                    if(temp!=null){
-                        tempArray[1][n] = temp;
-                        tempArray[2][n] = idAndMeta.length > 1 ? Integer.parseInt(idAndMeta[1]) : 0;
-                        for (int m = 1; m < 4; m++)
-                            tempArray[m + 2][n] = Integer.parseInt(intStrs[m]);
-                        //input checking
-                        if (Integer.class.cast(tempArray[4][n]) < 0)
-                            tempArray[4][n] = 0;
-                        if (Integer.class.cast(tempArray[5][n]) < Integer.class.cast(tempArray[4][n]))
-                            tempArray[5][n] = tempArray[4][n];
-                        if (Integer.class.cast(tempArray[5][n]) > 64)
-                            tempArray[5][n] = 64;
-                    }
+                    loots[n] = new RandomLoot(lines.get(n));
 				} catch (Exception e) {
 					lw.println("Error parsing Settings file: " + e.toString());
 					lw.println("Line:" + lines.get(n));
 				}
 			}
-            chestItems.put(chestType, tempArray);
+            chestItems.put(chestType, loots);
 		}
 	}
 
@@ -164,19 +136,14 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 	abstract public void writeGlobalOptions(PrintWriter pw);
 
 	protected void copyDefaultChestItems() {
-        for(int i = 0; i < Building.CHEST_TYPE_LABELS.length; i++){
-            chestTries.put(Building.CHEST_TYPE_LABELS[i], Building.DEFAULT_CHEST_TRIES[i]);
-        }
-		Object[][][] chestItems = new Object[Building.DEFAULT_CHEST_ITEMS.length][][];
-		//careful, we have to flip the order of the 2nd and 3rd dimension here
-		for (int l = 0; l < Building.DEFAULT_CHEST_ITEMS.length; l++) {
-			chestItems[l] = new Object[6][Building.DEFAULT_CHEST_ITEMS[l].length];
-			for (int m = 0; m < Building.DEFAULT_CHEST_ITEMS[l].length; m++) {
-				for (int n = 0; n < 6; n++) {
-					chestItems[l][n][m] = Building.DEFAULT_CHEST_ITEMS[l][m][n];
-				}
+		for (int l = 0; l < DefaultChest.ITEMS.length; l++) {
+            //careful, we have to flip the order of the 2nd and 3rd dimension here
+            RandomLoot[] chestItems = new RandomLoot[DefaultChest.ITEMS[l].length];
+			for (int m = 0; m < DefaultChest.ITEMS[l].length; m++) {
+                chestItems[m] = new RandomLoot(DefaultChest.ITEMS[l][m]);
 			}
-            this.chestItems.put(Building.CHEST_TYPE_LABELS[l], chestItems[l]);
+            this.chestItems.put(DefaultChest.LABELS[l], chestItems);
+            this.chestTries.put(DefaultChest.LABELS[l], DefaultChest.TRIES[l]);
 		}
 	}
 
@@ -241,33 +208,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 	}
 
 	protected void printDefaultChestItems(PrintWriter pw) {
-		pw.println();
-		pw.println("<-Chest contents->");
-		pw.println("<-Tries is the number of selections that will be made for this chest type.->");
-		pw.println("<-Format for items is <item name>,<selection weight>,<min stack size>,<max stack size> ->");
-		pw.println("<-So e.g. minecraft:arrow,2,1,12 means a stack of between 1 and 12 arrows, with a selection weight of 2.->");
-		for (int l = 0; l < Building.CHEST_TYPE_LABELS.length; l++) {
-			pw.println("CHEST_" + Building.CHEST_TYPE_LABELS[l]);
-			pw.println("Tries:" + Building.DEFAULT_CHEST_TRIES[l]);
-			for (int m = 0; m < Building.DEFAULT_CHEST_ITEMS[l].length; m++) {
-                try{
-                    String txt = GameData.getItemRegistry().getNameForObject(Building.DEFAULT_CHEST_ITEMS[l][m][1]);
-                    if(txt==null){
-                        txt = GameData.getBlockRegistry().getNameForObject(Building.DEFAULT_CHEST_ITEMS[l][m][1]);
-                    }
-                    if(txt!=null){
-                        pw.print(txt);
-                        pw.print("-" + Building.DEFAULT_CHEST_ITEMS[l][m][2]);
-                        pw.print("," + Building.DEFAULT_CHEST_ITEMS[l][m][3]);
-                        pw.print("," + Building.DEFAULT_CHEST_ITEMS[l][m][4]);
-                        pw.println("," + Building.DEFAULT_CHEST_ITEMS[l][m][5]);
-                    }
-                }catch(Exception e){
-                    e.printStackTrace();
-                }
-			}
-			pw.println();
-		}
+        DefaultChest.print(pw);
 	}
 
 	protected void printGlobalOptions(PrintWriter pw, boolean frequency) {

@@ -24,12 +24,16 @@ public class BuildingTower extends Building {
 	public final static int FLOOR_HAUNTED_CHANCE = 50, HAUNTED_CHEST_CHANCE = 60;
 	public final static int TOWER_UNIV_MIN_WIDTH = 5, TOWER_LEVELING = 12;
 	public final static String[] ROOFSTYLE_NAMES = { "Crenel", "Steep", "Steep Trim", "Shallow", "Dome", "Cone", "Two Sided" };
-	public final static int[] ROOF_STYLE_IDS = new int[ROOFSTYLE_NAMES.length];
 	public final static int SURFACE_PORTAL_ODDS = 20, NETHER_PORTAL_ODDS = 10;
 	public final static int BOOKSHELF_ODDS = 3, BED_ODDS = 5, CAULDRON_ODDS = 8, BREWING_STAND_ODDS = 8, ENCHANTMENT_TABLE_ODDS = 12;
 	public final static int ROOF_CRENEL = 0, ROOF_STEEP = 1, ROOF_TRIM = 2, ROOF_SHALLOW = 3, ROOF_DOME = 4, ROOF_CONE = 5, ROOF_TWO_SIDED = 6;
 	public final static int NORTH_FACE_DOOR_META = 3, EAST_FACE_DOOR_META = 0, SOUTH_FACE_DOOR_META = 1, WEST_FACE_DOOR_META = 2;
-
+    public final static BlockAndMeta TOWER_CHEST_BLOCK = new BlockExtended(Blocks.chest, 0, TOWER_CHEST),
+            HARD_CHEST_BLOCK = new BlockExtended(Blocks.chest, 0, HARD_CHEST),
+            GHAST_SPAWNER = new BlockExtended(Blocks.mob_spawner, 0, "Ghast"),
+            NORTH_FACE_TORCH_BLOCK = new BlockAndMeta(Blocks.torch, BUTTON_DIR_TO_META[DIR_NORTH]),
+            SOUTH_FACE_TORCH_BLOCK = new BlockAndMeta(Blocks.torch, BUTTON_DIR_TO_META[DIR_SOUTH]),
+            EAST_FACE_LADDER_BLOCK = new BlockAndMeta(Blocks.ladder, LADDER_DIR_TO_META[DIR_EAST]);
 	//****************************************  FUNCTION - build *************************************************************************************//
 	//builds a tower:
 	//PARAMETERS:
@@ -576,11 +580,6 @@ public class BuildingTower extends Building {
 			setBlockLocal(bWidth / 2, z1, bLength / 2 + 1, Blocks.obsidian);
 		}
 		return true;
-	}
-
-	static {
-		for (int m = 0; m < ROOFSTYLE_NAMES.length; m++)
-			ROOF_STYLE_IDS[m] = m;
 	}
 	public int baseHeight, roofStyle, minHorizDim;
 	public final boolean PopulateFurniture, MakeDoors, circular;

@@ -20,12 +20,11 @@ import net.minecraft.world.World;
 
 public class WorldGenCARuins extends WorldGeneratorThread {
 	private byte[][] caRule = null;
-	private int[][] caRulesWeightsAndIndex;
+	private int[] caRulesWeightsAndIndex;
 	private final int MinHeight, MaxHeight;
 	private final float GlobalFrequency, SymmetricSeedDensity;
 	private final int ContainerWidth, ContainerLength;
 	private int[] seedTypeWeights;
-	private final static int[] SEED_TYPE_CODES = new int[] { 0, 1, 2, 3 };
 	private final int MinHeightBeforeOscillation;
 	private final boolean SmoothWithStairs, MakeFloors;
 	private TemplateRule[] blockRules;
@@ -52,10 +51,10 @@ public class WorldGenCARuins extends WorldGeneratorThread {
 	public boolean generate(int i0, int j0, int k0) {
 		int th = MinHeight + random.nextInt(MaxHeight - MinHeight + 1);
 		if (caRule == null) //if we haven't picked in an earlier generate call 
-			caRule = ((PopulatorCARuins) master).caRules.get(Building.pickWeightedOption(world.rand, caRulesWeightsAndIndex[0], caRulesWeightsAndIndex[1]));
+			caRule = ((PopulatorCARuins) master).caRules.get(Building.pickWeightedOption(world.rand, caRulesWeightsAndIndex));
 		if (caRule == null)
 			return false;
-		int seedCode = Building.pickWeightedOption(world.rand, seedTypeWeights, SEED_TYPE_CODES);
+		int seedCode = Building.pickWeightedOption(world.rand, seedTypeWeights);
 		byte[][] seed = seedCode == 0 || (caRule[0][0] == 0 && caRule[0][1] == 0 && caRule[0][2] == 0 && caRule[0][3] == 0) //only use symmetric for 4-rules
 		? BuildingCellularAutomaton.makeSymmetricSeed(Math.min(ContainerWidth, ContainerLength), SymmetricSeedDensity, world.rand) : seedCode == 1 ? BuildingCellularAutomaton.makeLinearSeed(
 				ContainerWidth, world.rand) : seedCode == 2 ? BuildingCellularAutomaton.makeCircularSeed(Math.min(ContainerWidth, ContainerLength), world.rand) : BuildingCellularAutomaton

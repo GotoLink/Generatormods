@@ -43,7 +43,7 @@ public abstract class WorldGeneratorThread {
 	private int min_spawn_height = 0, max_spawn_height = 127;
 	public boolean spawn_surface = true;
 	HashMap<String, Integer> chestTries = null;
-	HashMap<String, Object[][]> chestItems = null;
+	HashMap<String, RandomLoot[]> chestItems = null;
 	//public int ConcaveSmoothingScale=10, ConvexSmoothingScale=20, 
 	//All WorldGeneratorThreads will have these, even if not used.
 	public int backtrackLength = 9;

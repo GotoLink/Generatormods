@@ -405,7 +405,7 @@ public class BuildingWall extends Building {
 				}
 			} else if ((buildOnL && clearSide == L_HAND) || (buildOnR && clearSide == R_HAND)) { //side towers
 				//FMLLog.getLogger().info("Building side tower for "+IDString()+" at n="+n0+" "+globalCoordString(0,0,0)+" with clearSide="+clearSide+" width "+tw);
-				TemplateTML template = ws.buildings.get(Building.pickWeightedOption(world.rand, ws.buildingWeights[0], ws.buildingWeights[1]));
+				TemplateTML template = ws.buildings.get(Building.pickWeightedOption(world.rand, ws.buildingWeights));
 				int ybuffer = -ws.TowerXOffset + (isAvenue ? 0 : 1);
 				int[] pt = getIJKPtAtN(nMid, clearSide == bHand ? (bWidth - ybuffer) : ybuffer - 1, 0, 0);
 				if (makeBuilding(template, tw, ybuffer, overlapTowers, rotDir(bDir, clearSide), pt))
@@ -780,7 +780,7 @@ public class BuildingWall extends Building {
 			if (roofRule != TemplateRule.RULE_NOT_PROVIDED)
 				roofRule = roofRule.getFixedRule(world.rand);
 			if (endTowers && ws.MakeEndTowers) {
-				endBTemplate = ws.buildings.get(Building.pickWeightedOption(world.rand, ws.buildingWeights[0], ws.buildingWeights[1]));
+				endBTemplate = ws.buildings.get(Building.pickWeightedOption(world.rand, ws.buildingWeights));
 				endBLength = endBTemplate == ws.makeDefaultTower ? ws.pickTWidth(circular, world.rand) + 1 //+1 allows some extra wiggle room for roof edges etc.
 						: (endBTemplate == ws.makeCARuin ? ws.CARuinContainerWidth : endBTemplate.length);
 			}

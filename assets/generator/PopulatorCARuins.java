@@ -88,7 +88,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler {
 	public TemplateRule[] spawnerRules = new TemplateRule[] { BuildingCellularAutomaton.DEFAULT_MEDIUM_LIGHT_NARROW_SPAWNER_RULE, BuildingCellularAutomaton.DEFAULT_MEDIUM_LIGHT_WIDE_SPAWNER_RULE,
 			BuildingCellularAutomaton.DEFAULT_LOW_LIGHT_SPAWNER_RULE };
 	ArrayList<byte[][]> caRules = null;
-	int[][] caRulesWeightsAndIndex = null;
+	int[] caRulesWeightsAndIndex = null;
 
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
@@ -216,10 +216,9 @@ public class PopulatorCARuins extends BuildingExplorationHandler {
 	}
 
 	private void setRulesWeightAndIndex(ArrayList<Integer> caRuleWeights) {
-		caRulesWeightsAndIndex = new int[2][caRuleWeights.size()];
+		caRulesWeightsAndIndex = new int[caRuleWeights.size()];
 		for (int m = 0; m < caRuleWeights.size(); m++) {
-			caRulesWeightsAndIndex[0][m] = caRuleWeights.get(m);
-			caRulesWeightsAndIndex[1][m] = m;
+			caRulesWeightsAndIndex[m] = caRuleWeights.get(m);
 		}
 	}
 

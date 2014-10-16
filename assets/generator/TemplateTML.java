@@ -205,20 +205,19 @@ public class TemplateTML {
 	}
 
 	//****************************  FUNCTION - buildWeightsAndIndex *************************************************************************************//
-	public static int[][] buildWeightsAndIndex(List<TemplateTML> buildings) throws Exception {
-		int[][] weightsAndIndex = new int[2][buildings.size()];
+	public static int[] buildWeights(List<TemplateTML> buildings) throws Exception {
+		int[] weights = new int[buildings.size()];
 		int sum = 0;
 		TemplateTML temp;
 		Iterator<TemplateTML> itr = buildings.iterator();
 		for (int m = 0; itr.hasNext(); m++) {
 			temp = itr.next();
-			weightsAndIndex[0][m] = temp.weight;
+			weights[m] = temp.weight;
 			sum += temp.weight;
-			weightsAndIndex[1][m] = m;
 		}
 		if (sum == 0)
 			throw ZERO_WEIGHT_EXCEPTION;
-		return weightsAndIndex;
+		return weights;
 	}
 
 	//****************************  FUNCTION - printTemplate*************************************************************************************//

@@ -41,7 +41,7 @@ public class TemplateWall extends TemplateTML {
 	public boolean underground = false;
 	public List<TemplateTML> buildings = null;
 	public List<TemplateWall> streets = null;
-	public int[][] buildingWeights;
+	public int[] buildingWeights;
 	public int StreetDensity = 6;
 	public boolean LevelInterior = true;
 	public int WHeight = 7, WWidth = 5, WalkHeight = 0; //WalkHeight is the height in the template (embed will be subtracted)
@@ -76,12 +76,12 @@ public class TemplateWall extends TemplateTML {
 		makeDefaultTower = new TemplateTML(TemplateTML.DEFAULT_TOWER_CODE, DefaultTowerWeight);
 		buildings.add(makeDefaultTower);
 		try {
-			buildingWeights = TemplateTML.buildWeightsAndIndex(buildings);
+			buildingWeights = TemplateTML.buildWeights(buildings);
 		} catch (Exception e) {
 			if (e == ZERO_WEIGHT_EXCEPTION) { //all the templates had zero weight!
 				//change default tower weight to 1 and rebuild index
 				buildings.get(buildings.size() - 1).weight = 1;
-				buildingWeights = TemplateTML.buildWeightsAndIndex(buildings);
+				buildingWeights = TemplateTML.buildWeights(buildings);
 			} else
 				throw e;
 		}
@@ -292,7 +292,7 @@ public class TemplateWall extends TemplateTML {
 
 	//****************************************  FUNCTIONS - tower accessors *************************************************************************************//
 	public int pickRoofStyle(boolean circular, Random random) {
-		return circular ? Building.pickWeightedOption(random, CircRoofStyles, BuildingTower.ROOF_STYLE_IDS) : Building.pickWeightedOption(random, SqrRoofStyles, BuildingTower.ROOF_STYLE_IDS);
+		return circular ? Building.pickWeightedOption(random, CircRoofStyles) : Building.pickWeightedOption(random, SqrRoofStyles);
 	}
 
 	public int getTMinWidth(boolean circular) {

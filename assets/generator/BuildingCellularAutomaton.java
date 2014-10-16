@@ -26,13 +26,14 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.world.EnumSkyBlock;
 
 /*
- * BuildingCellularAutomaton creates double-ended walls
+ * BuildingCellularAutomaton creates seed-based structures
  */
 public class BuildingCellularAutomaton extends Building {
 	private final static byte DEAD = 0, ALIVE = 1;
 	private final float MEAN_SIDE_LENGTH_PER_POPULATE = 15.0f;
 	private final static int HOLE_FLOOR_BUFFER = 2, UNREACHED = -1;
 	private final static int SYMMETRIC_SEED_MIN_WIDTH = 4, CIRCULAR_SEED_MIN_WIDTH = 4;
+    public final static String EASY_CHEST = "EASY", MEDIUM_CHEST = "MEDIUM";
 	public final static TemplateRule DEFAULT_MEDIUM_LIGHT_NARROW_SPAWNER_RULE = new TemplateRule(new Block[]{Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner},
             new int[]{0, 0, 0, 0, 0, 0}, new String[] { "Blaze", "Blaze", "Blaze", "Silverfish", "Silverfish", "LavaSlime" }, 100);
     public final static TemplateRule DEFAULT_MEDIUM_LIGHT_WIDE_SPAWNER_RULE = new TemplateRule(new Block[]{Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner, Blocks.mob_spawner},
