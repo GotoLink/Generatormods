@@ -1,6 +1,5 @@
 package assets.generator;
 
-
 /*
  *  Source code for the The Great Wall Mod, CellullarAutomata Ruins and Walled City Generator Mods for the game Minecraft
  *  Copyright (C) 2011 by Formivore - 2012 by GotoLink
@@ -15,11 +14,6 @@ package assets.generator;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-/**
- * Build command for players to try to build structures city/wall/ruin at the specified location
- */
-
 import java.util.List;
 import java.util.Random;
 
@@ -30,6 +24,9 @@ import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 
+/**
+ * Build command for players to try to build structures city/wall/ruin at the specified location
+ */
 public class CommandBuild extends CommandBase {
 	@Override
 	public int getRequiredPermissionLevel() {

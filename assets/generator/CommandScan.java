@@ -23,6 +23,7 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.world.World;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -35,6 +36,8 @@ import java.util.List;
  */
 public class CommandScan extends CommandBase{
     public final String[] modes = {"wall", "building"};
+    private final List<BlockAndMeta> blocks = new ArrayList<BlockAndMeta>();
+    private final List<String> rules = new ArrayList<String>();
     @Override
     public boolean canCommandSenderUseCommand(ICommandSender commandSender){
         return commandSender instanceof EntityPlayer;
@@ -68,10 +71,10 @@ public class CommandScan extends CommandBase{
             File template = new File(BuildingExplorationHandler.CONFIG_DIRECTORY, command[1]+".tml");
             try{
             if(template.createNewFile()){
-                List<BlockAndMeta> blocks = new ArrayList<BlockAndMeta>();
+                blocks.clear();
                 blocks.add(new BlockAndMeta(Blocks.air, 0));
                 HashMap<Integer, List<Integer>> layers = new HashMap<Integer, List<Integer>>();
-                List<String> rules = new ArrayList<String>();
+                rules.clear();
                 HashSet<String> biomes = new HashSet<String>();
                 int SIZE_0, SIZE_1;
                 int SIZE_2 = maxZ-minZ+1;
@@ -82,12 +85,7 @@ public class CommandScan extends CommandBase{
                         List<Integer> temp = new ArrayList<Integer>(SIZE_1*SIZE_2);
                         for (int x = minX; x <= maxX; x++) {
                             for (int z = minZ; z <= maxZ; z++) {
-                                BlockAndMeta blc = new BlockAndMeta(var1.getEntityWorld().getBlock(x, y, z), var1.getEntityWorld().getBlockMetadata(x, y, z));
-                                if (!blocks.contains(blc)) {
-                                    rules.add("rule" + blocks.size() + "=0,100," + GameData.getBlockRegistry().getNameForObject(blc.get()) + "-" + blc.getMeta());
-                                    blocks.add(blc);
-                                }
-                                temp.add(blocks.indexOf(blc));
+                                parseBlock(var1.getEntityWorld(), x, y, z, temp);
                                 if(y==minY)
                                     biomes.add(var1.getEntityWorld().getBiomeGenForCoords(x, z).biomeName);
                             }
@@ -102,12 +100,7 @@ public class CommandScan extends CommandBase{
                         for (int z = minZ; z <= maxZ; z++) {
                             biomes.add(var1.getEntityWorld().getBiomeGenForCoords(x, z).biomeName);
                             for (int y = minY; y <= maxY; y++) {
-                                BlockAndMeta blc = new BlockAndMeta(var1.getEntityWorld().getBlock(x, y, z), var1.getEntityWorld().getBlockMetadata(x, y, z));
-                                if (!blocks.contains(blc)) {
-                                    rules.add("rule" + blocks.size() + "=0,100," + GameData.getBlockRegistry().getNameForObject(blc.get()) + "-" + blc.getMeta());
-                                    blocks.add(blc);
-                                }
-                                temp.add(blocks.indexOf(blc));
+                                parseBlock(var1.getEntityWorld(), x, y, z, temp);
                             }
                         }
                         layers.put(x - minX, temp);
@@ -176,6 +169,15 @@ public class CommandScan extends CommandBase{
         } else {
             throw new WrongUsageException(getCommandUsage(var1));
         }
+    }
+
+    private void parseBlock(World world, int x, int y, int z, List<Integer> temp) {
+        BlockAndMeta blc = new BlockAndMeta(world.getBlock(x, y, z), world.getBlockMetadata(x, y, z));
+        if (!blocks.contains(blc)) {
+            rules.add("rule" + blocks.size() + "=0,100," + GameData.getBlockRegistry().getNameForObject(blc.get()) + "-" + blc.getMeta());
+            blocks.add(blc);
+        }
+        temp.add(blocks.indexOf(blc));
     }
 
     @Override
