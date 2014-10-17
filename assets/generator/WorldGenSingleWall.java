@@ -39,7 +39,7 @@ public class WorldGenSingleWall extends WorldGeneratorThread {
 			wall.smooth(ws.ConcaveDownSmoothingScale, ws.ConcaveUpSmoothingScale, true);
 			wall.buildFromTML();
 			wall.makeBuildings(true, true, true, false, false);
-			((PopulatorGreatWall) master).placedCoords = null;
+			//((PopulatorGreatWall) master).placedCoords = null;
 		}
 		return true;
 	}
