@@ -62,23 +62,24 @@ public class DefaultChest {
         pw.println();
         pw.println("<-Chest contents->");
         pw.println("<-Tries is the number of selections that will be made for this chest type.->");
-        pw.println("<-Format for items is <item name-damage value>,<selection weight>,<min stack size>,<max stack size> ->");
+        pw.println("<-Format for items is <item name-damage value>,<selection weight>,<min stack size>,<max stack size>,<json> ->");
+        pw.println("<-Where <damage value> and <json> are optional. Json format follows same rules as /give command->");
         pw.println("<-So e.g. minecraft:arrow,2,1,12 means a stack of between 1 and 12 arrows, with a selection weight of 2.->");
-        for (int l = 0; l < DefaultChest.LABELS.length; l++) {
-            pw.println("CHEST_" + DefaultChest.LABELS[l]);
-            pw.println("Tries:" + DefaultChest.TRIES[l]);
-            for (int m = 0; m < DefaultChest.ITEMS[l].length; m++) {
+        for (int l = 0; l < LABELS.length; l++) {
+            pw.println("CHEST_" + LABELS[l]);
+            pw.println("Tries:" + TRIES[l]);
+            for (int m = 0; m < ITEMS[l].length; m++) {
                 try{
-                    String txt = GameData.getItemRegistry().getNameForObject(DefaultChest.ITEMS[l][m][0]);
+                    String txt = GameData.getItemRegistry().getNameForObject(ITEMS[l][m][0]);
                     if(txt==null){
-                        txt = GameData.getBlockRegistry().getNameForObject(DefaultChest.ITEMS[l][m][0]);
+                        txt = GameData.getBlockRegistry().getNameForObject(ITEMS[l][m][0]);
                     }
                     if(txt!=null){
                         pw.print(txt);
-                        pw.print("-" + DefaultChest.ITEMS[l][m][1]);
-                        pw.print("," + DefaultChest.ITEMS[l][m][2]);
-                        pw.print("," + DefaultChest.ITEMS[l][m][3]);
-                        pw.println("," + DefaultChest.ITEMS[l][m][4]);
+                        pw.print("-" + ITEMS[l][m][1]);
+                        pw.print("," + ITEMS[l][m][2]);
+                        pw.print("," + ITEMS[l][m][3]);
+                        pw.println("," + ITEMS[l][m][4]);
                     }
                 }catch(Exception e){
                     e.printStackTrace();

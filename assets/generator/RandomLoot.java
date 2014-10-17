@@ -19,6 +19,9 @@ import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.JsonToNBT;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
 
 import java.util.Random;
 
@@ -44,35 +47,47 @@ public class RandomLoot {
     }
 
     public RandomLoot(String text){
-        String[] intStrs = text.trim().split(",");
-        if(intStrs.length!=4)
+        String[] intStrs = text.trim().split(",", 5);
+        if(intStrs.length<4)
             throw new IllegalArgumentException("Wrong number of separators in line");
-        String[] idAndMeta = intStrs[0].split("-", 2);
+        int index = intStrs[0].lastIndexOf("-");
+        String[] idAndMeta;
+        if(index!=-1) {
+            idAndMeta = new String[]{intStrs[0].substring(0, index), intStrs[0].substring(index+1)};
+        }else{
+            idAndMeta = new String[]{intStrs[0]};
+        }
         Object temp;
-        int[] tempArray = new int[4];
         try{
             int i = Integer.parseInt(idAndMeta[0]);
             temp = GameData.getItemRegistry().getObjectById(i);
             if(temp==null){
                 temp = GameData.getBlockRegistry().getObjectById(i);
             }
-        }catch (Exception e){
+        }catch (Throwable e){
             temp = GameData.getItemRegistry().getObject(idAndMeta[0]);
             if(temp==null){
                 temp = GameData.getBlockRegistry().getObject(idAndMeta[0]);
             }
         }
-        tempArray[0] = idAndMeta.length > 1 ? Integer.parseInt(idAndMeta[1]) : 0;
-        for (int m = 1; m < 4; m++)
-            tempArray[m] = Integer.parseInt(intStrs[m]);
+        int meta = idAndMeta.length > 1 ? Integer.parseInt(idAndMeta[1]) : 0;
         if(temp instanceof Item)
-            loot = new ItemStack((Item)temp, 0, tempArray[0]);
+            loot = new ItemStack((Item)temp, 0, meta);
         else if(temp!=null && temp != Blocks.air)
-            loot = new ItemStack((Block)temp, 0, tempArray[0]);
+            loot = new ItemStack((Block)temp, 0, meta);
         else
             throw new IllegalArgumentException("Can't find item or block with name: "+idAndMeta[0]);
-        weight = tempArray[1];
-        checkSize(tempArray[2], tempArray[3]);
+        weight = Integer.parseInt(intStrs[1]);
+        checkSize(Integer.parseInt(intStrs[2]), Integer.parseInt(intStrs[3]));
+        if(intStrs.length>4){
+            try{
+                NBTBase nbtbase = JsonToNBT.func_150315_a(intStrs[4]);
+                if (nbtbase instanceof NBTTagCompound)
+                    loot.setTagCompound((NBTTagCompound)nbtbase);
+            }catch (Throwable exception){
+                throw new IllegalArgumentException("Invalid JSon format", exception);
+            }
+        }
     }
 
     private void checkSize(int a, int b){
@@ -91,7 +106,7 @@ public class RandomLoot {
 
     public ItemStack getLoot(Random random){
         loot.stackSize = minSize + random.nextInt(maxSize-minSize+1);
-        return loot;
+        return loot.copy();
     }
 
     public int getWeight(){
@@ -100,6 +115,6 @@ public class RandomLoot {
 
     @Override
     public String toString(){
-        return GameData.getItemRegistry().getNameForObject(loot.getItem())+"-"+loot.getItemDamage()+","+weight+","+minSize+","+maxSize;
+        return loot.getDisplayName()+"-"+loot.getItemDamage()+","+weight+","+minSize+","+maxSize;
     }
 }
