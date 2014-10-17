@@ -17,6 +17,7 @@ package assets.generator;
 
 
 import cpw.mods.fml.common.registry.GameData;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockChest;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommand;
