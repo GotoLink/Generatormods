@@ -14,11 +14,6 @@ package assets.generator;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * WorldGenWalledCity generates walled cities in the Minecraft world.
- * Walled cities are composed of 4 wall template BuildingWalls in a rough rectangle,
- *  filled with many street template BuildingDoubleWalls.
- */
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -30,6 +25,11 @@ import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
 
+/*
+ * WorldGenWalledCity generates walled cities in the Minecraft world.
+ * Walled cities are composed of 4 wall template BuildingWalls in a rough rectangle,
+ *  filled with many street template BuildingDoubleWalls.
+ */
 public class WorldGenWalledCity extends WorldGeneratorThread {
 	private final static int GATE_HEIGHT = 6;
 	private final static int JMEAN_DEVIATION_SLOPE = 10;

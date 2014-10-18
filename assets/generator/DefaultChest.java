@@ -21,7 +21,7 @@ import net.minecraft.init.Items;
 import java.io.PrintWriter;
 
 /**
- * Created by GotoLink on 16/10/2014.
+ * Concentrate all default values regarding chests
  */
 public class DefaultChest {
     public final static String[] LABELS = new String[] { "EASY", "MEDIUM", "HARD", "TOWER" };

@@ -1,6 +1,5 @@
 package assets.generator;
 
-
 /*
  *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
  *  Copyright (C) 2011 by Formivore - 2012 by GotoLink
@@ -14,7 +13,6 @@ package assets.generator;
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 
 import cpw.mods.fml.common.registry.GameData;
 import net.minecraft.block.Block;

@@ -14,26 +14,26 @@ package assets.generator;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * WorldGeneratorThread is a thread that generates structures in the Minecraft world.
- * It is intended to serially hand back and forth control with a BuildingExplorationHandler (not to run parallel).
- */
 import java.util.HashMap;
 import java.util.Random;
 
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
 
+/*
+ * WorldGeneratorThread is a thread that generates structures in the Minecraft world.
+ * It is intended to serially hand back and forth control with a BuildingExplorationHandler (not to run parallel).
+ */
 public abstract class WorldGeneratorThread {
 	public final static int LAYOUT_CODE_NOCODE = -1;
 	public final static int LAYOUT_CODE_EMPTY = 0, LAYOUT_CODE_WALL = 1, LAYOUT_CODE_AVENUE = 2, LAYOUT_CODE_STREET = 3, LAYOUT_CODE_TOWER = 4, LAYOUT_CODE_TEMPLATE = 5;
 	protected final static int[][] LAYOUT_CODE_OVERRIDE_MATRIX = new int[][] { //present code=rows, attempted overriding code=columns
-	{ 0, 1, 1, 1, 1, 1 }, //present empty	
-			{ 0, 0, 0, 0, 0, 0 }, //present wall
-			{ 0, 0, 1, 1, 0, 0 }, //present avenue
-			{ 0, 0, 1, 1, 1, 0 }, //present street
-			{ 0, 0, 0, 0, 0, 0 }, //present tower	
-			{ 0, 0, 0, 0, 0, 0 } }; //present template
+        { 0, 1, 1, 1, 1, 1 }, //present empty
+        { 0, 0, 0, 0, 0, 0 }, //present wall
+        { 0, 0, 1, 1, 0, 0 }, //present avenue
+        { 0, 0, 1, 1, 1, 0 }, //present street
+        { 0, 0, 0, 0, 0, 0 }, //present tower
+        { 0, 0, 0, 0, 0, 0 } }; //present template
 	public final static char[] LAYOUT_CODE_TO_CHAR = new char[] { ' ', '#', '=', '-', '@', '&' };
 	public final BuildingExplorationHandler master;
 	public final World world;

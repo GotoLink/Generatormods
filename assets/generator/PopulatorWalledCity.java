@@ -14,16 +14,9 @@ package assets.generator;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * PopulatorWalledCity is the main class that hooks into ForgeModLoader for the Walled City Mod.
- * It reads the globalSettings file, keeps track of city locations, and runs WorldGenWalledCitys and WorldGenUndergroundCities.
- */
-
-import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
-import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
@@ -37,6 +30,10 @@ import net.minecraft.world.World;
 import java.io.*;
 import java.util.*;
 
+/*
+ * PopulatorWalledCity is the main class that hooks into ForgeModLoader for the Walled City Mod.
+ * It reads the globalSettings file, keeps track of city locations, and runs WorldGenWalledCitys and WorldGenUndergroundCities.
+ */
 @Mod(modid = "WalledCityMod", name = "Walled City Generator", version = BuildingExplorationHandler.VERSION, dependencies = "after:ExtraBiomes,BiomesOPlenty", acceptableRemoteVersions = "*")
 public class PopulatorWalledCity extends BuildingExplorationHandler {
 	@Instance("WalledCityMod")
@@ -234,16 +231,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler {
 		logger = event.getModLog();
 		settingsFileName = "WalledCitySettings.txt";
 		templateFolderName = "walledcity";
-        if(event.getSourceFile().getName().endsWith(".jar") && event.getSide().isClient()){
-            try {
-                Class.forName("mods.mud.ModUpdateDetector").getDeclaredMethod("registerMod", ModContainer.class, String.class, String.class).invoke(null,
-                        FMLCommonHandler.instance().findContainerFor(this),
-                        "https://raw.github.com/GotoLink/Generatormods/master/update.xml",
-                        "https://raw.github.com/GotoLink/Generatormods/master/changelog.md"
-                );
-            } catch (Throwable e) {
-            }
-        }
+        trySendMUD(event);
 	}
 
 	//****************************  FUNCTION - saveCityLocations *************************************************************************************//
@@ -304,8 +292,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler {
 		pw.println("RejectOnPreexistingArtifacts:" + RejectOnPreexistingArtifacts);
 		pw.println();
 		printDefaultChestItems(pw);
-		if (pw != null)
-			pw.close();
+        pw.close();
 	}
 
 	public static List<int[]> getCityLocs(File city) {

@@ -1,6 +1,5 @@
 package assets.generator;
 
-
 /*
  *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
  *  Copyright (C) 2011 by Formivore - 2012 by GotoLink
@@ -15,9 +14,6 @@ package assets.generator;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * TemplateTML reads in a .tml file and defines a template.
- */
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -29,6 +25,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+/*
+ * TemplateTML reads in a .tml file and defines a template.
+ */
 public class TemplateTML {
 	public final static String NO_WATER_CHECK_STR = "NO_WATER_CHECK";
 	public final static int NO_WATER_CHECK = -666;

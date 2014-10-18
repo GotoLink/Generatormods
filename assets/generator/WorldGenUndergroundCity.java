@@ -14,11 +14,6 @@ package assets.generator;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * WorldGenUndergroundCity generates a city in a large underground cavern.
- * The cavern is made from many recursively created spherical voids.
- * These are filled with street template BuildingDoubleWalls to create the city.
- */
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -28,6 +23,11 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
+/*
+ * WorldGenUndergroundCity generates a city in a large underground cavern.
+ * The cavern is made from many recursively created spherical voids.
+ * These are filled with street template BuildingDoubleWalls to create the city.
+ */
 public class WorldGenUndergroundCity extends WorldGeneratorThread {
 	private final static float P_CHILDREN = 0.80F;
 	private final static int MAX_CHILDREN = 3;

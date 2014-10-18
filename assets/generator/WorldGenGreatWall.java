@@ -14,15 +14,15 @@ package assets.generator;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import java.util.Random;
+
+import net.minecraft.world.World;
+
 /*
  * WorldGenGreatWall creates a great wall in Minecraft.
  * This class is chiefly a WorldGeneratorThread wrapper for a BuildingDoubleWall.
  * It also checks curviness and length.
  */
-import java.util.Random;
-
-import net.minecraft.world.World;
-
 public class WorldGenGreatWall extends WorldGeneratorThread {
 	//private final static boolean DEBUG=false;
 	//****************************  CONSTRUCTOR - WorldGenGreatWall *************************************************************************************//

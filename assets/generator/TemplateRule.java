@@ -14,9 +14,6 @@ package assets.generator;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * TemplateRule reads in a rule String and defines a rule that blocks can be sampled from.
- */
 import java.util.Random;
 
 import cpw.mods.fml.common.registry.GameData;
@@ -26,6 +23,9 @@ import net.minecraft.block.BlockChest;
 import net.minecraft.block.BlockMobSpawner;
 import net.minecraft.init.Blocks;
 
+/*
+ * TemplateRule reads in a rule String and defines a rule that blocks can be sampled from.
+ */
 public class TemplateRule {
 	public final static int FIXED_FOR_BUILDING = 5;
 	public final static TemplateRule RULE_NOT_PROVIDED = null;
