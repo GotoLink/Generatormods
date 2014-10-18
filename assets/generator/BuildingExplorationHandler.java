@@ -13,15 +13,13 @@ package assets.generator;
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-/*
- * BuildingExplorationHandler is a abstract superclass for PopulatorWalledCity and PopulatorGreatWall.
- * It loads settings files and runs WorldGeneratorThreads.
- */
 
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.IWorldGenerator;
 import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.ModContainer;
+import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldProviderEnd;
 import net.minecraft.world.biome.BiomeGenBase;
@@ -33,6 +31,10 @@ import org.apache.logging.log4j.Level;
 import java.io.*;
 import java.util.*;
 
+/*
+ * BuildingExplorationHandler is a abstract superclass for PopulatorWalledCity and PopulatorGreatWall.
+ * It loads settings files and runs WorldGeneratorThreads.
+ */
 public abstract class BuildingExplorationHandler implements IWorldGenerator {
     protected final static String VERSION = "0.1.6";
 	protected final static int MAX_TRIES_PER_CHUNK = 100;
@@ -231,16 +233,17 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 			logActivated = readBooleanParam(lw, logActivated, ":", read);
 	}
 
-	public static ArrayList<byte[][]> readAutomataList(PrintWriter lw, String splitString, String read) {
-		ArrayList<byte[][]> rules = new ArrayList<byte[][]>();
-		String[] ruleStrs = (read.split(splitString)[1]).split(",");
+	public static ArrayList<CARule> readAutomataList(PrintWriter lw, String splitString, String read) {
+		ArrayList<CARule> rules = new ArrayList<CARule>();
+		String[] ruleStrs = (read.split(splitString, 2)[1]).split(",");
 		for (String ruleStr : ruleStrs) {
-			byte[][] rule = BuildingCellularAutomaton.parseCARule(ruleStr.trim(), lw);
-			if (rule != null)
-				rules.add(rule);
+            try {
+                CARule rule = new CARule(ruleStr.trim(), lw);
+                rules.add(rule);
+            }catch (IllegalArgumentException ill){
+
+            }
 		}
-		if (rules.size() == 0)
-			return null;
 		return rules;
 	}
 
@@ -334,4 +337,17 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 		}
 		return FMLCommonHandler.instance().getMinecraftServerInstance().getFile("");
 	}
+
+    protected final void trySendMUD(FMLPreInitializationEvent event){
+        if(event.getSourceFile().getName().endsWith(".jar") && event.getSide().isClient()){
+            try {
+                Class.forName("mods.mud.ModUpdateDetector").getDeclaredMethod("registerMod", ModContainer.class, String.class, String.class).invoke(null,
+                        FMLCommonHandler.instance().findContainerFor(this),
+                        "https://raw.github.com/GotoLink/Generatormods/master/update.xml",
+                        "https://raw.github.com/GotoLink/Generatormods/master/changelog.md"
+                );
+            } catch (Throwable e) {
+            }
+        }
+    }
 }

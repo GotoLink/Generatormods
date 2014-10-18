@@ -1,6 +1,5 @@
 package assets.generator;
 
-
 /*
  *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
  *  Copyright (C) 2011 by Formivore - 2012 by GotoLink
@@ -15,10 +14,6 @@ package assets.generator;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * TemplateWall reads in additional variables from a .tml file to define a wall template.
- * The class includes static functions used to load template folders and link together hierarchical templates.
- */
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,6 +25,10 @@ import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
 
+/*
+ * TemplateWall reads in additional variables from a .tml file to define a wall template.
+ * The class includes static functions used to load template folders and link together hierarchical templates.
+ */
 public class TemplateWall extends TemplateTML {
 	public final static String BUILDING_DIRECTORY_NAME = "buildings";
 	public final static int[] ALL_BIOMES = null;
@@ -63,7 +62,7 @@ public class TemplateWall extends TemplateTML {
 	public int CARuinContainerWidth = 15;
 	public int CARuinMinHeight = 20;
 	public int CARuinMaxHeight = 35;
-	ArrayList<byte[][]> CARuinAutomataRules = null;
+	ArrayList<CARule> CARuinAutomataRules = null;
 
 	//****************************************  CONSTRUCTOR - WallStyle*************************************************************************************//
 	public TemplateWall(File wallFile, HashMap<String, TemplateTML> buildingTemplateMap, BuildingExplorationHandler beh) throws Exception {
@@ -292,7 +291,7 @@ public class TemplateWall extends TemplateTML {
 
 	//****************************************  FUNCTIONS - tower accessors *************************************************************************************//
 	public int pickRoofStyle(boolean circular, Random random) {
-		return circular ? Building.pickWeightedOption(random, CircRoofStyles) : Building.pickWeightedOption(random, SqrRoofStyles);
+		return circular ? RandomPicker.pickWeightedOption(random, CircRoofStyles) : RandomPicker.pickWeightedOption(random, SqrRoofStyles);
 	}
 
 	public int getTMinWidth(boolean circular) {

@@ -14,25 +14,6 @@ package assets.generator;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- *      Building is a general class for buildings. Classes can inherit from Building to build from a local frame of reference.
- * 
- *  Local frame of reference variables:
- *     i,j,k are coordinate inputs for global frame of reference functions.
- *     x,z,y are coordinate inputs for local frame of reference functions.
- *     bHand =-1,1 determines whether X-axis points left or right respectively when facing along Y-axis.
- *
- *               (dir=0)
- *                (-k)
- *                 n
- *                 n
- *  (dir=3) (-i)www*eee(+i)  (dir=1)
- *                 s
- *                 s
- *                (+k)
- *               (dir=2)
- */
-
 import net.minecraft.block.*;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.item.EntityPainting;
@@ -49,6 +30,24 @@ import java.util.LinkedList;
 import java.util.Random;
 import java.util.Set;
 
+/*
+ *      Building is a general class for buildings. Classes can inherit from Building to build from a local frame of reference.
+ *
+ *  Local frame of reference variables:
+ *     i,j,k are coordinate inputs for global frame of reference functions.
+ *     x,z,y are coordinate inputs for local frame of reference functions.
+ *     bHand =-1,1 determines whether X-axis points left or right respectively when facing along Y-axis.
+ *
+ *               (dir=0)
+ *                (-k)
+ *                 n
+ *                 n
+ *  (dir=3) (-i)www*eee(+i)  (dir=1)
+ *                 s
+ *                 s
+ *                (+k)
+ *               (dir=2)
+ */
 public class Building {
 	public final static int HIT_WATER = -666; // , HIT_SWAMP=-667;
 	public final static String HARD_CHEST = "HARD", TOWER_CHEST = "TOWER";
@@ -631,7 +630,7 @@ public class Building {
 			return new ItemStack(bRule.primaryBlock.get(), random.nextInt(10), bRule.primaryBlock.getMeta());
 		}
 		RandomLoot[] itempool = wgt.chestItems.get(chestType);
-		int idx = pickWeightedOption(world.rand, itempool);
+		int idx = RandomPicker.pickWeightedOption(world.rand, itempool);
         return itempool[idx].getLoot(random);
 	}
 
@@ -1053,8 +1052,7 @@ public class Building {
 	}
 
 	// &&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setLootChest
-	// &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
-	private void setLootChest(int[] pt, Block chestBlock, int meta, String chestType) {
+	protected void setLootChest(int[] pt, Block chestBlock, int meta, String chestType) {
 		if (world.setBlock(pt[0], pt[1], pt[2], chestBlock, meta, 2)) {
 			TileEntityChest chest = (TileEntityChest) world.getTileEntity(pt[0], pt[1], pt[2]);
 			if (wgt.chestTries != null && wgt.chestTries.containsKey(chestType)) {
@@ -1070,8 +1068,7 @@ public class Building {
 	}
 
 	// &&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setMobSpawner
-	// &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
-	private void setMobSpawner(int[] pt, Block spawner, int metadata, String info) {
+	protected void setMobSpawner(int[] pt, Block spawner, int metadata, String info) {
 		if(world.setBlock(pt[0], pt[1], pt[2], spawner, metadata, 2)){
             TileEntityMobSpawner tileentitymobspawner = (TileEntityMobSpawner) world.getTileEntity(pt[0], pt[1], pt[2]);
             if (tileentitymobspawner != null){
@@ -1168,33 +1165,6 @@ public class Building {
 			return metadata > 0 && metadata < 7 ? null : fail + " 1 and 6";
 		}
 		return null;
-	}
-
-    public static int pickWeightedOption(Random random, RandomLoot[] weights){
-        int[] w = new int[weights.length];
-        for (int i= 0; i < w.length; i++)
-            w[i]= weights[i].getWeight();
-        return pickWeightedOption(random, w);
-    }
-
-	public static int pickWeightedOption(Random random, int[] weights) {
-		int sum = 0, n;
-		for (n = 0; n < weights.length; n++)
-			sum += weights[n];
-		if (sum <= 0) {
-			System.err.println("Error selecting options, weightsum not positive!");
-			return 0; // default to returning first option
-		}
-		int s = random.nextInt(sum);
-		sum = 0;
-		n = 0;
-		while (n < weights.length) {
-			sum += weights[n];
-			if (sum > s)
-				return n;
-			n++;
-		}
-		return weights.length - 1;
 	}
 
 	public static int rotDir(int dir, int rotation) {

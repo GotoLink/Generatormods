@@ -29,7 +29,7 @@ import java.util.Random;
  * BuildingCellularAutomaton creates seed-based structures
  */
 public class BuildingCellularAutomaton extends Building {
-	private final static byte DEAD = 0, ALIVE = 1;
+	private final static byte DEAD = CARule.DEAD, ALIVE = CARule.ALIVE;
 	private final float MEAN_SIDE_LENGTH_PER_POPULATE = 15.0f;
 	private final static int HOLE_FLOOR_BUFFER = 2, UNREACHED = -1;
 	private final static int SYMMETRIC_SEED_MIN_WIDTH = 4, CIRCULAR_SEED_MIN_WIDTH = 4;
@@ -42,13 +42,13 @@ public class BuildingCellularAutomaton extends Building {
             new int[]{0, 0, 0, 0, 0}, new String[] { "UPRIGHT", "UPRIGHT", "Silverfish", "LavaSlime", "CaveSpider" }, 100);
 	private byte[][][] layers = null;
 	public byte[][] seed = null;
-	private byte[][] caRule = null;
+	private final CARule caRule;
 	private final TemplateRule lowLightSpawnerRule, mediumLightNarrowSpawnerRule, mediumLightWideSpawnerRule;
 	int[][] fBB;
 	int zGround = 0;
 
 	public BuildingCellularAutomaton(WorldGeneratorThread wgt_, TemplateRule bRule_, int bDir_, int axXHand_, boolean centerAligned_, int width, int height, int length, byte[][] seed_,
-			byte[][] caRule_, TemplateRule[] spawnerRules, int[] sourcePt) {
+			CARule caRule_, TemplateRule[] spawnerRules, int[] sourcePt) {
 		super(0, wgt_, bRule_, bDir_, axXHand_, centerAligned_, new int[] { width, height, length }, sourcePt);
 		seed = seed_;
 		if ((bWidth - seed.length) % 2 != 0)
@@ -187,11 +187,11 @@ public class BuildingCellularAutomaton extends Building {
             flushDelayed();
 		}
 		//populate
-		Collections.sort(floors, new Comparator() {
+		Collections.sort(floors, new Comparator<int[]>() {
 			@Override
-			public int compare(Object o1, Object o2) {
-				int a = ((int[]) o1)[0];
-				int b = ((int[]) o2)[0];
+			public int compare(int[] o1, int[] o2) {
+				int a = o1[0];
+				int b = o2[0];
 				return a < b ? -1 : a == b ? 0 : 1;
 			}
 		});
@@ -238,7 +238,7 @@ public class BuildingCellularAutomaton extends Building {
 							if (!(x1 == x && y1 == y))
 								neighbors += layers[z - 1][x1][y1];
 					//update this layer based on the rule
-					layers[z][x][y] = caRule[layers[z - 1][x][y]][neighbors];
+					layers[z][x][y] = caRule.getBytes(layers[z - 1][x][y] == 0)[neighbors];
 					//culling checks and update bounding box
 					if (layers[z][x][y] == ALIVE) {
 						if (x < BB[0][z])
@@ -308,7 +308,7 @@ public class BuildingCellularAutomaton extends Building {
 		if (!shiftBuidlingJDown(15)) //do a height check to see we are not at the edge of a cliff etc.
 			return false;
 		boolean hitWater = false;
-		if (caRule[0][2] != ALIVE) { //if not a 2-rule
+		if (!caRule.isAlive(true ,2)) { //if not a 2-rule
 			int[] heights = new int[] { findSurfaceJ(world, getI(bWidth - 1, 0), getK(bWidth - 1, 0), j0 + 10, false, 0),
 					findSurfaceJ(world, getI(0, bLength - 1), getK(0, bLength - 1), j0 + 10, false, 0),
 					findSurfaceJ(world, getI(bWidth - 1, bLength - 1), getK(bWidth - 1, bLength - 1), j0 + 10, false, 0),
@@ -319,7 +319,7 @@ public class BuildingCellularAutomaton extends Building {
 		if (j0 + bHeight > WORLD_MAX_Y - 1)
 			j0 = WORLD_MAX_Y - bHeight - 1; //stay 1 below top to avoid lighting problems
 		if (bury && !hitWater) {
-			zGround = caRule[0][2] == ALIVE ? Math.max(0, bHeight - bWidth / 3 - random.nextInt(bWidth)) : random.nextInt(3 * bHeight / 4);
+			zGround = caRule.isAlive(true,2) ? Math.max(0, bHeight - bWidth / 3 - random.nextInt(bWidth)) : random.nextInt(3 * bHeight / 4);
 			if (j0 - zGround < 5)
 				zGround = j0 - 5;
 			j0 -= zGround; //make ruin partially buried
@@ -360,9 +360,9 @@ public class BuildingCellularAutomaton extends Building {
 	public boolean shiftBuidlingJDown(int maxShift) {
 		//try 4 corners and center
 		int[] heights = new int[] { findSurfaceJ(world, getI(bWidth - 1, 0), getK(bWidth - 1, 0), j0 + 10, false, IGNORE_WATER),
-				findSurfaceJ(world, getI(0, bLength - 1), getK(0, bLength - 1), j0 + 10, false, IGNORE_WATER),
-				findSurfaceJ(world, getI(bWidth - 1, bLength - 1), getK(bWidth - 1, bLength - 1), j0 + 10, false, IGNORE_WATER),
-				findSurfaceJ(world, getI(bWidth / 2, bLength / 2), getK(bWidth / 2, bLength / 2), j0 + 10, false, IGNORE_WATER) };
+            findSurfaceJ(world, getI(0, bLength - 1), getK(0, bLength - 1), j0 + 10, false, IGNORE_WATER),
+            findSurfaceJ(world, getI(bWidth - 1, bLength - 1), getK(bWidth - 1, bLength - 1), j0 + 10, false, IGNORE_WATER),
+            findSurfaceJ(world, getI(bWidth / 2, bLength / 2), getK(bWidth / 2, bLength / 2), j0 + 10, false, IGNORE_WATER) };
 		int minHeight = minOrMax(heights, true);
 		if (minOrMax(heights, false) - minHeight > maxShift)
 			return false;
@@ -543,47 +543,12 @@ public class BuildingCellularAutomaton extends Building {
 		for (int x = 0; x < (width + 1) / 2; x++) {
 			for (int y = 0; y < (length + 1) / 2; y++) {
 				seed[x][y] = (Building.CIRCLE_SHAPE[diam][x][y] >= 0 && random.nextFloat() < seedDensity) //use a circular mask to avoid ugly corners
-						? ALIVE
-								: DEAD;
+						? ALIVE : DEAD;
 				seed[width - x - 1][y] = seed[x][y];
 				seed[x][length - y - 1] = seed[x][y];
 				seed[width - x - 1][length - y - 1] = seed[x][y];
 			}
 		}
 		return seed;
-	}
-
-	public static byte[][] parseCARule(String str, PrintWriter lw) {
-		try {
-			byte[][] rule = new byte[][] { { 0, 0, 0, 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0, 0, 0, 0 } };
-			String birthStr = str.split("/")[0].trim();
-			String surviveStr = str.split("/")[1].trim();
-			for (int n = 1; n < birthStr.length(); n++) {
-				int digit = Integer.parseInt(birthStr.substring(n, n + 1));
-				rule[0][digit] = ALIVE;
-			}
-			for (int n = 1; n < surviveStr.length(); n++) {
-				int digit = Integer.parseInt(surviveStr.substring(n, n + 1));
-				rule[1][digit] = ALIVE;
-			}
-			return rule;
-		} catch (Exception e) {
-			if (lw != null)
-				lw.println("Error parsing automaton rule " + str + ": " + e.getMessage());
-			return null;
-		}
-	}
-
-	public static String ruleToString(byte[][] rule) {
-		StringBuilder sb = new StringBuilder(30);
-		sb.append("B");
-		for (int n = 0; n < 9; n++)
-			if (rule[0][n] == ALIVE)
-				sb.append(n);
-		sb.append("S");
-		for (int n = 0; n < 9; n++)
-			if (rule[1][n] == ALIVE)
-				sb.append(n);
-		return sb.toString();
 	}
 }

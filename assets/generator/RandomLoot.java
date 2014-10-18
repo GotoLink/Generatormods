@@ -26,9 +26,9 @@ import net.minecraft.nbt.NBTTagCompound;
 import java.util.Random;
 
 /**
- * Created by GotoLink on 16/10/2014.
+ * Defines a loot whose final size is randomized within a range of values
  */
-public class RandomLoot {
+public class RandomLoot implements RandomPicker.IWeighted {
     final ItemStack loot;
     int weight, minSize, maxSize;
     public RandomLoot(Object blockOrItem, int damage, int weight, int minSize, int maxSize){
@@ -37,7 +37,7 @@ public class RandomLoot {
         else if(blockOrItem instanceof Item)
             this.loot = new ItemStack((Item)blockOrItem, 0, damage);
         else
-            throw new IllegalArgumentException(blockOrItem.toString());
+            throw new IllegalArgumentException(String.valueOf(blockOrItem));
         this.weight = weight;
         checkSize(minSize, maxSize);
     }
@@ -46,7 +46,7 @@ public class RandomLoot {
         this(arg[0], ((Integer)arg[1]).intValue(), ((Integer)arg[2]).intValue(), ((Integer)arg[3]).intValue(), ((Integer)arg[4]).intValue());
     }
 
-    public RandomLoot(String text){
+    public RandomLoot(String text) throws IllegalArgumentException{
         String[] intStrs = text.trim().split(",", 5);
         if(intStrs.length<4)
             throw new IllegalArgumentException("Wrong number of separators in line");
@@ -109,6 +109,7 @@ public class RandomLoot {
         return loot.copy();
     }
 
+    @Override
     public int getWeight(){
         return weight;
     }
