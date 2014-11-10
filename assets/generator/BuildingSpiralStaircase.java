@@ -51,8 +51,6 @@ public class BuildingSpiralStaircase extends Building {
 		Block stairsBlockId = bRule.primaryBlock.toStair();
 		int sDir = DIR_SOUTH;
 		setBlockLocal(1, 0, 1, bRule);
-		if (yP == 1 && yP == 2)
-			yP = 0;
 		int jB0 = getSurfaceIJKPt(0, yP, j0 + bHeight + 2, true, 0)[1] + 1;
 		int jB2 = getSurfaceIJKPt(2, yP, j0 + bHeight + 2, true, 0)[1] + 1;
 		int pYInc = Integer.signum(yP);

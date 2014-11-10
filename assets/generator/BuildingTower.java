@@ -154,9 +154,9 @@ public class BuildingTower extends Building {
 		//*** build from buffer ***
 		//build tower
 		for (int x1 = 1; x1 < buffer.length - 1; x1++) {
-			for (int y1 = 1; y1 < buffer[0][0].length - 1; y1++) {
-				if (!circular || circle_shape[x1 - 1][y1 - 1] >= 0) {
-					for (int z1 = 0; z1 < Math.min(bHeight, zLim); z1++) {
+            for (int z1 = 0; z1 < Math.min(bHeight, zLim); z1++) {
+			    for (int y1 = 1; y1 < Math.min(buffer[x1][z1].length, buffer[0][0].length - 1); y1++) {
+				    if (!circular || circle_shape[x1 - 1][y1 - 1] >= 0) {
 						setBlockLocal(x1 - 1, z1 - 1, y1 - 1, buffer[x1][z1][y1]);
 					}
 				}
@@ -164,8 +164,8 @@ public class BuildingTower extends Building {
 		}
 		//build roof
 		for (int x1 = 0; x1 < buffer.length; x1++) {
-			for (int y1 = 0; y1 < buffer[0][0].length; y1++) {
-				for (int z1 = bHeight; z1 < zLim; z1++) {
+            for (int z1 = bHeight; z1 < zLim; z1++) {
+			    for (int y1 = 0; y1 < Math.min(buffer[x1][z1].length, buffer[0][0].length); y1++) {
 					setBlockLocal(x1 - 1, z1 - 1, y1 - 1, buffer[x1][z1][y1]);
 				}
 			}

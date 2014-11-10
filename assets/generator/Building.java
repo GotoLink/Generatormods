@@ -200,7 +200,7 @@ public class Building {
 		// painting uses same orientation meta as ladders.
 		// Have to adjust ijk since unlike ladders the entity exists at the
 		// block it is hung on.
-		int dir = orientDirToBDir(LADDER_META_TO_DIR[metadata]);
+		int dir = orientDirToBDir(LADDER_META_TO_DIR[metadata % LADDER_META_TO_DIR.length]);
 		pt[0] -= DIR_TO_I[dir];
 		pt[2] -= DIR_TO_K[dir];
 		if (dir == DIR_NORTH)
@@ -395,12 +395,12 @@ public class Building {
 			if (block[3] == 0 && !isSolidBlock(world.getBlock(block[0], block[1] + 1, block[2])))
 				block[3] = 1;
 			if (block[3] != 0) {
-				int dir = VINES_META_TO_DIR[block[3]];
+				int dir = VINES_META_TO_DIR[block[3] % VINES_META_TO_DIR.length];
 				while (true) {
 					if (isSolidBlock(world.getBlock(block[0] + DIR_TO_I[dir], block[1], block[2] + DIR_TO_K[dir])))
 						break;
 					dir = (dir + 1) % 4;
-					if (dir == VINES_META_TO_DIR[block[3]]) { // we've looped through everything
+					if (dir == VINES_META_TO_DIR[block[3] % VINES_META_TO_DIR.length]) { // we've looped through everything
 						if (isSolidBlock(world.getBlock(block[0], block[1] + 1, block[2]))) {
 							dir = -1;
 							break;
@@ -433,8 +433,8 @@ public class Building {
 
     protected BlockAndMeta getDelayedStair(Block blc, int...block){
         // if stairs are running into ground. replace them with a solid block
-        int dirX = block[0] - DIR_TO_I[STAIRS_META_TO_DIR[block[3] % 4]];
-        int dirZ = block[2] - DIR_TO_K[STAIRS_META_TO_DIR[block[3] % 4]];
+        int dirX = block[0] - DIR_TO_I[STAIRS_META_TO_DIR[block[3] % STAIRS_META_TO_DIR.length]];
+        int dirZ = block[2] - DIR_TO_K[STAIRS_META_TO_DIR[block[3] % STAIRS_META_TO_DIR.length]];
         if(world.getHeightValue(dirX, dirZ)>block[1]) {
             Block adjId = world.getBlock(dirX, block[1], dirZ);
             Block aboveID = world.getBlock(block[0], block[1] + 1, block[2]);
@@ -664,7 +664,7 @@ public class Building {
 				// >=4:the door is open
 				tempdata += 4;
 			}
-			return DOOR_DIR_TO_META[orientDirToBDir(DOOR_META_TO_DIR[metadata % 4])] + tempdata;
+			return DOOR_DIR_TO_META[orientDirToBDir(DOOR_META_TO_DIR[metadata % DOOR_META_TO_DIR.length])] + tempdata;
 		}
 		if(blockID==Blocks.lever||blockID==Blocks.stone_button||blockID==Blocks.wooden_button){
 			// check to see if this is flagged as thrown
@@ -843,7 +843,7 @@ public class Building {
 			if (metadata == 0)
 				return 0;
 			else if (metadata == 1 || metadata == 2 || metadata == 4 || metadata == 8)
-				return VINES_DIR_TO_META[(bDir + VINES_META_TO_DIR[metadata]) % 4];
+				return VINES_DIR_TO_META[(bDir + VINES_META_TO_DIR[metadata]) % VINES_DIR_TO_META.length];
 			else
 				return 1; // default case since vine do not have to have correct
 			// metadata
