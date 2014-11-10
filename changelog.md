@@ -1,3 +1,8 @@
+== CARuins, GreatWall and WalledCity Generator 0.1.7 ==
+* Fixed few crashes with building/tower generation
+* Added support for json data in chest items
+* Added chest handling when using template scanner
+
 == CARuins, GreatWall and WalledCity Generator 0.1.6 ==
 * Changed mob spawner handling to support modded mobs
 * Changed chest content definition to support user-defined chest types

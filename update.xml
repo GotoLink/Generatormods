@@ -1,4 +1,11 @@
 <mod modid="CARuins">
+    <mcVersion version="1.7.10">
+        <release type="release" version="0.1.7"
+                 url="http://www.minecraftforum.net/topic/1651891-/#Formivore"
+                 download="http://www.mediafire.com/download/npwv1c9ms2msn9n/Generatormods-0.1.7(1.7.10).jar"
+                 md5="67F8C6B76AA08FF043BE5F2D9B406F11"
+                />
+    </mcVersion>
     <mcVersion version="1.7.2">
 	<release type="release" version="0.1.6"
                  url="http://www.minecraftforum.net/topic/1651891-/#Formivore"

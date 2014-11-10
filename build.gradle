@@ -15,11 +15,13 @@ buildscript {
     }
 }
 apply plugin: 'forge'
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
 minecraft {
-    version = "1.7.10-10.13.0.1208"
+    version = "1.7.10-10.13.2.1230"
     runDir = "eclipse"
 }
-version = "0.1.6"
+version = "0.1.7"
 archivesBaseName = project.projectDir.name
 sourceSets.main.java{srcDirs project.projectDir.getPath() include("assets/**")}
 sourceSets.main.resources{srcDirs project.projectDir.getPath() include("*.info", "*.mcmeta" , "*.md")}
