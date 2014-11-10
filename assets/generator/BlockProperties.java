@@ -20,11 +20,10 @@ import net.minecraft.init.Blocks;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.IShearable;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.IdentityHashMap;
 
 public class BlockProperties {
-    private final static Map<Block,BlockProperties> props = new HashMap<Block, BlockProperties>();
+    private final static IdentityHashMap<Block,BlockProperties> props = new IdentityHashMap<Block, BlockProperties>(42);
     /**
      * All the studied block properties
      */
@@ -32,9 +31,8 @@ public class BlockProperties {
 
     /**
      * Build the properties for the given block and store them into the internal map
-     * @param block
      */
-    public BlockProperties(Block block){
+    private BlockProperties(Block block){
         // Lava is considered to NOT be a liquid, and is therefore not
         // wallable. This is so we can build cities on the lava surface.
         isWater = block.getMaterial() == Material.water || block == Blocks.ice;
@@ -61,8 +59,6 @@ public class BlockProperties {
 
     /**
      * Retrieve the properties for the given block
-     * @param block
-     * @return
      */
     public static BlockProperties get(Block block){
         BlockProperties p = props.get(block);
