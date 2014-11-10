@@ -77,8 +77,6 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 		generate(world, random, i * 16, k * 16);
 	}
 
-	abstract public void loadDataFiles();
-
 	abstract public void loadGlobalOptions(BufferedReader br);
 
 	public void logOrPrint(String str, String lvl) {
@@ -156,7 +154,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 			lw.println("Getting global options for " + this.toString() + " ...");
 			try {
 				loadGlobalOptions(new BufferedReader(new FileReader(settingsFile)));
-			} catch (FileNotFoundException e) {
+			} catch (FileNotFoundException ignored) {
 			}
 		} else {
 			copyDefaultChestItems();
@@ -240,7 +238,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
             try {
                 CARule rule = new CARule(ruleStr.trim(), lw);
                 rules.add(rule);
-            }catch (IllegalArgumentException ill){
+            }catch (IllegalArgumentException ignored){
 
             }
 		}
@@ -346,7 +344,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
                         "https://raw.github.com/GotoLink/Generatormods/master/update.xml",
                         "https://raw.github.com/GotoLink/Generatormods/master/changelog.md"
                 );
-            } catch (Throwable e) {
+            } catch (Throwable ignored) {
             }
         }
     }

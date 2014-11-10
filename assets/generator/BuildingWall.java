@@ -607,7 +607,8 @@ public class BuildingWall extends Building {
 		return getX(pt) >= xArray[ptY] + buffer;
 	}
 
-	public boolean queryLayout(int layoutCode) {
+	@SuppressWarnings("UnusedDeclaration")
+    public boolean queryLayout(int layoutCode) {
 		for (int n = 0; n < bLength; n++) {
 			setCursor(n);
 			if (!wgt.layoutIsClear(getIJKPt(0, 0, 0), getIJKPt(bWidth - 1, 0, 0), layoutCode)) {

@@ -64,7 +64,7 @@ public class TemplateRule {
                 if (data.length > 1) {
                     try {
                         x = Integer.parseInt(data[1]);
-                    } catch (Exception e) {
+                    } catch (Exception ignored) {
                     }
                 }
                 if(data[0].startsWith(SPECIAL_STAIR.substring(0, 1))){

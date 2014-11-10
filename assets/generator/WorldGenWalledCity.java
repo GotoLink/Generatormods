@@ -431,7 +431,8 @@ public class WorldGenWalledCity extends WorldGeneratorThread {
 	}
 
 	//****************************************  FUNCTION - printLayout *************************************************************************************//
-	private void printLayout(File f) {
+	@SuppressWarnings("UnusedDeclaration")
+    private void printLayout(File f) {
 		try {
 			PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(f)));
 			pw.println("  +y   ");
@@ -447,14 +448,13 @@ public class WorldGenWalledCity extends WorldGeneratorThread {
 				pw.println();
 			}
 			pw.close();
-		} catch (Exception e) {
+		} catch (Exception ignored) {
 		}
 	}
 
 	//****************************************  FUNCTION - randInteriorPoint  *************************************************************************************//
 	/**
-	 * @return Coordinates (i,j,k) of interior surface point, j will be -1 if
-	 *         point was water
+	 * @return Coordinates (i,j,k) of interior surface point, j will be -1 if point was water
 	 */
 	private int[] randInteriorPoint() {
 		int tries = 0;

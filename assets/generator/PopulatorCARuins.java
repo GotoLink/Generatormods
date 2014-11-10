@@ -109,7 +109,6 @@ public class PopulatorCARuins extends BuildingExplorationHandler {
 	}
 
 	//****************************  FUNCTION - loadDataFiles *************************************************************************************//
-	@Override
 	public final void loadDataFiles() {
 		try {
 			initializeLogging("Loading options for the Cellular Automata Generator.");
@@ -205,7 +204,7 @@ public class PopulatorCARuins extends BuildingExplorationHandler {
 			try {
 				if (br != null)
 					br.close();
-			} catch (IOException e) {
+			} catch (IOException ignored) {
 			}
 		}
 	}

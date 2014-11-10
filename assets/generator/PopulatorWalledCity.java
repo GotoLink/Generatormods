@@ -56,7 +56,8 @@ public class PopulatorWalledCity extends BuildingExplorationHandler {
 	private Map<World, File> cityFiles;
 
 	//****************************  FUNCTION - addCityToVillages*************************************************************************************//
-	public void addCityToVillages(World world, int id) {
+	@SuppressWarnings("unchecked")
+    public void addCityToVillages(World world, int id) {
 		if (world != null && world.provider.dimensionId != CITY_TYPE_UNDERGROUND) {
 			if (world.villageCollectionObj != null) {
 				Village city = new Village(world);
@@ -79,8 +80,8 @@ public class PopulatorWalledCity extends BuildingExplorationHandler {
 			return;
 		List<?> playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
 		if (playerList != null) {
-			for (int index = 0; index < playerList.size(); ++index) {
-				EntityPlayerMP player = (EntityPlayerMP) playerList.get(index);
+			for (Object index : playerList) {
+				EntityPlayerMP player = (EntityPlayerMP) index;
 				player.addChatComponentMessage(new ChatComponentText(chatString));
 			}
 		}
@@ -93,21 +94,22 @@ public class PopulatorWalledCity extends BuildingExplorationHandler {
 		if (playerList == null) {
 			citiesBuiltMessages.add(args);
 		} else {
-			for (int index = 0; index < playerList.size(); ++index) {
-				EntityPlayerMP player = (EntityPlayerMP) playerList.get(index);
+            for (Object index : playerList) {
+                EntityPlayerMP player = (EntityPlayerMP) index;
 				String dirStr;
 				int dI = args[0] - (int) player.posX;
 				int dK = args[2] - (int) player.posZ;
 				if (dI * dI + dK * dK < args[4] * args[4]) {
 					dirStr = "nearby";
-				}
-				dirStr = "to the ";
-				if (Math.abs(dI) > 2 * Math.abs(dK))
-					dirStr += dI > 0 ? "east" : "west";
-				else if (Math.abs(dK) > 2 * Math.abs(dI))
-					dirStr += dK > 0 ? "south" : "north";
-				else
-					dirStr += dI > 0 ? (dK > 0 ? "southeast" : "northeast") : (dK > 0 ? "southwest" : "northwest");
+				}else {
+                    dirStr = "to the ";
+                    if (Math.abs(dI) > 2 * Math.abs(dK))
+                        dirStr += dI > 0 ? "east" : "west";
+                    else if (Math.abs(dK) > 2 * Math.abs(dI))
+                        dirStr += dK > 0 ? "south" : "north";
+                    else
+                        dirStr += dI > 0 ? (dK > 0 ? "southeast" : "northeast") : (dK > 0 ? "southwest" : "northwest");
+                }
 				player.addChatComponentMessage(new ChatComponentText("** Built city " + dirStr + " (" + args[0] + "," + args[1] + "," + args[2] + ")! **"));
 			}
 		}
@@ -145,7 +147,6 @@ public class PopulatorWalledCity extends BuildingExplorationHandler {
 	}
 
 	//****************************  FUNCTION - loadDataFiles *************************************************************************************//
-	@Override
 	public final void loadDataFiles() {
 		try {
 			initializeLogging("Loading options and templates for the Walled City Generator.");
@@ -208,7 +209,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler {
 			try {
 				if (br != null)
 					br.close();
-			} catch (IOException e) {
+			} catch (IOException ignored) {
 			}
 		}
 	}
@@ -312,7 +313,7 @@ public class PopulatorWalledCity extends BuildingExplorationHandler {
 			try {
 				if (br != null)
 					br.close();
-			} catch (IOException e) {
+			} catch (IOException ignored) {
 			}
 		}
 		return cityLocs;

@@ -53,7 +53,6 @@ public class PopulatorGreatWall extends BuildingExplorationHandler {
 	}
 
 	//****************************  FUNCTION - loadDataFiles *************************************************************************************//
-	@Override
 	public final void loadDataFiles() {
 		try {
 			initializeLogging("Loading options and templates for the Great Wall Mod.");
@@ -109,7 +108,7 @@ public class PopulatorGreatWall extends BuildingExplorationHandler {
 			try {
 				if (br != null)
 					br.close();
-			} catch (IOException e) {
+			} catch (IOException ignored) {
 			}
 		}
 	}

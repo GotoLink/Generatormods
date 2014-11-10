@@ -62,7 +62,7 @@ public class TemplateTML {
 			for (String read = br.readLine(); read != null; read = br.readLine())
 				lines.add(read);
 			br.close();
-		} catch (IOException io) {
+		} catch (IOException ignored) {
 		}
 		parseFile(lines);
 		lw.println("Successfully loaded template " + name + " with weight " + weight + ".");
@@ -220,7 +220,8 @@ public class TemplateTML {
 	}
 
 	//****************************  FUNCTION - printTemplate*************************************************************************************//
-	public void printTemplate() {
+	@SuppressWarnings("UnusedDeclaration")
+    public void printTemplate() {
 		explorationHandler.logOrPrint("TEMPLATE - " + name, "CONFIG");
 		for (int z = 0; z < height; z++) {
 			for (int y = 0; y < length; y++) {
