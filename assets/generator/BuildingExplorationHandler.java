@@ -248,7 +248,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 	public static boolean readBooleanParam(PrintWriter lw, boolean defaultVal, String splitString, String read) {
 		try {
 			defaultVal = Boolean.parseBoolean(read.split(splitString)[1].trim());
-		} catch (NullPointerException e) {
+		} catch (Exception e) {
 			lw.println("Error parsing boolean: " + e.toString());
 			lw.println("Using default " + defaultVal + ". Line:" + read);
 		}
@@ -274,7 +274,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 			}
 			return newVals;
 		} catch (Exception e) {
-			lw.println("Error parsing intlist input: " + e.toString());
+			lw.println("Error parsing input as int list: " + e.toString());
 			lw.println("Using default. Line:" + read);
 		}
 		return defaultVals;
@@ -282,10 +282,13 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 
 	public static int readIntParam(PrintWriter lw, int defaultVal, String splitString, String read) {
 		try {
-			defaultVal = Integer.parseInt(read.split(splitString)[1].trim());
-		} catch (NumberFormatException e) {
-			lw.println("Error parsing int: " + e.toString());
-			lw.println("Using default " + defaultVal + ". Line:" + read);
+            if(read.contains(splitString))
+			    defaultVal = Integer.parseInt(read.split(splitString)[1].trim());
+		} catch (Exception e) {
+            if(lw!=null) {
+                lw.println("Error parsing int: " + e.toString());
+                lw.println("Using default " + defaultVal + ". Line:" + read);
+            }
 		}
 		return defaultVal;
 	}

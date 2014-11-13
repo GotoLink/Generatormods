@@ -33,10 +33,10 @@ public class CARule implements RandomPicker.IWeighted {
                 parse(subs[0].trim(), true, lw);
                 parse(subs[1].trim(), false, lw);
             }else
-                throw new IllegalArgumentException();
-            weight = BuildingExplorationHandler.readIntParam(lw, 1, "=", str[1].trim());
+                throw new IllegalArgumentException("Couldn't split birth/survive values");
+            weight = BuildingExplorationHandler.readIntParam(lw, 1, "=", str.length>1?str[1].trim():"");
         }else
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Line doesn't start with birth value");
     }
 
     public CARule(String birth, String survive, int weight, String comment){
