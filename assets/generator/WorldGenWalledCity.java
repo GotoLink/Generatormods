@@ -14,6 +14,10 @@ package assets.generator;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import net.minecraft.block.Block;
+import net.minecraft.init.Blocks;
+import net.minecraft.world.World;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -21,16 +25,12 @@ import java.io.PrintWriter;
 import java.util.LinkedList;
 import java.util.Random;
 
-import net.minecraft.block.Block;
-import net.minecraft.init.Blocks;
-import net.minecraft.world.World;
-
 /*
  * WorldGenWalledCity generates walled cities in the Minecraft world.
  * Walled cities are composed of 4 wall template BuildingWalls in a rough rectangle,
  *  filled with many street template BuildingDoubleWalls.
  */
-public class WorldGenWalledCity extends WorldGeneratorThread {
+public final class WorldGenWalledCity extends WorldGeneratorThread {
 	private final static int GATE_HEIGHT = 6;
 	private final static int JMEAN_DEVIATION_SLOPE = 10;
 	private final static int LEVELLING_DEVIATION_SLOPE = 18;
@@ -41,7 +41,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread {
 	private TemplateWall ows, sws;
 	private BuildingWall[] walls;
 	private int axXHand;
-	private int[] dir = null;
+	private Building.Direction[] dir = null;
 	private int Lmean, jmean;
 	private final int cityType;
 	private int corner1[], corner2[], mincorner[];
@@ -221,7 +221,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread {
 			} else {
 				//no gateway on this city side, try just building an interior avenue from midpoint
 				w.setCursor(startScan);
-				BuildingWall radialAvenue = new BuildingWall(0, this, sws, Building.rotDir(w.bDir, -axXHand), radialAvenueHand, ows.MaxL, false, w.getSurfaceIJKPt(-1, 0, Building.WORLD_MAX_Y, false,
+				BuildingWall radialAvenue = new BuildingWall(0, this, sws, w.bDir.rotate(-axXHand), radialAvenueHand, ows.MaxL, false, w.getSurfaceIJKPt(-1, 0, Building.WORLD_MAX_Y, false,
 						Building.IGNORE_WATER));
 				radialAvenue.setTarget(cityCenter);
 				radialAvenue.plan(1, 0, BuildingWall.DEFAULT_LOOKAHEAD, true);
@@ -267,7 +267,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread {
 		for (BuildingWall radialAvenue : radialAvenues) {
 			for (int n = radialAvenue.bLength - avInterval; n >= 20; n -= avInterval) {
 				radialAvenue.setCursor(n);
-				BuildingDoubleWall crossAvenue = new BuildingDoubleWall(ID, this, sws, Building.rotDir(radialAvenue.bDir, Building.ROT_R), Building.R_HAND, radialAvenue.getIJKPt(0, 0, 0));
+				BuildingDoubleWall crossAvenue = new BuildingDoubleWall(ID, this, sws, radialAvenue.bDir.rotate(Building.R_HAND), Building.R_HAND, radialAvenue.getIJKPt(0, 0, 0));
 				if (crossAvenue.plan())
 					crossAvenues.add(crossAvenue);
 			}
@@ -283,7 +283,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread {
 				sws = TemplateWall.pickBiomeWeightedWallStyle(ows.streets, world, i0, k0, world.rand, true);
 				if (pt[1] != -1) {
 					//streets
-					BuildingDoubleWall street = new BuildingDoubleWall(ID + tries, this, sws, random.nextInt(4), Building.R_HAND, pt);
+					BuildingDoubleWall street = new BuildingDoubleWall(ID + tries, this, sws, Building.Direction.from(random), Building.R_HAND, pt);
 					if (street.plan()) {
 						plannedStreets.add(street);
 					}
@@ -372,18 +372,18 @@ public class WorldGenWalledCity extends WorldGeneratorThread {
 		exploredChunk[2] = world.blockExists(chunkI << 4, 0, (chunkK + 1) << 4); //South
 		exploredChunk[3] = world.blockExists((chunkI - 1) << 4, 0, chunkK << 4); //West
 		//pick an explored direction if it exists
-		dir = new int[4];
-		int randDir = random.nextInt(4);
-		for (dir[0] = (randDir + 1) % 4; dir[0] != randDir; dir[0] = (dir[0] + 1) % 4)
-			if (exploredChunk[dir[0]])
+		dir = new Building.Direction[4];
+		Building.Direction randDir = Building.Direction.from(random);
+		for (dir[0] = randDir.next(); dir[0] != randDir; dir[0] = dir[0].next())
+			if (exploredChunk[dir[0].ordinal()])
 				break; //this chunk has been explored so we want to go in this direction
 		//Choose axXHand (careful it is opposite the turn direction of the square).
 		//if RH direction explored, then turn RH; else turn LH;
 		//axXHand=2*random.nextInt(2)-1;
-		axXHand = exploredChunk[(dir[0] + 1) % 4] ? -1 : 1;
-		dir[1] = (dir[0] - axXHand + 4) % 4;
-		dir[2] = (dir[1] - axXHand + 4) % 4;
-		dir[3] = (dir[2] - axXHand + 4) % 4;
+		axXHand = exploredChunk[dir[0].next().ordinal()] ? -1 : 1;
+		dir[1] = dir[0].rotate(-axXHand);
+		dir[2] = dir[1].rotate(-axXHand);
+		dir[3] = dir[2].rotate(-axXHand);
 	}
 
 	//****************************************  FUNCTION - levelCity  *************************************************************************************//
@@ -415,9 +415,9 @@ public class WorldGenWalledCity extends WorldGeneratorThread {
 						pt[1] += 10; //just to try to catch any overhanging blocks
 						for (; pt[1] > jmax; pt[1]--)
 							if (!world.isAirBlock(pt[0], pt[1], pt[2]))
-								Building.setBlockAndMetaNoLighting(world, pt[0], pt[1], pt[2], Blocks.air, 0);
+								Building.setBlockAndMetaNoLighting(world, pt[0], pt[1], pt[2], Blocks.air, 0, 2);
 						if (!world.isAirBlock(pt[0], jmax - 1, pt[2]))
-							Building.setBlockAndMetaNoLighting(world, pt[0], jmax, pt[2], oldSurfaceBlockId, 0);
+							Building.setBlockAndMetaNoLighting(world, pt[0], jmax, pt[2], oldSurfaceBlockId, 0, 2);
 					}
 					if (pt[1] < jmin)
 						Building.fillDown(pt, jmin, world);

@@ -19,7 +19,6 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.EnumSkyBlock;
 
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -28,7 +27,7 @@ import java.util.Random;
 /*
  * BuildingCellularAutomaton creates seed-based structures
  */
-public class BuildingCellularAutomaton extends Building {
+public final class BuildingCellularAutomaton extends Building {
 	private final static byte DEAD = CARule.DEAD, ALIVE = CARule.ALIVE;
 	private final float MEAN_SIDE_LENGTH_PER_POPULATE = 15.0f;
 	private final static int HOLE_FLOOR_BUFFER = 2, UNREACHED = -1;
@@ -47,7 +46,7 @@ public class BuildingCellularAutomaton extends Building {
 	int[][] fBB;
 	int zGround = 0;
 
-	public BuildingCellularAutomaton(WorldGeneratorThread wgt_, TemplateRule bRule_, int bDir_, int axXHand_, boolean centerAligned_, int width, int height, int length, byte[][] seed_,
+	public BuildingCellularAutomaton(WorldGeneratorThread wgt_, TemplateRule bRule_, Direction bDir_, int axXHand_, boolean centerAligned_, int width, int height, int length, byte[][] seed_,
 			CARule caRule_, TemplateRule[] spawnerRules, int[] sourcePt) {
 		super(0, wgt_, bRule_, bDir_, axXHand_, centerAligned_, new int[] { width, height, length }, sourcePt);
 		seed = seed_;
@@ -472,7 +471,7 @@ public class BuildingCellularAutomaton extends Building {
 		if (spawnerSelection == null || random.nextBoolean()) {
 			for (int tries = 0; tries < 10; tries++) {
 				int x = random.nextInt(fWidth) + fBB[0][z], y = random.nextInt(fLength) + fBB[2][z];
-				BuildingDispenserTrap bdt = new BuildingDispenserTrap(wgt, bRule, random.nextInt(4), 1, getIJKPt(x, z, y));
+				BuildingDispenserTrap bdt = new BuildingDispenserTrap(wgt, bRule, Direction.from(random), 1, getIJKPt(x, z, y));
 				if (bdt.queryCanBuild(2)) {
 					bdt.build(random.nextBoolean() ? BuildingDispenserTrap.ARROW_MISSILE : BuildingDispenserTrap.DAMAGE_POTION_MISSILE, true);
 					break;
@@ -489,14 +488,14 @@ public class BuildingCellularAutomaton extends Building {
 		for (int tries = 0; tries < 8; tries++) {
 			int x = random.nextInt(fWidth) + fBB[0][z2], y = random.nextInt(fLength) + fBB[2][z2];
 			if (isFloor(x, z2, y)) {
-				int dir = random.nextInt(4);
+				Direction dir = Direction.values()[random.nextInt(4)];
 				if (buildStairs && (bss = new BuildingSpiralStaircase(wgt, bRule, dir, 1, false, z1 - z2 + 1, getIJKPt(x, z2 - 1, y))).bottomIsFloor()) {
 					bss.build(0, 0);
 				} else if (isFloor(x, z1, y)) {
 					//ladder
 					for (int z = z1; z < z2; z++) {
-						setBlockLocal(x + DIR_TO_X[dir], z, y + DIR_TO_Y[dir], bRule);
-						setBlockLocal(x, z, y, Blocks.ladder, LADDER_DIR_TO_META[flipDir(dir)]);
+						setBlockLocal(x + dir.toX(), z, y + dir.toY(), bRule);
+						setBlockLocal(x, z, y, Blocks.ladder, LADDER_DIR_TO_META[dir.flip().ordinal()]);
 					}
 				}
 				return;

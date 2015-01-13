@@ -18,17 +18,18 @@ import net.minecraft.block.*;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.item.EntityPainting;
 import net.minecraft.init.Blocks;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.tileentity.TileEntityMobSpawner;
 import net.minecraft.tileentity.TileEntitySign;
 import net.minecraft.village.VillageDoorInfo;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.common.util.BlockSnapshot;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 /*
  *      Building is a general class for buildings. Classes can inherit from Building to build from a local frame of reference.
@@ -49,10 +50,51 @@ import java.util.Set;
  *               (dir=2)
  */
 public class Building {
+	public enum Direction{
+		NORTH,EAST,SOUTH,WEST;
+
+		public Direction flip(){
+			return from(this.ordinal() + 2);
+		}
+
+		public Direction next(){
+			return from(this.ordinal() + 1);
+		}
+
+		public Direction rotate(int rotation){
+			return from(this.ordinal() + rotation + 4);
+		}
+
+		public int toX(){
+			if(this==EAST){
+				return 1;
+			}else if(this==WEST){
+				return -1;
+			}
+			return 0;
+		}
+
+		public int toY(){
+			if(this==NORTH){
+				return 1;
+			}else if(this==SOUTH){
+				return -1;
+			}
+			return 0;
+		}
+
+		private static Direction from(int i){
+			return Direction.values()[i%4];
+		}
+
+		public static Direction from(Random random){
+			return from(random.nextInt(4));
+		}
+	}
 	public final static int HIT_WATER = -666; // , HIT_SWAMP=-667;
 	public final static String HARD_CHEST = "HARD", TOWER_CHEST = "TOWER";
-	public final static int DIR_NORTH = 0, DIR_EAST = 1, DIR_SOUTH = 2, DIR_WEST = 3;
-	public final static int ROT_R = 1, R_HAND = 1, L_HAND = -1;
+	public final static int DIR_NORTH = Direction.NORTH.ordinal(), DIR_EAST = Direction.EAST.ordinal(), DIR_SOUTH = Direction.SOUTH.ordinal(), DIR_WEST = Direction.WEST.ordinal();
+	public final static int R_HAND = 1, L_HAND = -1;
 	public final static int SEA_LEVEL = 63, WORLD_MAX_Y = 255;
 	// **** WORKING VARIABLES ****
 	protected final World world;
@@ -66,12 +108,8 @@ public class Building {
 	protected int i0, j0, k0; // origin coordinates (x=0,z=0,y=0). The child class may want to move the origin as it progress to use as a "cursor" position.
 	private int xI, yI, xK, yK; //
 	protected int bHand; // hand of secondary axis. Takes values of 1 for right-handed, -1 for left-handed.
-	protected int bDir; // Direction code of primary axis. Takes values of DIR_NORTH=0,DIR_EAST=1,DIR_SOUTH=2,DIR_WEST=3.
-	// **************************************** CONSTRUCTOR - findSurfaceJ
-	// *************************************************************************************//
-	// Finds a surface block.
-	// Depending on the value of waterIsSurface and wallIsSurface will treat
-	// liquid and wall blocks as either solid or air.
+	protected Direction bDir; // Direction code of primary axis. Takes values of DIR_NORTH=0,DIR_EAST=1,DIR_SOUTH=2,DIR_WEST=3.
+
 	public final static int IGNORE_WATER = -1;
 	// Special Blocks
 	public final static int PAINTING_BLOCK_OFFSET = 3;
@@ -90,8 +128,6 @@ public class Building {
 			2, 5, 3, 4 }, TRAPDOOR_DIR_TO_META = new int[] { 1, 2, 0, 3 }, VINES_DIR_TO_META = new int[] { 4, 8, 1, 2 }, DOOR_DIR_TO_META = new int[] { 3, 0, 1, 2 },
 			PAINTING_DIR_TO_FACEDIR = new int[] { 0, 3, 2, 1 };
 	public final static int[] DIR_TO_I = new int[] { 0, 1, 0, -1 }, DIR_TO_K = new int[] { -1, 0, 1, 0 };
-	// for use in local orientation
-	public final static int[] DIR_TO_X = new int[] { 0, 1, 0, -1 }, DIR_TO_Y = new int[] { 1, 0, -1, 0 };
 	// some prebuilt directional blocks
 	public final static BlockAndMeta WEST_FACE_TORCH_BLOCK = new BlockAndMeta(Blocks.torch, BUTTON_DIR_TO_META[DIR_WEST]), EAST_FACE_TORCH_BLOCK = new BlockAndMeta(Blocks.torch, BUTTON_DIR_TO_META[DIR_EAST]),
 			HOLE_BLOCK_LIGHTING = new BlockAndMeta(Blocks.air, 0), HOLE_BLOCK_NO_LIGHTING = new BlockAndMeta(Blocks.air, 1),
@@ -117,7 +153,7 @@ public class Building {
 
     // **************************** CONSTRUCTORS - Building
     // *************************************************************************************//
-    public Building(int ID_, WorldGeneratorThread wgt_, TemplateRule buildingRule_, int dir_, int axXHand_, boolean centerAligned_, int[] dim, int[] alignPt) {
+    public Building(int ID_, WorldGeneratorThread wgt_, TemplateRule buildingRule_, Direction dir_, int axXHand_, boolean centerAligned_, int[] dim, int[] alignPt) {
         bID = ID_;
         wgt = wgt_;
         world = wgt.world;
@@ -187,11 +223,15 @@ public class Building {
 		return "(" + pt[0] + "," + pt[1] + "," + pt[2] + ")";
 	}
 
+	public final Direction getDir(){
+		return Direction.from(random);
+	}
+
 	// outputs dir rotated to this Building's orientation and handedness
 	// dir input should be the direction desired if bDir==DIR_NORTH and
 	// bHand=R_HAND
 	public int orientDirToBDir(int dir) {
-		return bHand < 0 && dir % 2 == 1 ? (bDir + dir + 2) & 0x3 : (bDir + dir) & 0x3;
+		return bHand < 0 && dir % 2 == 1 ? (bDir.ordinal() + dir + 2) & 0x3 : (bDir.ordinal() + dir) & 0x3;
 	}
 
 	// &&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setPainting
@@ -218,29 +258,29 @@ public class Building {
 
 	// ******************** ORIENTATION FUNCTIONS
 	// *************************************************************************************************************//
-	public void setPrimaryAx(int dir_) {
+	public void setPrimaryAx(Direction dir_) {
 		bDir = dir_;
 		// changes of basis
 		switch (bDir) {
-		case DIR_NORTH:
+		case NORTH:
 			xI = bHand;
 			yI = 0;
 			xK = 0;
 			yK = -1;
 			break;
-		case DIR_EAST:
+		case EAST:
 			xI = 0;
 			yI = 1;
 			xK = bHand;
 			yK = 0;
 			break;
-		case DIR_SOUTH:
+		case SOUTH:
 			xI = -bHand;
 			yI = 0;
 			xK = 0;
 			yK = 1;
 			break;
-		case DIR_WEST:
+		case WEST:
 			xI = 0;
 			yI = -1;
 			xK = -bHand;
@@ -291,13 +331,13 @@ public class Building {
 	protected final String IDString() {
 		String str = "ID=" + bID + " axes(Y,X)=";
 		switch (bDir) {
-		case DIR_SOUTH:
+		case SOUTH:
 			return str + "(S," + (bHand > 0 ? "W)" : "E)");
-		case DIR_NORTH:
+		case NORTH:
 			return str + "(N," + (bHand > 0 ? "E)" : "W)");
-		case DIR_WEST:
+		case WEST:
 			return str + "(W," + (bHand > 0 ? "N)" : "S)");
-		case DIR_EAST:
+		case EAST:
 			return str + "(E," + (bHand > 0 ? "S)" : "N)");
 		}
 		return "Error - bad dir value for ID=" + bID;
@@ -427,7 +467,7 @@ public class Building {
             if((randLightingHash[(block[0] & 0x7) | (block[1] & 0x38) | (block[2] & 0x1c0)]))
                 world.setBlock(block[0], block[1], block[2], blc, block[3], 3);
             else
-                setBlockAndMetaNoLighting(world, block[0], block[1], block[2], blc, block[3]);
+                setBlockAndMetaNoLighting(world, block[0], block[1], block[2], blc, block[3], 3);
         }
 	}
 
@@ -463,16 +503,14 @@ public class Building {
 
 	protected final void setBlockLocal(int x, int z, int y, Block blockID, int metadata) {
         int[] pt = getIJKPt(x, z, y);
-        if (blockID == Blocks.air && world.isAirBlock(pt[0], pt[1], pt[2]))
-            return;
-        if (!(blockID instanceof BlockChest))
-            emptyIfChest(pt);
+        if(emptyIfChest(blockID, pt))
+			return;
         if (BlockProperties.get(blockID).isDelayed){
             delayedBuildQueue.offer(new PlacedBlock(blockID, new int[]{pt[0], pt[1], pt[2], rotateMetadata(blockID, metadata)}));
         }else if (randLightingHash[(x & 0x7) | (y & 0x38) | (z & 0x1c0)]) {
             world.setBlock(pt[0], pt[1], pt[2], blockID, rotateMetadata(blockID, metadata), 2);
         } else {
-            setBlockAndMetaNoLighting(world, pt[0], pt[1], pt[2], blockID, rotateMetadata(blockID, metadata));
+            setBlockAndMetaNoLighting(world, pt[0], pt[1], pt[2], blockID, rotateMetadata(blockID, metadata), 2);
         }
         if (BlockProperties.get(blockID).isDoor) {
             addDoorToNewListIfAppropriate(pt[0], pt[1], pt[2]);
@@ -510,16 +548,14 @@ public class Building {
 	// allows control of lighting. Also will build even if replacing air with air.
 	protected final void setBlockWithLightingLocal(int x, int z, int y, Block blockID, int metadata, boolean lighting) {
 		int[] pt = getIJKPt(x, z, y);
-        if (blockID == Blocks.air && world.isAirBlock(pt[0], pt[1], pt[2]))
-            return;
-		if (!(blockID instanceof BlockChest))
-			emptyIfChest(pt);
+		if(emptyIfChest(blockID, pt))
+			return;
 		if (BlockProperties.get(blockID).isDelayed)
             delayedBuildQueue.offer(new PlacedBlock(blockID, new int[]{pt[0], pt[1], pt[2], rotateMetadata(blockID, metadata)}));
 		else if (lighting)
 			world.setBlock(pt[0], pt[1], pt[2], blockID, rotateMetadata(blockID, metadata), 3);
 		else
-			setBlockAndMetaNoLighting(world, pt[0], pt[1], pt[2], blockID, rotateMetadata(blockID, metadata));
+			setBlockAndMetaNoLighting(world, pt[0], pt[1], pt[2], blockID, rotateMetadata(blockID, metadata), 3);
 		if (BlockProperties.get(blockID).isDoor) {
 			addDoorToNewListIfAppropriate(pt[0], pt[1], pt[2]);
 		}
@@ -571,7 +607,7 @@ public class Building {
 	}
 
 	private void addDoorToNewListIfAppropriate(int par1, int par2, int par3) {
-		if (!(this.wgt instanceof WorldGenWalledCity)) {
+		if (!(this.wgt.master instanceof PopulatorWalledCity)) {
 			return;
 		}
 		int id = getKnownBuilding();
@@ -616,13 +652,19 @@ public class Building {
 
 	// ******************** LOCAL COORDINATE FUNCTIONS - HELPER FUNCTIONS
 	// *************************************************************************************************************//
-	private void emptyIfChest(int[] pt) {
+	private boolean emptyIfChest(Block newID, int[] pt) {
+		Block old = world.getBlock(pt[0], pt[1], pt[2]);
+		if (newID == Blocks.air && old.isAir(world, pt[0], pt[1], pt[2]))
+			return true;
 		// if block is a chest empty it
-		if (pt != null && world.getBlock(pt[0], pt[1], pt[2]) instanceof BlockChest) {
-			TileEntityChest tileentitychest = (TileEntityChest) world.getTileEntity(pt[0], pt[1], pt[2]);
-			for (int m = 0; m < tileentitychest.getSizeInventory(); m++)
-				tileentitychest.setInventorySlotContents(m, null);
+		if (!(newID instanceof ITileEntityProvider) && old instanceof ITileEntityProvider) {
+			TileEntity tileentity = world.getTileEntity(pt[0], pt[1], pt[2]);
+			if(tileentity instanceof IInventory) {
+				for (int m = 0; m < ((IInventory)tileentity).getSizeInventory(); m++)
+					((IInventory)tileentity).setInventorySlotContents(m, null);
+			}
 		}
+		return false;
 	}
 
 	private ItemStack getChestItemstack(String chestType) {
@@ -693,7 +735,7 @@ public class Building {
 			return LADDER_DIR_TO_META[orientDirToBDir(LADDER_META_TO_DIR[metadata - 2])] + tempdata;
         }else if(blockID==Blocks.rail||blockID==Blocks.golden_rail||blockID==Blocks.detector_rail||blockID==Blocks.activator_rail){
 			switch (bDir) {
-			case DIR_NORTH:
+			case NORTH:
 				// flat tracks
 				if (metadata == 0) {
 					return 0;
@@ -727,7 +769,7 @@ public class Building {
 				if (metadata == 9) {
 					return bHand == 1 ? 9 : 6;
 				}
-			case DIR_EAST:
+			case EAST:
 				// flat tracks
 				if (metadata == 0) {
 					return 1;
@@ -761,7 +803,7 @@ public class Building {
 				if (metadata == 9) {
 					return bHand == 1 ? 6 : 7;
 				}
-			case DIR_SOUTH:
+			case SOUTH:
 				// flat tracks
 				if (metadata == 0) {
 					return 0;
@@ -795,7 +837,7 @@ public class Building {
 				if (metadata == 9) {
 					return bHand == 1 ? 7 : 8;
 				}
-			case DIR_WEST:
+			case WEST:
 				// flat tracks
 				if (metadata == 0) {
 					return 1;
@@ -843,14 +885,14 @@ public class Building {
 			if (metadata == 0)
 				return 0;
 			else if (metadata == 1 || metadata == 2 || metadata == 4 || metadata == 8)
-				return VINES_DIR_TO_META[(bDir + VINES_META_TO_DIR[metadata]) % VINES_DIR_TO_META.length];
+				return VINES_DIR_TO_META[(bDir.ordinal() + VINES_META_TO_DIR[metadata]) % VINES_DIR_TO_META.length];
 			else
 				return 1; // default case since vine do not have to have correct
 			// metadata
         }else if(blockID==Blocks.standing_sign){
 			// sign posts
 			switch (bDir) {
-			case DIR_NORTH:
+			case NORTH:
 				if (metadata == 0) {
 					return bHand == 1 ? 0 : 8;
 				}
@@ -899,7 +941,7 @@ public class Building {
 				if (metadata == 15) {
 					return bHand == 1 ? 15 : 9;
 				}
-			case DIR_EAST:
+			case EAST:
 				if (metadata == 0) {
 					return bHand == 1 ? 4 : 12;
 				}
@@ -948,7 +990,7 @@ public class Building {
 				if (metadata == 15) {
 					return bHand == 1 ? 3 : 13;
 				}
-			case DIR_SOUTH:
+			case SOUTH:
 				if (metadata == 0) {
 					return bHand == 1 ? 8 : 0;
 				}
@@ -997,7 +1039,7 @@ public class Building {
 				if (metadata == 15) {
 					return bHand == 1 ? 7 : 1;
 				}
-			case DIR_WEST:
+			case WEST:
 				if (metadata == 0) {
 					return bHand == 1 ? 12 : 4;
 				}
@@ -1055,11 +1097,11 @@ public class Building {
 	protected void setLootChest(int[] pt, Block chestBlock, int meta, String chestType) {
 		if (world.setBlock(pt[0], pt[1], pt[2], chestBlock, meta, 2)) {
 			TileEntityChest chest = (TileEntityChest) world.getTileEntity(pt[0], pt[1], pt[2]);
-			if (wgt.chestTries != null && wgt.chestTries.containsKey(chestType)) {
+			if (chest != null && wgt.chestTries != null && wgt.chestTries.containsKey(chestType)) {
 				for (int m = 0; m < wgt.chestTries.get(chestType); m++) {
 					if (random.nextBoolean()) {
 						ItemStack itemstack = getChestItemstack(chestType);
-						if (itemstack != null && chest != null)
+						if (itemstack != null)
 							chest.setInventorySlotContents(random.nextInt(chest.getSizeInventory()), itemstack);
 					}
 				}
@@ -1102,20 +1144,25 @@ public class Building {
 		return (int) Math.sqrt((pt1[0] - pt2[0]) * (pt1[0] - pt2[0]) + (pt1[1] - pt2[1]) * (pt1[1] - pt2[1]) + (pt1[2] - pt2[2]) * (pt1[2] - pt2[2]));
 	}
 
+	// Finds a surface block.
+	// Depending on the value of waterIsSurface and wallIsSurface will treat
+	// liquid and wall blocks as either solid or air.
 	public static int findSurfaceJ(World world, int i, int k, int jinit, boolean wallIsSurface, int waterSurfaceBuffer) {
-		Block blockId;
 		//if(world.getChunkProvider().chunkExists(i>>4, k>>4))
 		{
 			if (world.provider.isHellWorld) {// the Nether
+				int max = world.provider.getActualHeight()-1;
+				if(jinit<max)
+					max = jinit;
 				if ((i % 2 == 1) ^ (k % 2 == 1)) {
-					for (int j = (int) (WORLD_MAX_Y * 0.5); j > -1; j--) {
+					for (int j = max; j > -1; j--) {
 						if (world.isAirBlock(i, j, k))
 							for (; j > -1; j--)
 								if (!BlockProperties.get(world.getBlock(i, j, k)).isWallable)
 									return j;
 					}
 				} else {
-					for (int j = 0; j <= (int) (WORLD_MAX_Y * 0.5); j++)
+					for (int j = 0; j <= max; j++)
 						if (world.isAirBlock(i, j, k))
 							return j;
 				}
@@ -1125,7 +1172,7 @@ public class Building {
 				if (minecraftHeight < jinit)
 					jinit = minecraftHeight;
 				for (int j = jinit; j >= 0; j--) {
-					blockId = world.getBlock(i, j, k);
+					Block blockId = world.getBlock(i, j, k);
 					if (!BlockProperties.get(blockId).isWallable && (wallIsSurface || !BlockProperties.get(blockId).isArtificial))
 						return j;
 					if (waterSurfaceBuffer != IGNORE_WATER && BlockProperties.get(blockId).isWater)
@@ -1137,44 +1184,26 @@ public class Building {
 		return -1;
 	}
 
-	public static int flipDir(int dir) {
-		return (dir + 2) % 4;
-	}
-
-	public static String metaValueCheck(Block blockID, int metadata) {
-		if (metadata < 0 || metadata >= 16)
-			return "All Minecraft meta values should be between 0 and 15";
-		String fail = blockID.getUnlocalizedName() + " meta value should be between";
-		if (BlockProperties.get(blockID).isStair)
-			return metadata < 8 ? null : fail + " 0 and 7";
-		// orientation metas
-		if(blockID==Blocks.rail){
-			return metadata < 10 ? null : fail + " 0 and 9";
-        }else if(blockID==Blocks.stone_button || blockID== Blocks.wooden_button){
-			return metadata % 8 > 0 && metadata % 8 < 5 ? null : fail + " 1 and 4 or 9 and 12";
-        }else if(blockID==Blocks.ladder||blockID==Blocks.dispenser||blockID==Blocks.furnace||blockID==Blocks.lit_furnace||blockID==Blocks.wall_sign
-		||blockID==Blocks.piston||blockID==Blocks.piston_extension||blockID==Blocks.chest||blockID==Blocks.hopper||blockID==Blocks.dropper||blockID==Blocks.golden_rail||blockID==Blocks.detector_rail||blockID==Blocks.activator_rail){
-			return metadata % 8 < 6 ? null : fail + " 0 and 5 or 8 and 13";
-        }else if(blockID==Blocks.pumpkin||blockID==Blocks.lit_pumpkin){
-			return metadata < 5 ? null : fail + " 0 and 4";
-        }else if(blockID==Blocks.fence_gate){
-			return metadata < 8 ? null : fail + " 0 and 7";
-        }else if(blockID==Blocks.wooden_slab ||blockID==Blocks.bed){
-			return metadata % 8 < 4 ? null : fail + " 0 and 3 or 8 and 11";
-        }else if(blockID==Blocks.torch||blockID==Blocks.redstone_torch||blockID==Blocks.unlit_redstone_torch){
-			return metadata > 0 && metadata < 7 ? null : fail + " 1 and 6";
-		}
-		return null;
-	}
-
-	public static int rotDir(int dir, int rotation) {
-		return (dir + rotation + 4) % 4;
-	}
-
-	public static void setBlockAndMetaNoLighting(World world, int i, int j, int k, Block blockId, int meta) {
+	public static void setBlockAndMetaNoLighting(World world, int i, int j, int k, Block blockId, int meta, int flag) {
 		if (i < 0xfe363c80 || k < 0xfe363c80 || i >= 0x1c9c380 || k >= 0x1c9c380 || j < 0 || j > Building.WORLD_MAX_Y)
 			return;
-		world.getChunkFromChunkCoords(i >> 4, k >> 4).func_150807_a(i & 0xf, j, k & 0xf, blockId, meta);
+		Chunk chunk = world.getChunkFromChunkCoords(i >> 4, k >> 4);
+        Block oldBlock = null;
+        BlockSnapshot blockSnapshot = null;
+        if ((flag & 1) != 0) {
+            oldBlock = chunk.getBlock(i & 15, j, k & 15);
+        }
+        if(world.captureBlockSnapshots){
+            blockSnapshot = BlockSnapshot.getBlockSnapshot(world, i, j, k, flag);
+            world.capturedBlockSnapshots.add(blockSnapshot);
+        }
+        boolean success = chunk.func_150807_a(i & 0xf, j, k & 0xf, blockId, meta);
+        if(!success && blockSnapshot != null){
+            world.capturedBlockSnapshots.remove(blockSnapshot);
+        }
+        if(success && blockSnapshot == null){
+            world.markAndNotifyBlock(i, j, k, chunk, oldBlock, blockId, flag);
+        }
 	}
 
 	// ******************** STATIC FUNCTIONS
@@ -1191,7 +1220,7 @@ public class Building {
 			oldSurfaceBlockId = world.provider.isHellWorld ? Blocks.netherrack : Blocks.grass;
 		Block fillBlockId = oldSurfaceBlockId == Blocks.grass ? Blocks.dirt : oldSurfaceBlockId;
 		for (; lowPt[1] <= jtop; lowPt[1]++)
-			setBlockAndMetaNoLighting(world, lowPt[0], lowPt[1], lowPt[2], lowPt[1] == jtop ? oldSurfaceBlockId : fillBlockId, 0);
+			setBlockAndMetaNoLighting(world, lowPt[0], lowPt[1], lowPt[2], lowPt[1] == jtop ? oldSurfaceBlockId : fillBlockId, 0, 2);
 	}
 
 	protected static int minOrMax(int[] a, boolean isMin) {

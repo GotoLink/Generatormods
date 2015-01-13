@@ -14,11 +14,11 @@ package assets.generator;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import java.util.Random;
-
 import net.minecraft.world.World;
 
-public class WorldGenCARuins extends WorldGeneratorThread {
+import java.util.Random;
+
+public final class WorldGenCARuins extends WorldGeneratorThread {
 	private CARule caRule = null;
 	private final int MinHeight, MaxHeight;
 	private final float GlobalFrequency, SymmetricSeedDensity;
@@ -66,7 +66,7 @@ public class WorldGenCARuins extends WorldGeneratorThread {
 		 * bss.bottomIsFloor();
 		 * return true;
 		 */
-		BuildingCellularAutomaton bca = new BuildingCellularAutomaton(this, blockRule, random.nextInt(4), 1, false, ContainerWidth, th, ContainerLength, seed, caRule, null, new int[] { i0, j0, k0 });
+		BuildingCellularAutomaton bca = new BuildingCellularAutomaton(this, blockRule, Building.Direction.from(random), 1, false, ContainerWidth, th, ContainerLength, seed, caRule, null, new int[] { i0, j0, k0 });
 		if (bca.plan(true, MinHeightBeforeOscillation) && bca.queryCanBuild(0, true)) {
 			bca.build(SmoothWithStairs, MakeFloors);
 			if (GlobalFrequency < 0.05 && random.nextInt(2) != 0) {

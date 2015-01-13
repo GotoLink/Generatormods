@@ -14,21 +14,21 @@ package assets.generator;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 /*
  * WorldGenUndergroundCity generates a city in a large underground cavern.
  * The cavern is made from many recursively created spherical voids.
  * These are filled with street template BuildingDoubleWalls to create the city.
  */
-public class WorldGenUndergroundCity extends WorldGeneratorThread {
+public final class WorldGenUndergroundCity extends WorldGeneratorThread {
 	private final static float P_CHILDREN = 0.80F;
 	private final static int MAX_CHILDREN = 3;
 	public final static int MIN_DIAM = 11, MAX_DIAM = 30;
@@ -84,10 +84,13 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread {
 		for (int attempts = 0; attempts < Math.min(20, hollows.size()); attempts++) {
 			int[] hollow = getFarthestHollowFromPt(pole);
 			int diam = Building.SPHERE_SHAPE[hollow[3]][hollow[3] / 3];
-			int axDir = Math.abs(center[0] - hollow[0]) > Math.abs(center[2] - hollow[2]) ? hollow[0] > center[0] ? Building.DIR_SOUTH : Building.DIR_NORTH : hollow[2] > center[2] ? Building.DIR_WEST
-					: Building.DIR_EAST;
-			int[] pt = new int[] { hollow[0] + (Math.abs(axDir) == 1 ? hollow[3] / 2 : (axDir == Building.DIR_SOUTH ? (hollow[3] + diam) / 2 : (hollow[3] - diam) / 2 + 1)), hollow[1] - hollow[3] / 3,
-					hollow[2] + (Math.abs(axDir) == 2 ? hollow[3] / 2 : (axDir == Building.DIR_WEST ? (hollow[3] + diam) / 2 : (hollow[3] - diam) / 2 + 1)) };
+			Building.Direction axDir = Math.abs(center[0] - hollow[0]) > Math.abs(center[2] - hollow[2]) ?
+					hollow[0] > center[0] ? Building.Direction.SOUTH : Building.Direction.NORTH :
+					hollow[2] > center[2] ? Building.Direction.WEST : Building.Direction.EAST;
+			int[] pt = new int[] {
+					hollow[0] + (axDir == Building.Direction.EAST ? hollow[3] / 2 : (axDir == Building.Direction.SOUTH ? (hollow[3] + diam) / 2 : (hollow[3] - diam) / 2 + 1)),
+					hollow[1] - hollow[3] / 3,
+					hollow[2] + (axDir == Building.Direction.SOUTH ? hollow[3] / 2 : (axDir == Building.Direction.WEST ? (hollow[3] + diam) / 2 : (hollow[3] - diam) / 2 + 1)) };
 			boolean separated = true;
 			for (BuildingUndergroundEntranceway entranceway : entranceways)
 				if (Building.distance(entranceway.getIJKPt(0, 0, 0), pt) < 400)
@@ -118,7 +121,7 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread {
 				pt[1] = Building.findSurfaceJ(world, pt[0], pt[2], hollow[1] - (hollow[3] + 1) / 2, false, Building.IGNORE_WATER) + 1;
 				TemplateWall sws = TemplateWall.pickBiomeWeightedWallStyle(pws.streets, world, pt[0], pt[2], world.rand, true);
 				sws.MergeWalls = true;
-				BuildingDoubleWall street = new BuildingDoubleWall(tries, this, sws, random.nextInt(4), Building.R_HAND, pt);
+				BuildingDoubleWall street = new BuildingDoubleWall(tries, this, sws, Building.Direction.from(random), Building.R_HAND, pt);
 				if (street.plan()) {
 					street.build(LAYOUT_CODE_NOCODE);
 					streets.add(street);
@@ -161,7 +164,7 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread {
 			for (int y1 = 0; y1 < top_diam; y1++) {
 				for (int x1 = 0; x1 < top_diam; x1++) {
 					if (Building.CIRCLE_SHAPE[top_diam][x1][y1] >= 0) {
-						Building.setBlockAndMetaNoLighting(world, i + offset + x1, j + z1, k + offset + y1, Blocks.air, 0);
+						Building.setBlockAndMetaNoLighting(world, i + offset + x1, j + z1, k + offset + y1, Blocks.air, 0, 2);
 					}
 				}
 			}
@@ -171,7 +174,7 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread {
 						//keep gravel and water from pouring in
 						for (int z2 = z1 + 1; z2 <= z1 + 3; z2++)
 							if (BlockProperties.get(world.getBlock(i + offset + x1, j + z2, k + offset + y1)).isFlowing) {
-								world.setBlock(i + offset + x1, j + z2, k + offset + y1, Blocks.stone, 0, 2);
+								Building.setBlockAndMetaNoLighting(world, i + offset + x1, j + z2, k + offset + y1, Blocks.stone, 0, 2);
 							}
 					}
 				}
@@ -183,16 +186,10 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread {
 				for (int y1 = 0; y1 < bottom_diam; y1++) {
 					for (int x1 = 0; x1 < bottom_diam; x1++) {
 						if (Building.CIRCLE_SHAPE[bottom_diam][x1][y1] >= 0) {
-							Building.setBlockAndMetaNoLighting(world, i + offset + x1, j - z1, k + offset + y1, Blocks.air, 0);
-						}
-					}
-				}
-				for (int y1 = 0; y1 < bottom_diam; y1++) {
-					for (int x1 = 0; x1 < bottom_diam; x1++) {
-						if (Building.CIRCLE_SHAPE[bottom_diam][x1][y1] >= 0) {
+							Building.setBlockAndMetaNoLighting(world, i + offset + x1, j - z1, k + offset + y1, Blocks.air, 0, 2);
 							Block blockId = world.getBlock(i + offset + x1, j - z1 - 1, k + offset + y1);
 							if (BlockProperties.get(blockId).isOre && blockId != Blocks.coal_ore)
-								world.setBlock(i + offset + x1, j - z1 - 1, k + offset + y1, Blocks.stone, 0, 2);
+								Building.setBlockAndMetaNoLighting(world, i + offset + x1, j - z1 - 1, k + offset + y1, Blocks.stone, 0, 2);
 						}
 					}
 				}

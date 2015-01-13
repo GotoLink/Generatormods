@@ -14,16 +14,16 @@ package assets.generator;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import java.util.Random;
-
 import net.minecraft.world.World;
+
+import java.util.Random;
 
 /*
  * WorldGenGreatWall creates a great wall in Minecraft.
  * This class is chiefly a WorldGeneratorThread wrapper for a BuildingDoubleWall.
  * It also checks curviness and length.
  */
-public class WorldGenGreatWall extends WorldGeneratorThread {
+public final class WorldGenGreatWall extends WorldGeneratorThread {
 	//private final static boolean DEBUG=false;
 	//****************************  CONSTRUCTOR - WorldGenGreatWall *************************************************************************************//
 	public WorldGenGreatWall(PopulatorGreatWall gw, World world, Random random, int chunkI, int chunkK, int triesPerChunk, double chunkTryProb) {
@@ -36,7 +36,7 @@ public class WorldGenGreatWall extends WorldGeneratorThread {
 		TemplateWall ws = TemplateWall.pickBiomeWeightedWallStyle(((PopulatorGreatWall) master).wallStyles, world, i0, k0, world.rand, false);
 		if (ws == null)
 			return false;
-		BuildingDoubleWall dw = new BuildingDoubleWall(10 * (random.nextInt(9000) + 1000), this, ws, random.nextInt(4), 1, new int[] { i0, j0, k0 });
+		BuildingDoubleWall dw = new BuildingDoubleWall(10 * (random.nextInt(9000) + 1000), this, ws, Building.Direction.from(random), 1, new int[] { i0, j0, k0 });
 		if (!dw.plan())
 			return false;
 		//calculate the integrated curvature

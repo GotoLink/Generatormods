@@ -22,7 +22,7 @@ import net.minecraft.tileentity.TileEntityDispenser;
 /*
  * BuildingDispenserTrap generates a redstone activated dispenser trap
  */
-public class BuildingDispenserTrap extends Building {
+public final class BuildingDispenserTrap extends Building {
 	public final static int ARROW_MISSILE = 0, DAMAGE_POTION_MISSILE = 1;
 	private static BlockAndMeta[] CODE_TO_BLOCK = new BlockAndMeta[] { PRESERVE_BLOCK, null, new BlockAndMeta(Blocks.air, 0), new BlockAndMeta(Blocks.redstone_wire, 0), new BlockAndMeta(Blocks.redstone_torch, BUTTON_DIR_TO_META[DIR_NORTH]),
             new BlockAndMeta(Blocks.unlit_redstone_torch, BUTTON_DIR_TO_META[DIR_SOUTH]), new BlockAndMeta(Blocks.redstone_torch, 5) };
@@ -30,7 +30,7 @@ public class BuildingDispenserTrap extends Building {
 			{ { 0, 0, 0 }, { 1, 1, 1 }, { 1, 1, 1 }, { 1, 5, 1 } }, { { 0, 1, 0 }, { 1, 1, 1 }, { 1, 3, 1 }, { 1, 1, 1 } }, { { 0, 1, 0 }, { 1, 6, 1 }, { 1, 0, 1 }, { 1, 2, 1 } },
 			{ { 0, 1, 0 }, { 1, 1, 1 }, { 1, 1, 1 }, { 1, 1, 1 } }, };
 
-	public BuildingDispenserTrap(WorldGeneratorThread wgt_, TemplateRule bRule_, int bDir_, int plateSeparation, int[] sourcePt) {
+	public BuildingDispenserTrap(WorldGeneratorThread wgt_, TemplateRule bRule_, Direction bDir_, int plateSeparation, int[] sourcePt) {
 		super(0, wgt_, bRule_, bDir_, 1, true, new int[] { 3, 6, plateSeparation }, sourcePt);
 	}
 
@@ -100,7 +100,7 @@ public class BuildingDispenserTrap extends Building {
 			if (itemstack != null && tileentitychest != null)
 				tileentitychest.setInventorySlotContents(random.nextInt(tileentitychest.getSizeInventory()), itemstack);
 		} catch (Exception e) {
-			System.err.println("Error filling dispenser: " + e.toString());
+			wgt.master.logOrPrint("Error filling dispenser: " + e.toString(), "ERROR");
 			e.printStackTrace();
 		}
 	}

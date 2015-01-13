@@ -20,7 +20,7 @@ import net.minecraft.init.Blocks;
 /*
  * BuildingWall plans and builds a wall that flows along Minecraft's terrain.
  */
-public class BuildingWall extends Building {
+public final class BuildingWall extends Building {
 	public enum FailType {
 		NOTHING, OBSTRUCTED, UNDERWATER, TOOSTEEPDOWN, TOOSTEEPUP, HITWALL, CANNOTEXPLORE, HITTARGET, MAXLENGTH
 	}
@@ -65,7 +65,7 @@ public class BuildingWall extends Building {
 	}
 
 	//****************************************  CONSTRUCTORS - BuildingWall  *************************************************************************************//
-	public BuildingWall(int ID_, WorldGeneratorThread wgt_, TemplateWall ws_, int dir_, int axXHand_, int maxLength_, boolean endTowers, int i1_, int j1_, int k1_) {
+	public BuildingWall(int ID_, WorldGeneratorThread wgt_, TemplateWall ws_, Direction dir_, int axXHand_, int maxLength_, boolean endTowers, int i1_, int j1_, int k1_) {
 		super(ID_, wgt_, ws_.rules[ws_.template[0][0][ws_.WWidth / 2]], dir_, axXHand_, false, new int[] { ws_.WWidth, ws_.WHeight, 0 }, new int[] { i1_, j1_, k1_ });
 		constructorHelper(ws_, maxLength_, i1_, j1_, k1_);
 		pickTowers(random.nextFloat() < ws.CircularProb, endTowers);
@@ -76,7 +76,7 @@ public class BuildingWall extends Building {
 		}
 	}
 
-	public BuildingWall(int ID_, WorldGeneratorThread wgt_, TemplateWall ws_, int dir_, int axXHand_, int maxLength_, boolean endTowers, int[] sourcePt) {
+	public BuildingWall(int ID_, WorldGeneratorThread wgt_, TemplateWall ws_, Direction dir_, int axXHand_, int maxLength_, boolean endTowers, int[] sourcePt) {
 		super(ID_, wgt_, ws_.rules[ws_.template[0][0][ws_.WWidth / 2]], dir_, axXHand_, false, new int[] { ws_.WWidth, ws_.WHeight, 0 }, sourcePt);
 		constructorHelper(ws_, maxLength_, sourcePt[0], sourcePt[1], sourcePt[2]);
 		pickTowers(random.nextFloat() < ws.CircularProb, endTowers);
@@ -238,8 +238,8 @@ public class BuildingWall extends Building {
 				if (curvature(zArray[n0], zArray[n0 - gateWidth / 2], zArray[n0 - gateWidth - 1], 1) == 0 && curvature(xArray[n0], xArray[n0 - gateWidth / 2], xArray[n0 - gateWidth - 1], 0) == 0) {
 					int tw = ws.pickTWidth(circular, world.rand), th = ws.getTMaxHeight(circular);
 					if (rs != null) {
-						avenues = new BuildingWall[] { new BuildingWall(bID, wgt, rs, rotDir(bDir, bHand), XHand, XMaxLen, false, getIJKPt(bWidth, 0, XHand == -bHand ? 1 - gateWidth : 0)),
-								new BuildingWall(bID, wgt, rs, rotDir(bDir, -bHand), antiXHand, antiXMaxLen, false, getIJKPt(-1, 0, antiXHand == bHand ? 1 - gateWidth : 0)) };
+						avenues = new BuildingWall[] { new BuildingWall(bID, wgt, rs, bDir.rotate(bHand), XHand, XMaxLen, false, getIJKPt(bWidth, 0, XHand == -bHand ? 1 - gateWidth : 0)),
+								new BuildingWall(bID, wgt, rs, bDir.rotate(-bHand), antiXHand, antiXMaxLen, false, getIJKPt(-1, 0, antiXHand == bHand ? 1 - gateWidth : 0)) };
 						avenues[0].setTarget(XTarget == null ? getIJKPt(bWidth + tw, 0, XHand == -bHand ? 1 - gateWidth : 0) : XTarget);
 						avenues[0].plan(1, 0, DEFAULT_LOOKAHEAD, true);
 						if (XTarget == null && avenues[0].bLength >= tw) {
@@ -292,9 +292,9 @@ public class BuildingWall extends Building {
 							int tnMid2 = n0 + tw / 2 + 1;
 							int x1 = flankTHand == bHand ? bWidth - 1 + ws.TowerXOffset : -ws.TowerXOffset;
 							//preceding tower
-							new BuildingTower(0, this, rotDir(bDir, flankTHand), bHand, true, tw, th, tw, getIJKPtAtN(tnMid1, x1, 0, 0)).build(0, 0, false);
+							new BuildingTower(0, this, bDir.rotate(flankTHand), bHand, true, tw, th, tw, getIJKPtAtN(tnMid1, x1, 0, 0)).build(0, 0, false);
 							//following tower
-							new BuildingTower(0, this, rotDir(bDir, flankTHand), -bHand, true, tw, th + zArray[tnMid1] - zArray[tnMid2], tw, getIJKPtAtN(tnMid2, x1, 0, 0)).build(0, 0, false);
+							new BuildingTower(0, this, bDir.rotate(flankTHand), -bHand, true, tw, th + zArray[tnMid1] - zArray[tnMid2], tw, getIJKPtAtN(tnMid2, x1, 0, 0)).build(0, 0, false);
 						}
                         flushDelayed();
 						//stairs up to wall
@@ -312,7 +312,7 @@ public class BuildingWall extends Building {
 							}
 							for (int n1 = ngw2; n1 < ngw2 + 5; n1++) {
 								if (zArray[n1 + 3] == zArray[n1] && xArray[n1 + 3] == xArray[ngw2 - 1]) {
-									new BuildingSpiralStaircase(wgt, bRule, flipDir(bDir), -bHand, false, -WalkHeight, getIJKPtAtN(n1, x2, WalkHeight - 2, 3)).build(1, n1 - ngw2 + 5);
+									new BuildingSpiralStaircase(wgt, bRule, bDir.flip(), -bHand, false, -WalkHeight, getIJKPtAtN(n1, x2, WalkHeight - 2, 3)).build(1, n1 - ngw2 + 5);
 									gatewayEnd = n1 + 3;
 									break;
 								}
@@ -396,7 +396,7 @@ public class BuildingWall extends Building {
 			//try tower types
 			if (makeGatehouseTowers && curvature(zArray[nBack], zArray[nMid], zArray[n0], 0) == 0 && curvature(xArray[nBack], xArray[nMid], xArray[n0], 2) == 0) {
 				//FMLLog.getLogger().info("Building gatehouse for "+IDString()+" at n="+n0+" "+globalCoordString(0,0,0)+" width "+tw);
-				BuildingTower tower = new BuildingTower(bID + n0, this, flipDir(bDir), -bHand, true, tw, ws.pickTHeight(circular, world.rand), circular ? tw : ws.pickTWidth(circular, world.rand),
+				BuildingTower tower = new BuildingTower(bID + n0, this, bDir.flip(), -bHand, true, tw, ws.pickTHeight(circular, world.rand), circular ? tw : ws.pickTWidth(circular, world.rand),
 						getIJKPtAtN(nMid, bWidth / 2, 0, tw / 2));
 				if (!tower.isObstructedRoof(-1)) {
 					wgt.setLayoutCode(tower.getIJKPt(0, 0, 0), tower.getIJKPt(tw - 1, 0, tw - 1), WorldGeneratorThread.LAYOUT_CODE_TOWER);
@@ -408,7 +408,7 @@ public class BuildingWall extends Building {
 				TemplateTML template = ws.buildings.get(RandomPicker.pickWeightedOption(world.rand, ws.buildingWeights));
 				int ybuffer = -ws.TowerXOffset + (isAvenue ? 0 : 1);
 				int[] pt = getIJKPtAtN(nMid, clearSide == bHand ? (bWidth - ybuffer) : ybuffer - 1, 0, 0);
-				if (makeBuilding(template, tw, ybuffer, overlapTowers, rotDir(bDir, clearSide), pt))
+				if (makeBuilding(template, tw, ybuffer, overlapTowers, bDir.rotate(clearSide), pt))
 					setCursor(n0 + ws.BuildingInterval - 1);
 			}
 		}
@@ -650,7 +650,7 @@ public class BuildingWall extends Building {
 	public boolean setTarget(int[] targ) {
 		if (targ[1] > 20 && Math.abs(j1 - targ[1]) < Math.max(Math.abs(i1 - targ[0]), Math.abs(k1 - targ[2]))) {
 			target = true;
-			setPrimaryAx(Math.abs(i1 - targ[0]) > Math.abs(k1 - targ[2]) ? (targ[0] > i1 ? DIR_EAST : DIR_WEST) : (targ[2] > k1 ? DIR_SOUTH : DIR_NORTH));
+			setPrimaryAx(Math.abs(i1 - targ[0]) > Math.abs(k1 - targ[2]) ? (targ[0] > i1 ? Direction.EAST : Direction.WEST) : (targ[2] > k1 ? Direction.SOUTH : Direction.NORTH));
 			setCursor(0);
 			x_targ = getX(targ);
 			z_targ = getZ(targ);
@@ -701,7 +701,7 @@ public class BuildingWall extends Building {
 	}
 
 	//****************************************  FUNCTION - makeBuildings *************************************************************************************//
-	private boolean makeBuilding(TemplateTML template, int tw, int ybuffer, boolean overlapTowers, int dir, int[] pt) {
+	private boolean makeBuilding(TemplateTML template, int tw, int ybuffer, boolean overlapTowers, Direction dir, int[] pt) {
 		if (template == ws.makeDefaultTower) {
 			int maxBL = bDir == dir ? endBLength : circular ? tw : ws.pickTWidth(false, world.rand);
 			//FMLLog.getLogger().info("Querying "+(circular? "circular " : "square ")+(bDir==dir ? "end" : "side")+" tower, ybuffer="+ybuffer+".");
@@ -759,14 +759,14 @@ public class BuildingWall extends Building {
 		int[] pt = getIJKPt(-1, WalkHeight - 1, 0);
 		Block id = world.getBlock(pt[0], pt[1], pt[2]);
 		int meta = world.getBlockMetadata(pt[0], pt[1], pt[2]);
-		if (BlockProperties.get(id).isStair && STAIRS_META_TO_DIR[meta < 4 ? meta : (meta - 4)] == rotDir(bDir, -bHand)) {
+		if (BlockProperties.get(id).isStair && STAIRS_META_TO_DIR[meta < 4 ? meta : (meta - 4)] == bDir.rotate(-bHand).ordinal()) {
             BlockAndMeta temp = new BlockAndMeta(id, meta).stairToSolid();
             world.setBlock(pt[0], pt[1], pt[2], temp.get(), temp.getMeta(), 2);
         }
 		pt = getIJKPt(bWidth, WalkHeight - 1, 0);
 		id = world.getBlock(pt[0], pt[1], pt[2]);
 		meta = world.getBlockMetadata(pt[0], pt[1], pt[2]);
-		if (BlockProperties.get(id).isStair && STAIRS_META_TO_DIR[meta < 4 ? meta : (meta - 4)] == rotDir(bDir, bHand)) {
+		if (BlockProperties.get(id).isStair && STAIRS_META_TO_DIR[meta < 4 ? meta : (meta - 4)] == bDir.rotate(bHand).ordinal()) {
             BlockAndMeta temp = new BlockAndMeta(id, meta).stairToSolid();
             world.setBlock(pt[0], pt[1], pt[2], temp.get(), temp.getMeta(), 2);
         }

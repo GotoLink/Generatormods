@@ -20,7 +20,7 @@ import net.minecraft.init.Blocks;
 /*
  * BuildingTower builds a procedurally generated tower.
  */
-public class BuildingTower extends Building {
+public final class BuildingTower extends Building {
 	public final static int FLOOR_HAUNTED_CHANCE = 50, HAUNTED_CHEST_CHANCE = 60;
 	public final static int TOWER_UNIV_MIN_WIDTH = 5, TOWER_LEVELING = 12;
 	public final static String[] ROOFSTYLE_NAMES = { "Crenel", "Steep", "Steep Trim", "Shallow", "Dome", "Cone", "Two Sided" };
@@ -527,9 +527,9 @@ public class BuildingTower extends Building {
 	private void populateBookshelves(int z) {
 		int x1 = random.nextInt(bWidth - 2) + 1;
 		int y1 = random.nextInt(bLength - 2) + 1;
-		int dir = random.nextInt(4);
-		int xinc = DIR_TO_X[dir];
-		int yinc = DIR_TO_Y[dir];
+		Direction dir = getDir();
+		int xinc = dir.toX();
+		int yinc = dir.toY();
 		//find a wall
 		while (true) {
 			if (x1 < 1 || x1 >= bWidth - 1 || y1 < 1 || y1 >= bLength - 1 || !isFloor(x1, z, y1))
@@ -547,8 +547,8 @@ public class BuildingTower extends Building {
 					break;
 				setBlockLocal(x1, z1, y1, Blocks.bookshelf);
 			}
-			x1 += DIR_TO_X[(dir + 1) % 4];
-			y1 += DIR_TO_Y[(dir + 1) % 4];
+			x1 += dir.next().toX();
+			y1 += dir.next().toY();
 			if (!isFloor(x1, z, y1))
 				break;
 		}
@@ -587,7 +587,7 @@ public class BuildingTower extends Building {
 	private int[][] circle_shape;
 	private TemplateRule roofRule, SpawnerRule, ChestRule;
 
-	public BuildingTower(int ID_, Building parent, boolean circular_, int roofStyle_, int dir_, int axXHand_, boolean centerAligned_, int TWidth_, int THeight_, int TLength_, int[] sourcePt) {
+	public BuildingTower(int ID_, Building parent, boolean circular_, int roofStyle_, Direction dir_, int axXHand_, boolean centerAligned_, int TWidth_, int THeight_, int TLength_, int[] sourcePt) {
 		super(ID_, parent.wgt, parent.bRule, dir_, axXHand_, centerAligned_, new int[] { TWidth_, THeight_, TLength_ }, sourcePt);
 		baseHeight = 0;
 		roofStyle = roofStyle_;
@@ -624,7 +624,7 @@ public class BuildingTower extends Building {
 	// -            -  baseHeight==ws.WalkHeight
 	// --------------  baseHeight-1 (floor)
 	//
-	public BuildingTower(int ID_, BuildingWall wall, int dir_, int axXHand_, boolean centerAligned_, int TWidth_, int THeight_, int TLength_, int[] sourcePt) {
+	public BuildingTower(int ID_, BuildingWall wall, Direction dir_, int axXHand_, boolean centerAligned_, int TWidth_, int THeight_, int TLength_, int[] sourcePt) {
 		super(ID_, wall.wgt, wall.towerRule, dir_, axXHand_, centerAligned_, new int[] { TWidth_, THeight_, TLength_ }, sourcePt);
 		baseHeight = wall.WalkHeight;
 		roofStyle = wall.roofStyle;
@@ -669,13 +669,13 @@ public class BuildingTower extends Building {
 
 	//****************************************  FUNCTIONS  - populators *************************************************************************************//
 	private void populateBeds(int z) {
-		int dir = random.nextInt(4);
+		Direction dir = getDir();
 		int x1 = random.nextInt(bWidth - 2) + 1;
 		int y1 = random.nextInt(bLength - 2) + 1;
-		int x2 = x1 + DIR_TO_X[dir], y2 = y1 + DIR_TO_Y[dir];
+		int x2 = x1 + dir.toX(), y2 = y1 + dir.toY();
 		if (isFloor(x1, z, y1) && hasNoDoorway(x1, z, y1) && isFloor(x2, z, y2) && hasNoDoorway(x2, z, y2)) {
-			setBlockLocal(x1, z, y1, Blocks.bed, dir + 8);
-			setBlockLocal(x2, z, y2, Blocks.bed, dir);
+			setBlockLocal(x1, z, y1, Blocks.bed, dir.ordinal() + 8);
+			setBlockLocal(x2, z, y2, Blocks.bed, dir.ordinal());
 		}
 	}
 

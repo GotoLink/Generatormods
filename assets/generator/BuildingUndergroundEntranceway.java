@@ -20,14 +20,14 @@ import net.minecraft.init.Blocks;
 /*
  * BuildingUndergroundEntranceway builds a passageway from an underground city to the surface.
  */
-public class BuildingUndergroundEntranceway extends Building {
+public final class BuildingUndergroundEntranceway extends Building {
 	private final static int PASSAGE_HEIGHT = 6, PASSAGE_WIDTH = 4, SUPPORT_INTERVAL = 6;
 	private final TemplateWall ws;
 	public BuildingWall street;
 	private final Block stairsID;
 
 	//****************************************  CONSTRUCTOR - BuildingUndergroundEntraceway  *************************************************************************************//
-	public BuildingUndergroundEntranceway(int ID_, WorldGeneratorThread wgt_, TemplateWall ws_, int dir_, int[] sourcePt) {
+	public BuildingUndergroundEntranceway(int ID_, WorldGeneratorThread wgt_, TemplateWall ws_, Direction dir_, int[] sourcePt) {
 		super(ID_, wgt_, ws_.TowerRule, dir_, 1, false, new int[] { PASSAGE_WIDTH, PASSAGE_HEIGHT, 0 }, sourcePt);
 		ws = ws_;
 		stairsID = ws.rules[ws.template[0][0][ws.WWidth / 2]].primaryBlock.toStair();
@@ -91,7 +91,7 @@ public class BuildingUndergroundEntranceway extends Building {
 		}
 		//for(int x=0; x<PASSAGE_WIDTH; x++) buildDown(x, bLength-1, bLength, bRule,20,4,3);
         flushDelayed();
-		street = new BuildingWall(bID, wgt, ws, flipDir(bDir), -bHand, ws.MaxL, true, getIJKPt((PASSAGE_WIDTH - ws.WWidth) / 2, 0, -1));
+		street = new BuildingWall(bID, wgt, ws, bDir.flip(), -bHand, ws.MaxL, true, getIJKPt((PASSAGE_WIDTH - ws.WWidth) / 2, 0, -1));
 		street.plan(1, 0, BuildingWall.DEFAULT_LOOKAHEAD, true);
 		return true;
 	}
