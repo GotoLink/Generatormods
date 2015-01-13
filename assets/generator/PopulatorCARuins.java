@@ -31,8 +31,8 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Random;
 
-@Mod(modid = "CARuins", name = "Cellular Automata Generator", version = BuildingExplorationHandler.VERSION, dependencies = "after:ExtraBiomes,BiomesOPlenty", acceptableRemoteVersions = "*")
-public class PopulatorCARuins extends BuildingExplorationHandler {
+@Mod(modid = "CARuins", name = "Cellular Automata Generator", version = BuildingExplorationHandler.VERSION, dependencies = BuildingExplorationHandler.LOADED_BEFORE, acceptableRemoteVersions = "*")
+public final class PopulatorCARuins extends BuildingExplorationHandler {
 	@Instance("CARuins")
 	public static PopulatorCARuins instance;
 	private final static String AUTOMATA_RULES_STRING = "AUTOMATA RULES";

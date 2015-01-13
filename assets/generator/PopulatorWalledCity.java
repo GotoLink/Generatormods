@@ -34,8 +34,8 @@ import java.util.*;
  * PopulatorWalledCity is the main class that hooks into ForgeModLoader for the Walled City Mod.
  * It reads the globalSettings file, keeps track of city locations, and runs WorldGenWalledCitys and WorldGenUndergroundCities.
  */
-@Mod(modid = "WalledCityMod", name = "Walled City Generator", version = BuildingExplorationHandler.VERSION, dependencies = "after:ExtraBiomes,BiomesOPlenty", acceptableRemoteVersions = "*")
-public class PopulatorWalledCity extends BuildingExplorationHandler {
+@Mod(modid = "WalledCityMod", name = "Walled City Generator", version = BuildingExplorationHandler.VERSION, dependencies = BuildingExplorationHandler.LOADED_BEFORE, acceptableRemoteVersions = "*")
+public final class PopulatorWalledCity extends BuildingExplorationHandler {
 	@Instance("WalledCityMod")
 	public static PopulatorWalledCity instance;
 	public final static int MIN_CITY_LENGTH = 40;

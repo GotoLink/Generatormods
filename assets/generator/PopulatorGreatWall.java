@@ -33,8 +33,8 @@ import java.util.Random;
  * PopulatorGreatWall is the main class that hooks into ForgeModLoader for the Great Wall Mod.
  * It reads the globalSettings file and runs WorldGenWalledCities.
  */
-@Mod(modid = "GreatWallMod", name = "Great Wall Mod", version = BuildingExplorationHandler.VERSION, dependencies = "after:ExtraBiomes,BiomesOPlenty", acceptableRemoteVersions = "*")
-public class PopulatorGreatWall extends BuildingExplorationHandler {
+@Mod(modid = "GreatWallMod", name = "Great Wall Mod", version = BuildingExplorationHandler.VERSION, dependencies = BuildingExplorationHandler.LOADED_BEFORE, acceptableRemoteVersions = "*")
+public final class PopulatorGreatWall extends BuildingExplorationHandler {
 	@Instance("GreatWallMod")
 	public static PopulatorGreatWall instance;
 	//USER MODIFIABLE PARAMETERS, values below are defaults

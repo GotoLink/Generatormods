@@ -36,7 +36,7 @@ import java.util.*;
  * It loads settings files and runs WorldGeneratorThreads.
  */
 public abstract class BuildingExplorationHandler implements IWorldGenerator {
-    protected final static String VERSION = "0.1.6";
+    protected final static String VERSION = "${version}", LOADED_BEFORE = "after:ExtrabiomesXL;after:BiomesOPlenty";
 	protected final static int MAX_TRIES_PER_CHUNK = 100;
 	public final static File CONFIG_DIRECTORY = new File(Loader.instance().getConfigDir(), "generatormods");
 	protected final static File LOG = new File(new File(getMinecraftBaseDir(), "logs"), "generatormods_log.txt");
@@ -71,8 +71,6 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 
 	//****************************  FUNCTION - GenerateSurface  *************************************************************************************//
 	public void generateSurface(World world, Random random, int i, int k) {
-		if (errFlag)
-			return;
 		updateWorldExplored(world);
 		generate(world, random, i * 16, k * 16);
 	}
@@ -171,7 +169,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 			LOG.delete();
 		lw = new PrintWriter(new BufferedWriter(new FileWriter(LOG, LOG.canWrite())));
 		logOrPrint(message, "INFO");
-		if (BIOME_NAMES[1] == null || BIOME_NAMES[1].equals("")) {
+		if (BIOME_NAMES[1] == null || BIOME_NAMES[1].isEmpty()) {
 			for (int i = 0; i < BIOME_NAMES.length - 1; i++) {
 				if (BiomeGenBase.getBiomeGenArray()[i] != null)
 					BIOME_NAMES[i + 1] = BiomeGenBase.getBiomeGenArray()[i].biomeName;
@@ -298,16 +296,16 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 			defaultVals = new int[names.length];
 		try {
 			int[] newVals = new int[names.length];
-			for (int i = 0; i < newVals.length; i++)
-				newVals[i] = 0;
-			if ((read.split(splitString)[1]).trim().equalsIgnoreCase(allStr)) {
+			String text = read.split(splitString)[1].trim();
+			if (text.equalsIgnoreCase(allStr)) {
 				for (int i = 0; i < newVals.length; i++)
 					newVals[i] = 1;
 			} else {
-				for (String check : (read.split(splitString)[1]).split(",")) {
+				for (String check : text.split(",")) {
 					boolean found = false;
+					check = check.replaceAll("\\s", "").trim();
 					for (int i = 0; i < names.length; i++) {
-						if (names[i] != null && names[i].replaceAll("\\s", "").trim().equalsIgnoreCase(check.replaceAll("\\s", "").trim())) {
+						if (names[i] != null && names[i].replaceAll("\\s", "").trim().equalsIgnoreCase(check)) {
 							found = true;
 							newVals[i]++;
 						}
