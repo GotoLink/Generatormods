@@ -23,7 +23,7 @@ import java.io.PrintWriter;
 /**
  * Concentrate all default values regarding chests
  */
-public class DefaultChest {
+public final class DefaultChest {
     public final static String[] LABELS = new String[] { "EASY", "MEDIUM", "HARD", "TOWER" };
     public final static int[] TRIES = new int[] { 4, 6, 6, 6 };
     // chest items[n] format is array of 5 arrays

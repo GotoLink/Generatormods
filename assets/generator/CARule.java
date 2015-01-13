@@ -19,7 +19,7 @@ import java.io.PrintWriter;
 /**
  * Represents a CellullarAutomata rule, encapsulating seed, weight, and optional comment
  */
-public class CARule implements RandomPicker.IWeighted {
+public final class CARule implements RandomPicker.IWeighted {
     public final static byte DEAD = 0, ALIVE = 1;
     private byte[] birth = new byte[9], survive = new byte[9];
     private final int weight;

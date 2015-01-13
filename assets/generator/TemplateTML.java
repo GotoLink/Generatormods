@@ -14,16 +14,8 @@ package assets.generator;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
+import java.io.*;
+import java.util.*;
 
 /*
  * TemplateTML reads in a .tml file and defines a template.
@@ -93,8 +85,14 @@ public class TemplateTML {
 		int layerN = 0;
 		String line;
 		while (itr.hasNext()) {
-			String[] splitStr = itr.next().split("#");
-			line = splitStr.length > 0 ? splitStr[0].trim() : "";
+			line = itr.next();
+			int idx = line.indexOf("#");
+			if(idx>-1) {
+				line = line.substring(0, idx);
+			}
+			line = line.trim();
+			if(line.length()==0)
+				continue;
 			if (line.startsWith("layer")) {
 				//if layer has a label, put it in separate table. Otherwise add to main template.
 				String[] layerData = line.split(":");
@@ -144,7 +142,7 @@ public class TemplateTML {
 					waterHeight = BuildingExplorationHandler.readIntParam(lw, waterHeight, "=", line);
 			} else if (line.length() > 0) {
 				String[] spl = line.split("=");
-				if (spl.length == 2 && !spl[0].equals("") && !spl[1].equals(""))
+				if (spl.length == 2 && !spl[0].isEmpty() && !spl[1].isEmpty())
 					extraOptions.put(spl[0], line); //lazy - put line as value since we have a functions to parse
 			}
 		}

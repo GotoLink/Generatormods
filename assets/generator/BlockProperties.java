@@ -22,7 +22,7 @@ import net.minecraftforge.common.IShearable;
 
 import java.util.IdentityHashMap;
 
-public class BlockProperties {
+public final class BlockProperties {
     private final static IdentityHashMap<Block,BlockProperties> props = new IdentityHashMap<Block, BlockProperties>(42);
     /**
      * All the studied block properties

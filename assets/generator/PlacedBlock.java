@@ -17,7 +17,7 @@ package assets.generator;
 import net.minecraft.block.Block;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class PlacedBlock extends BlockAndMeta{
+public final class PlacedBlock extends BlockAndMeta{
     public final int x, y, z;
     public PlacedBlock(Block block, int[] data) {
         super(block, data[3]);

@@ -14,20 +14,21 @@ package assets.generator;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import java.util.List;
-import java.util.Random;
-
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
+import net.minecraftforge.common.DimensionManager;
+
+import java.util.List;
+import java.util.Random;
 
 /**
  * Build command for players to try to build structures city/wall/ruin at the specified location
  */
-public class CommandBuild extends CommandBase {
+public final class CommandBuild extends CommandBase {
 	@Override
 	public int getRequiredPermissionLevel() {
 		return 2;
@@ -54,7 +55,7 @@ public class CommandBuild extends CommandBase {
             func_152373_a(var1, this, "/build command used by " + var1.getCommandSenderName(), var1.getCommandSenderName(), coordinate);
 			int posX = parseInt(var1, coordinate[coordinate.length - 2]);
 			int posZ = parseInt(var1, coordinate[coordinate.length - 1]);
-			World world = MinecraftServer.getServer().worldServers[coordinate.length == 3 ? 0 : Integer.parseInt(coordinate[1])];
+			World world = DimensionManager.getWorld(coordinate.length == 3 ? 0 : Integer.parseInt(coordinate[1]));
 			if ("ruin".equalsIgnoreCase(coordinate[0])) {
 				(new WorldGenCARuins(PopulatorCARuins.instance, world, new Random(), posX, posZ, 1, 1)).run();
 			} else if ("wall".equalsIgnoreCase(coordinate[0])) {

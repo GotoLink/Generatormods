@@ -20,7 +20,7 @@ import java.util.Random;
 /**
  * Allows picking at random from a collection
  */
-public class RandomPicker {
+public final class RandomPicker {
 
     public static int pickWeightedOption(Random random, List<? extends IWeighted> weights){
         int[] w = new int[weights.size()];

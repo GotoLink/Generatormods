@@ -14,14 +14,14 @@ package assets.generator;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import java.util.Random;
-
 import cpw.mods.fml.common.registry.GameData;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockAir;
 import net.minecraft.block.BlockChest;
 import net.minecraft.block.BlockMobSpawner;
 import net.minecraft.init.Blocks;
+
+import java.util.Random;
 
 /*
  * TemplateRule reads in a rule String and defines a rule that blocks can be sampled from.
@@ -53,7 +53,7 @@ public class TemplateRule {
 		String[] data;
         Block temp;
 		for (int i = 0; i < numblocks; i++) {
-			data = items[i + 2].trim().split("-", 2);
+			data = items[i + 2].trim().split("-", 3);
             if(data[0].equals(SPECIAL_AIR)){//Preserve block rule
                 blockIDs[i] = Building.PRESERVE_BLOCK.get();
                 blockMDs[i] = Building.PRESERVE_BLOCK.getMeta();
@@ -99,7 +99,7 @@ public class TemplateRule {
                 }
             }
 			if (checkMetaValue && !(blockIDs[i] instanceof BlockAir)) {
-				String checkStr = Building.metaValueCheck(blockIDs[i], blockMDs[i]);
+				String checkStr = metaValueCheck(i);
 				if (checkStr != null)
 					throw new Exception("Error reading rule: " + rule + "\nBad meta value " + blockMDs[i] + ". " + checkStr);
 			}
@@ -142,7 +142,7 @@ public class TemplateRule {
 	public void setFixedRule(Random random) {
 		if (condition == FIXED_FOR_BUILDING) {
 			int m = random.nextInt(blockIDs.length);
-            if(extraData!=null && extraData[m]!=null && !extraData[m].equals(""))
+            if(extraData!=null && extraData[m]!=null && !extraData[m].isEmpty())
                 fixedRuleChosen = new BlockExtended(blockIDs[m], blockMDs[m], extraData[m]);
             else
                 fixedRuleChosen = new BlockAndMeta(blockIDs[m], blockMDs[m]);
@@ -154,7 +154,7 @@ public class TemplateRule {
 		if (condition != FIXED_FOR_BUILDING)
 			return this;
 		int m = random.nextInt(blockIDs.length);
-        if(extraData!=null && extraData[m]!=null && !extraData[m].equals(""))
+        if(extraData!=null && extraData[m]!=null && !extraData[m].isEmpty())
 		    return new TemplateRule(blockIDs[m], blockMDs[m], extraData[m], chance);
         else
             return new TemplateRule(blockIDs[m], blockMDs[m], chance);
@@ -165,7 +165,7 @@ public class TemplateRule {
 			if (fixedRuleChosen != null)
 				return fixedRuleChosen;
 			int m = random.nextInt(blockIDs.length);
-            if(extraData!=null && extraData[m]!=null && !extraData[m].equals(""))
+            if(extraData!=null && extraData[m]!=null && !extraData[m].isEmpty())
                 return new BlockExtended(blockIDs[m], blockMDs[m], extraData[m]);
             else
                 return new BlockAndMeta(blockIDs[m], blockMDs[m]);
@@ -200,7 +200,7 @@ public class TemplateRule {
 
 	public BlockAndMeta getNonAirBlock(Random random) {
 		int m = random.nextInt(blockIDs.length);
-        if(extraData!=null && extraData[m]!=null && !extraData[m].equals(""))
+        if(extraData!=null && extraData[m]!=null && !extraData[m].isEmpty())
             return new BlockExtended(blockIDs[m], blockMDs[m], extraData[m]);
         else
             return new BlockAndMeta(blockIDs[m], blockMDs[m]);
@@ -212,7 +212,7 @@ public class TemplateRule {
         if(blockIDs!=null)
             for (int m = 0; m < blockIDs.length; m++) {
                 str += "," + GameData.getBlockRegistry().getNameForObject(blockIDs[m]) + "-" + blockMDs[m];
-                if(extraData!=null && extraData[m]!=null && !extraData[m].equals(""))
+                if(extraData!=null && extraData[m]!=null && !extraData[m].isEmpty())
                     str += "-" + extraData[m];
             }
 		return str;
@@ -232,7 +232,7 @@ public class TemplateRule {
                 pos = l;
 			}
 		}
-        if(extraData!=null && extraData[pos]!=null && !extraData[pos].equals(""))
+        if(extraData!=null && extraData[pos]!=null && !extraData[pos].isEmpty())
 		    return new BlockExtended(blockIDs[pos], blockMDs[pos], extraData[pos]);
         else
             return new BlockAndMeta(blockIDs[pos], blockMDs[pos]);
@@ -240,5 +240,33 @@ public class TemplateRule {
 
     public boolean isSpecial(Block block){
         return block instanceof BlockAir || block instanceof BlockMobSpawner || block instanceof BlockChest;
+    }
+
+    private String metaValueCheck(int i) {
+        Block blockID = blockIDs[i];
+        int metadata = blockMDs[i];
+        if (metadata < 0 || metadata >= 16)
+            return "All Minecraft meta values should be between 0 and 15";
+        String fail = blockID.getUnlocalizedName() + " meta value should be between";
+        if (BlockProperties.get(blockID).isStair)
+            return metadata < 8 ? null : fail + " 0 and 7";
+        // orientation metas
+        if(blockID==Blocks.rail){
+            return metadata < 10 ? null : fail + " 0 and 9";
+        }else if(blockID==Blocks.stone_button || blockID== Blocks.wooden_button){
+            return metadata % 8 > 0 && metadata % 8 < 5 ? null : fail + " 1 and 4 or 9 and 12";
+        }else if(blockID==Blocks.ladder||blockID==Blocks.dispenser||blockID==Blocks.furnace||blockID==Blocks.lit_furnace||blockID==Blocks.wall_sign
+                ||blockID==Blocks.piston||blockID==Blocks.piston_extension||blockID==Blocks.chest||blockID==Blocks.hopper||blockID==Blocks.dropper||blockID==Blocks.golden_rail||blockID==Blocks.detector_rail||blockID==Blocks.activator_rail){
+            return metadata % 8 < 6 ? null : fail + " 0 and 5 or 8 and 13";
+        }else if(blockID==Blocks.pumpkin||blockID==Blocks.lit_pumpkin){
+            return metadata < 5 ? null : fail + " 0 and 4";
+        }else if(blockID==Blocks.fence_gate){
+            return metadata < 8 ? null : fail + " 0 and 7";
+        }else if(blockID==Blocks.wooden_slab ||blockID==Blocks.bed){
+            return metadata % 8 < 4 ? null : fail + " 0 and 3 or 8 and 11";
+        }else if(blockID==Blocks.torch||blockID==Blocks.redstone_torch||blockID==Blocks.unlit_redstone_torch){
+            return metadata > 0 && metadata < 7 ? null : fail + " 1 and 6";
+        }
+        return null;
     }
 }

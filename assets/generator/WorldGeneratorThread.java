@@ -14,11 +14,11 @@ package assets.generator;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import java.util.HashMap;
-import java.util.Random;
-
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
+
+import java.util.HashMap;
+import java.util.Random;
 
 /*
  * WorldGeneratorThread is a thread that generates structures in the Minecraft world.

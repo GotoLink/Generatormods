@@ -25,7 +25,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.world.World;
 
 import java.io.*;
@@ -37,7 +36,7 @@ import java.util.List;
 /**
  * Scan command for players to get templates from structures built in game in the specified location
  */
-public class CommandScan extends CommandBase{
+public final class CommandScan extends CommandBase{
     public final String[] modes = {"wall", "building"};
     private final List<BlockAndMeta> blocks = new ArrayList<BlockAndMeta>();
     private final List<String> rules = new ArrayList<String>();

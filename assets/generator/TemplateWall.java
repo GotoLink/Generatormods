@@ -14,22 +14,18 @@ package assets.generator;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
-
 import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
+
+import java.io.File;
+import java.util.*;
 
 /*
  * TemplateWall reads in additional variables from a .tml file to define a wall template.
  * The class includes static functions used to load template folders and link together hierarchical templates.
  */
-public class TemplateWall extends TemplateTML {
+public final class TemplateWall extends TemplateTML {
 	public final static String BUILDING_DIRECTORY_NAME = "buildings";
 	public final static int[] ALL_BIOMES = null;
 	public final static int NO_RULE = -1;
