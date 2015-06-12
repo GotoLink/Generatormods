@@ -257,8 +257,8 @@ public final class TemplateWall extends TemplateTML {
 				childTemplates.addAll(childTemplateMap.values());
 				break;
 			}
-			if (childTemplateMap.containsKey(name.trim()))
-				childTemplates.add(childTemplateMap.get(name.trim()));
+			if (childTemplateMap.containsKey(name))
+				childTemplates.add(childTemplateMap.get(name));
 		}
 		return childTemplates;
 	}
@@ -270,14 +270,14 @@ public final class TemplateWall extends TemplateTML {
 		String[] names = ((extraOptions.get(listVarString)).split("="))[1].split(",");
 		for (String name : names) {
 			name = name.trim();
-			if (name.toUpperCase().equals("NONE"))
+			if (name.toUpperCase(Locale.ENGLISH).equals("NONE"))
 				return new ArrayList<TemplateWall>();
-			if (name.toUpperCase().equals("ALL")) {
+			if (name.toUpperCase(Locale.ENGLISH).equals("ALL")) {
 				childTemplates.addAll(childTemplateMap.values());
 				break;
 			}
-			if (childTemplateMap.containsKey(name.trim())) {
-				TemplateWall ws = childTemplateMap.get(name.trim());
+			if (childTemplateMap.containsKey(name)) {
+				TemplateWall ws = childTemplateMap.get(name);
 				ws.Biomes = ALL_BIOMES;
 				childTemplates.add(ws);
 			}

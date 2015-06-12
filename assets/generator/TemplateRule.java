@@ -82,14 +82,16 @@ public class TemplateRule {
                 if (temp != null) {
                     blockIDs[i] = temp;
                     if (data.length > 1) {
-                        String[] txt = data[1].split("-", 2);
                         try {
-                            blockMDs[i] = Integer.parseInt(txt[0]);
+                            blockMDs[i] = Integer.parseInt(data[1]);
+                            if (data.length > 2 && isSpecial(temp)) {
+                                extraData[i] = data[2];
+                            }
                         } catch (Exception e) {
                             blockMDs[i] = 0;
-                        }
-                        if (txt.length > 1 && isSpecial(temp)) {
-                            extraData[i] = txt[1];
+                            if (data.length > 1 && isSpecial(temp)) {
+                                extraData[i] = data[1];
+                            }
                         }
                     } else {
                         blockMDs[i] = 0;
