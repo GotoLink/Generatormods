@@ -22,7 +22,20 @@ import net.minecraft.init.Blocks;
  */
 public final class BuildingWall extends Building {
 	public enum FailType {
-		NOTHING, OBSTRUCTED, UNDERWATER, TOOSTEEPDOWN, TOOSTEEPUP, HITWALL, CANNOTEXPLORE, HITTARGET, MAXLENGTH
+		NOTHING("No Fail."), OBSTRUCTED("Obstructed."), UNDERWATER("Underwater."), TOOSTEEPDOWN("Too Steep Down."), TOOSTEEPUP("Too Steep Up."), HITWALL("Hit Wall"), CANNOTEXPLORE("Could not explore"), HITTARGET("Hit Target"), MAXLENGTH("Max length ( %d ) reached."){
+			@Override
+			protected String toString(int val){
+				return String.format(super.toString(val), val);
+			}
+		};
+		private final String text;
+		private FailType(String def){
+			this.text = def;
+		}
+
+		protected String toString(int val){
+			return text;
+		}
 	}
     protected final static Block[] STEP_TO_STAIRS = { Blocks.stone_brick_stairs, Blocks.sandstone_stairs, Blocks.oak_stairs, Blocks.stone_stairs, Blocks.brick_stairs, Blocks.stone_brick_stairs, Blocks.nether_brick_stairs,
             Blocks.quartz_stairs };
@@ -91,18 +104,18 @@ public final class BuildingWall extends Building {
 	//Builds a planned wall from a template
 	public void buildFromTML() {
 		if (ws == null) {
-			System.err.println("Tried to build wall from template but no template was given!");
+			wgt.master.logOrPrint("Tried to build wall from template but no template was given!", "ERROR");
 			return;
 		}
 		setCursor(0);
 		if (bLength > 0)
 			if (DEBUG)
-				System.out.println("**** Built " + ws.name + " wall " + IDString() + ", length " + (bLength) + " from " + localCoordString(xArray[0], zArray[0], 0) + " to "
-						+ localCoordString(xArray[bLength - 1], zArray[bLength - 1], bLength - 1) + " ****");
+				wgt.master.logOrPrint("Built " + ws.name + " wall " + IDString() + ", length " + (bLength) + " from " + localCoordString(xArray[0], zArray[0], 0) + " to "
+						+ localCoordString(xArray[bLength - 1], zArray[bLength - 1], bLength - 1), "INFO");
 			else if (DEBUG)
-				System.out.println("**** Wall too short to build! " + IDString() + "length=" + bLength + " at " + localCoordString(0, 0, 0) + " ****");
+				wgt.master.logOrPrint("Wall too short to build! " + IDString() + "length=" + bLength + " at " + localCoordString(0, 0, 0), "INFO");
 		if (DEBUG)
-			System.out.println("Wall planning was terminated due to: " + failString() + "\n");
+			wgt.master.logOrPrint("Wall planning was terminated due to: " + failString(), "ERROR");
 		int lN = 0;
 		BlockAndMeta idAndMeta;
 		int layer[][];
@@ -140,7 +153,7 @@ public final class BuildingWall extends Building {
 				boolean keepWallFromAbove = true;
 				for (int z1 = bHeight + OVERHEAD_CLEARENCE - 1; z1 >= -ws.embed; z1--) {
 					boolean wallBlockPresent = isWallBlock(x1, z1, 0);
-					idAndMeta = z1 < bHeight ? ws.rules[layer[z1 + ws.embed][x1]].getBlockOrHole(world.rand) : HOLE_BLOCK_NO_LIGHTING;
+					idAndMeta = z1 < bHeight ? ws.rules[layer[z1 + ws.embed][x1]].getBlockOrHole(random) : HOLE_BLOCK_NO_LIGHTING;
 					//starting from top, preserve old wall block until we run into a non-wall block
 					if (keepWallFromAbove && wallBlockPresent && idAndMeta.get() == Blocks.air) {
 						continue;
@@ -236,7 +249,7 @@ public final class BuildingWall extends Building {
 			}
 			if (n0 - gateWidth - 1 >= 0) {
 				if (curvature(zArray[n0], zArray[n0 - gateWidth / 2], zArray[n0 - gateWidth - 1], 1) == 0 && curvature(xArray[n0], xArray[n0 - gateWidth / 2], xArray[n0 - gateWidth - 1], 0) == 0) {
-					int tw = ws.pickTWidth(circular, world.rand), th = ws.getTMaxHeight(circular);
+					int tw = ws.pickTWidth(circular, random), th = ws.getTMaxHeight(circular);
 					if (rs != null) {
 						avenues = new BuildingWall[] { new BuildingWall(bID, wgt, rs, bDir.rotate(bHand), XHand, XMaxLen, false, getIJKPt(bWidth, 0, XHand == -bHand ? 1 - gateWidth : 0)),
 								new BuildingWall(bID, wgt, rs, bDir.rotate(-bHand), antiXHand, antiXMaxLen, false, getIJKPt(-1, 0, antiXHand == bHand ? 1 - gateWidth : 0)) };
@@ -330,27 +343,7 @@ public final class BuildingWall extends Building {
 
 	//****************************************  FUNCTION  - failString  *************************************************************************************//
 	public String failString() {
-		switch (failCode) {
-		case OBSTRUCTED:
-			return "Obstructed.";
-		case UNDERWATER:
-			return "Underwater.";
-		case TOOSTEEPDOWN:
-			return "Too Steep Down.";
-		case TOOSTEEPUP:
-			return "Too Steep Up.";
-		case HITWALL:
-			return "Hit Wall";
-		case CANNOTEXPLORE:
-			return "Could not explore";
-		case HITTARGET:
-			return "Hit Target";
-		case MAXLENGTH:
-			return "Max length (" + maxLength + ") reached.";
-		case NOTHING:
-		default:
-			return "No Fail.";
-		}
+		return failCode.toString(maxLength);
 	}
 
 	//****************************************  FUNCTION  - getIJKPtAtN *************************************************************************************//
@@ -363,7 +356,7 @@ public final class BuildingWall extends Building {
 	//****************************************  FUNCTION - makeBuildings *************************************************************************************//
 	public void makeBuildings(boolean buildOnL, boolean buildOnR, boolean makeGatehouseTowers, boolean overlapTowers, boolean isAvenue) {
 		if (ws == null) {
-			System.err.println("Tried to build towers but wall style was null!");
+			wgt.master.logOrPrint("Tried to build towers but wall style was null!", "ERROR");
 			return;
 		}
 		if (!ws.MakeBuildings)
@@ -382,7 +375,7 @@ public final class BuildingWall extends Building {
 			//use this tw for curvature even though it is incorrect since they will determine their own width.
 			//This may cause so building-over but that's OK.
 			//tw is also passed to  as the actual width for default towers inside makeBuilding().
-			int tw = ws.pickTWidth(circular, world.rand);
+			int tw = ws.pickTWidth(circular, random);
 			//towers are built from n0-2 to n0-tw-1
 			//n0 and nBack used to calculat curvature are 2 further from nMid
 			int nMid = n0 - tw / 2 - 2, nBack = n0 - tw - 3;
@@ -395,8 +388,8 @@ public final class BuildingWall extends Building {
 			}
 			//try tower types
 			if (makeGatehouseTowers && curvature(zArray[nBack], zArray[nMid], zArray[n0], 0) == 0 && curvature(xArray[nBack], xArray[nMid], xArray[n0], 2) == 0) {
-				//FMLLog.getLogger().info("Building gatehouse for "+IDString()+" at n="+n0+" "+globalCoordString(0,0,0)+" width "+tw);
-				BuildingTower tower = new BuildingTower(bID + n0, this, bDir.flip(), -bHand, true, tw, ws.pickTHeight(circular, world.rand), circular ? tw : ws.pickTWidth(circular, world.rand),
+				wgt.master.logOrPrint("Building gatehouse for "+IDString()+" at n="+n0+" "+localCoordString(0, 0, 0)+" width "+tw, "INFO");
+				BuildingTower tower = new BuildingTower(bID + n0, this, bDir.flip(), -bHand, true, tw, ws.pickTHeight(circular, random), circular ? tw : ws.pickTWidth(circular, random),
 						getIJKPtAtN(nMid, bWidth / 2, 0, tw / 2));
 				if (!tower.isObstructedRoof(-1)) {
 					wgt.setLayoutCode(tower.getIJKPt(0, 0, 0), tower.getIJKPt(tw - 1, 0, tw - 1), WorldGeneratorThread.LAYOUT_CODE_TOWER);
@@ -404,8 +397,8 @@ public final class BuildingWall extends Building {
 					setCursor(n0 + ws.BuildingInterval - 1);
 				}
 			} else if ((buildOnL && clearSide == L_HAND) || (buildOnR && clearSide == R_HAND)) { //side towers
-				//FMLLog.getLogger().info("Building side tower for "+IDString()+" at n="+n0+" "+globalCoordString(0,0,0)+" with clearSide="+clearSide+" width "+tw);
-				TemplateTML template = ws.buildings.get(RandomPicker.pickWeightedOption(world.rand, ws.buildingWeights));
+				wgt.master.logOrPrint("Building side tower for "+IDString()+" at n="+n0+" "+localCoordString(0, 0, 0)+" with clearSide="+clearSide+" width "+tw, "INFO");
+				TemplateTML template = ws.buildings.get(RandomPicker.pickWeightedOption(random, ws.buildingWeights));
 				int ybuffer = -ws.TowerXOffset + (isAvenue ? 0 : 1);
 				int[] pt = getIJKPtAtN(nMid, clearSide == bHand ? (bWidth - ybuffer) : ybuffer - 1, 0, 0);
 				if (makeBuilding(template, tw, ybuffer, overlapTowers, bDir.rotate(clearSide), pt))
@@ -419,7 +412,7 @@ public final class BuildingWall extends Building {
 			if (endTN < 0)
 				endTN = 0;
 			int[] pt = getIJKPtAtN(endTN, bWidth / 2, 0, 1);
-			makeBuilding(endBTemplate, ws.pickTWidth(circular, world.rand), 1, overlapTowers, bDir, pt);
+			makeBuilding(endBTemplate, ws.pickTWidth(circular, random), 1, overlapTowers, bDir, pt);
 		}
 	}
 
@@ -435,7 +428,7 @@ public final class BuildingWall extends Building {
 	//failString contains termination rationale.
 	public int plan(int startN, int depth, int lookahead, boolean stopAtWall) {
 		if (startN < 1 || startN >= maxLength) {
-			System.err.println("Error, bad start length at BuildingWall.plan:" + startN + ".");
+			wgt.master.logOrPrint("Error, bad start length at BuildingWall.plan:" + startN + ".", "ERROR");
 			return 0;
 		}
 		int fails = 0;
@@ -535,7 +528,6 @@ public final class BuildingWall extends Building {
 						for (int m = bLength - Backtrack; m < bLength + bestImprovement; m++) {
 							xArray[m] = bestBranch.xArray[m];
 							zArray[m] = bestBranch.zArray[m];
-							//failString=bestBranch.failString;
 							failCode = bestBranch.failCode;
 						}
 						hitMaxDepth = bestBranch.hitMaxDepth;
@@ -550,7 +542,7 @@ public final class BuildingWall extends Building {
 						break; //we have added branches if any and did not hit max depth, so break
 					}
 				}
-				//if(DEBUG && planL>startN) printWall(startN);
+				printWall(startN);
 			}
 		}//end main loop
 		if (depth == 0) {
@@ -565,8 +557,7 @@ public final class BuildingWall extends Building {
 	//****************************************  FUNCTION  - printWall  *************************************************************************************//
 	//For precise debugging
 	public void printWall() {
-		if (DEBUG)
-			printWall(0);
+		printWall(0);
 	}
 
 	public void printWall(int start) {
@@ -579,9 +570,8 @@ public final class BuildingWall extends Building {
 					System.out.print("||");
 				System.out.print(xArray[m] + ",");
 				if (m > 0 && Math.abs(xArray[m] - xArray[m - 1]) > 1)
-					System.out.print("(ERROR: X-slope>1 at n=" + m + ")");
+					System.out.println("(ERROR: X-slope>1 at n=" + m + ")");
 			}
-			System.out.print("\n");
 			for (int m = start; m < bLength; m++) {
 				if (m % 10 == 0)
 					System.out.print("|");
@@ -589,9 +579,8 @@ public final class BuildingWall extends Building {
 					System.out.print("||");
 				System.out.print(zArray[m] + ",");
 				if (m > 0 && Math.abs(zArray[m] - zArray[m - 1]) > 1)
-					System.out.print("(ERROR: Z-slope>1 at n=" + m + ")");
+					System.out.println("(ERROR: Z-slope>1 at n=" + m + ")");
 			}
-			System.out.println("\n");
 		}
 	}
 
@@ -703,10 +692,10 @@ public final class BuildingWall extends Building {
 	//****************************************  FUNCTION - makeBuildings *************************************************************************************//
 	private boolean makeBuilding(TemplateTML template, int tw, int ybuffer, boolean overlapTowers, Direction dir, int[] pt) {
 		if (template == ws.makeDefaultTower) {
-			int maxBL = bDir == dir ? endBLength : circular ? tw : ws.pickTWidth(false, world.rand);
+			int maxBL = bDir == dir ? endBLength : circular ? tw : ws.pickTWidth(false, random);
 			//FMLLog.getLogger().info("Querying "+(circular? "circular " : "square ")+(bDir==dir ? "end" : "side")+" tower, ybuffer="+ybuffer+".");
 			for (int tl = maxBL; tl >= ws.getTMinWidth(circular); tl--) {
-				BuildingTower tower = new BuildingTower(bID + n0, this, dir, 1, true, circular ? tl : tw, ws.pickTHeight(circular, world.rand), tl, pt);
+				BuildingTower tower = new BuildingTower(bID + n0, this, dir, 1, true, circular ? tl : tw, ws.pickTHeight(circular, random), tl, pt);
 				if (tower.queryCanBuild(ybuffer, overlapTowers)) {
 					tower.build(0, 0, true);
 					return true;
@@ -715,7 +704,7 @@ public final class BuildingWall extends Building {
 		} else if (template == ws.makeCARuin) {
 			CARule caRule = ws.CARuinAutomataRules.get(random.nextInt(ws.CARuinAutomataRules.size()));
 			for (int tries = 0; tries < 10; tries++) {
-				byte[][] seed = BuildingCellularAutomaton.makeSymmetricSeed(ws.CARuinContainerWidth, 0.5F, world.rand);
+				byte[][] seed = BuildingCellularAutomaton.makeSymmetricSeed(ws.CARuinContainerWidth, 0.5F, random);
 				BuildingCellularAutomaton bca = new BuildingCellularAutomaton(wgt, ws.CARuinRule, dir, 1, true, ws.CARuinContainerWidth, ws.CARuinMinHeight
 						+ random.nextInt(ws.CARuinMaxHeight - ws.CARuinMinHeight + 1), ws.CARuinContainerWidth, seed, caRule, null, pt);
 				if (bca.plan(false, 12) && bca.queryCanBuild(ybuffer, ws.CARuinContainerWidth <= 15)) {
@@ -775,14 +764,14 @@ public final class BuildingWall extends Building {
 	private void pickTowers(boolean circular_, boolean endTowers) {
 		circular = circular_;
 		if (ws != null) {
-			roofStyle = ws.pickRoofStyle(circular, world.rand);
-			towerRule = ws.TowerRule.getFixedRule(world.rand);
+			roofStyle = ws.pickRoofStyle(circular, random);
+			towerRule = ws.TowerRule.getFixedRule(random);
 			roofRule = ws.getRoofRule(circular);
 			if (roofRule != TemplateRule.RULE_NOT_PROVIDED)
-				roofRule = roofRule.getFixedRule(world.rand);
+				roofRule = roofRule.getFixedRule(random);
 			if (endTowers && ws.MakeEndTowers) {
-				endBTemplate = ws.buildings.get(RandomPicker.pickWeightedOption(world.rand, ws.buildingWeights));
-				endBLength = endBTemplate == ws.makeDefaultTower ? ws.pickTWidth(circular, world.rand) + 1 //+1 allows some extra wiggle room for roof edges etc.
+				endBTemplate = ws.buildings.get(RandomPicker.pickWeightedOption(random, ws.buildingWeights));
+				endBLength = endBTemplate == ws.makeDefaultTower ? ws.pickTWidth(circular, random) + 1 //+1 allows some extra wiggle room for roof edges etc.
 						: (endBTemplate == ws.makeCARuin ? ws.CARuinContainerWidth : endBTemplate.length);
 			}
 		}

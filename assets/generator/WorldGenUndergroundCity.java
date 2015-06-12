@@ -47,7 +47,7 @@ public final class WorldGenUndergroundCity extends WorldGeneratorThread {
 	//****************************  FUNCTION - generate*************************************************************************************//
 	@Override
 	public boolean generate(int i0, int j0, int k0) {
-		pws = TemplateWall.pickBiomeWeightedWallStyle(((PopulatorWalledCity) master).undergroundCityStyles, world, i0, k0, world.rand, true);
+		pws = TemplateWall.pickBiomeWeightedWallStyle(((PopulatorWalledCity) master).undergroundCityStyles, world, i0, k0, random, true);
 		if (pws == null)
 			return false;
 		if (!((PopulatorWalledCity) master).cityIsSeparated(world, i0, k0, PopulatorWalledCity.CITY_TYPE_UNDERGROUND))
@@ -56,8 +56,7 @@ public final class WorldGenUndergroundCity extends WorldGeneratorThread {
 		hollow(i0, j0, k0, MAX_DIAM);
 		if (hollows.size() == 0)
 			return false;
-		((PopulatorWalledCity) master).cityLocations.get(world).add(new int[] { i0, k0, PopulatorWalledCity.CITY_TYPE_UNDERGROUND });
-		((PopulatorWalledCity) master).saveCityLocations(world);
+		((PopulatorWalledCity) master).saveCityLocations(world, new int[] { i0, k0, PopulatorWalledCity.CITY_TYPE_UNDERGROUND });
 		master.logOrPrint("\n***** Building " + pws.name + " city with " + hollows.size() + " hollows at (" + i0 + "," + j0 + "," + k0 + "). ******\n", "FINER");
 		List<BuildingUndergroundEntranceway> entranceways = buildEntranceways();
 		//build streets, towers
@@ -119,7 +118,7 @@ public final class WorldGenUndergroundCity extends WorldGeneratorThread {
 				pt[0] += hollow[0];
 				pt[2] += hollow[2];
 				pt[1] = Building.findSurfaceJ(world, pt[0], pt[2], hollow[1] - (hollow[3] + 1) / 2, false, Building.IGNORE_WATER) + 1;
-				TemplateWall sws = TemplateWall.pickBiomeWeightedWallStyle(pws.streets, world, pt[0], pt[2], world.rand, true);
+				TemplateWall sws = TemplateWall.pickBiomeWeightedWallStyle(pws.streets, world, pt[0], pt[2], random, true);
 				sws.MergeWalls = true;
 				BuildingDoubleWall street = new BuildingDoubleWall(tries, this, sws, Building.Direction.from(random), Building.R_HAND, pt);
 				if (street.plan()) {

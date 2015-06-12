@@ -32,7 +32,7 @@ public final class BuildingTML extends Building {
 
 	//****************************************  FUNCTION - build *************************************************************************************//
 	public void build() {
-		tmlt.setFixedRules(world.rand);
+		tmlt.setFixedRules(random);
 		//build base
 		int[][] base = tmlt.namedLayers.get("base");
 		for (int y = 0; y < bLength; y++)
@@ -46,18 +46,12 @@ public final class BuildingTML extends Building {
 		for (int z = bHeight; z < tmlt.cutIn + tmlt.embed; z++)
 			for (int y = 0; y < bLength; y++)
 				for (int x = 0; x < bWidth; x++) {
-					/*
-					 * if(!queryExplorationHandlerForChunk(x,y)) break;
-					 */
 					setBlockLocal(x, z, y, Blocks.air);
 				}
 		//build
 		for (int z = 0; z < bHeight; z++)
 			for (int y = 0; y < bLength; y++)
 				for (int x = 0; x < bWidth; x++) {
-					/*
-					 * if(!queryExplorationHandlerForChunk(x,y)) break;
-					 */
 					setBlockLocal(x, z, y, tmlt.rules[tmlt.template[z][y][x]]);
 				}
         flushDelayed();

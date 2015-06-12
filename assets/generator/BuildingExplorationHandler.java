@@ -229,9 +229,13 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 			logActivated = readBooleanParam(lw, logActivated, ":", read);
 	}
 
+	public static String readTextValue(String split, String parse){
+		return parse.split(split, 2)[1].trim();
+	}
+
 	public static ArrayList<CARule> readAutomataList(PrintWriter lw, String splitString, String read) {
 		ArrayList<CARule> rules = new ArrayList<CARule>();
-		String[] ruleStrs = (read.split(splitString, 2)[1]).split(",");
+		String[] ruleStrs = readTextValue(splitString, read).split(",");
 		for (String ruleStr : ruleStrs) {
             try {
                 CARule rule = new CARule(ruleStr.trim(), lw);
@@ -245,7 +249,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 
 	public static boolean readBooleanParam(PrintWriter lw, boolean defaultVal, String splitString, String read) {
 		try {
-			defaultVal = Boolean.parseBoolean(read.split(splitString)[1].trim());
+			defaultVal = Boolean.parseBoolean(readTextValue(splitString, read));
 		} catch (Exception e) {
 			lw.println("Error parsing boolean: " + e.toString());
 			lw.println("Using default " + defaultVal + ". Line:" + read);
@@ -255,7 +259,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 
 	public static float readFloatParam(PrintWriter lw, float defaultVal, String splitString, String read) {
 		try {
-			defaultVal = Float.parseFloat(read.split(splitString)[1].trim());
+			defaultVal = Float.parseFloat(readTextValue(splitString, read));
 		} catch (Exception e) {
 			lw.println("Error parsing double: " + e.toString());
 			lw.println("Using default " + defaultVal + ". Line:" + read);
@@ -265,7 +269,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 
 	public static Integer[] readIntList(PrintWriter lw, Integer[] defaultVals, String splitString, String read) {
 		try {
-			String[] check = (read.split(splitString)[1]).split(",");
+			String[] check = (readTextValue(splitString, read)).split(",");
 			Integer[] newVals = new Integer[check.length];
 			for (int i = 0; i < check.length; i++) {
 				newVals[i] = Integer.parseInt(check[i].trim());
@@ -281,7 +285,7 @@ public abstract class BuildingExplorationHandler implements IWorldGenerator {
 	public static int readIntParam(PrintWriter lw, int defaultVal, String splitString, String read) {
 		try {
             if(read.contains(splitString))
-			    defaultVal = Integer.parseInt(read.split(splitString)[1].trim());
+			    defaultVal = Integer.parseInt(readTextValue(splitString, read));
 		} catch (Exception e) {
             if(lw!=null) {
                 lw.println("Error parsing int: " + e.toString());

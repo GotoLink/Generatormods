@@ -33,7 +33,7 @@ public final class WorldGenGreatWall extends WorldGeneratorThread {
 	//****************************  FUNCTION - generate  *************************************************************************************//
 	@Override
 	public boolean generate(int i0, int j0, int k0) {
-		TemplateWall ws = TemplateWall.pickBiomeWeightedWallStyle(((PopulatorGreatWall) master).wallStyles, world, i0, k0, world.rand, false);
+		TemplateWall ws = TemplateWall.pickBiomeWeightedWallStyle(((PopulatorGreatWall) master).wallStyles, world, i0, k0, random, false);
 		if (ws == null)
 			return false;
 		BuildingDoubleWall dw = new BuildingDoubleWall(10 * (random.nextInt(9000) + 1000), this, ws, Building.Direction.from(random), 1, new int[] { i0, j0, k0 });
