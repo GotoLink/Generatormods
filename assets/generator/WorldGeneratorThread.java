@@ -96,7 +96,7 @@ public abstract class WorldGeneratorThread {
 				} else {
 					j0 = min_spawn_height + this.random.nextInt(max_spawn_height - min_spawn_height + 1);
 				}
-				if (j0 > 0 && world.getBiomeGenForCoordsBody(i0, k0) != BiomeGenBase.ocean)
+				if (j0 > 0)
 					success = generate(i0, j0, k0);
 			}
 			tries++;

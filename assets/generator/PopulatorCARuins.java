@@ -24,6 +24,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.BiomeGenBase;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -106,6 +107,11 @@ public final class PopulatorCARuins extends BuildingExplorationHandler {
 	public void serverStarting(FMLServerStartingEvent event) {
 		event.registerServerCommand(new CommandBuild());
         event.registerServerCommand(new CommandScan());
+		for(BiomeGenBase biome:BiomeGenBase.getBiomeGenArray()){
+			if(biome!=null && biome.topBlock!=null){
+				BlockProperties.get(biome.topBlock).setBiomeGround();
+			}
+		}
 	}
 
 	//****************************  FUNCTION - loadDataFiles *************************************************************************************//

@@ -133,7 +133,7 @@ public final class BuildingCellularAutomaton extends Building {
 			//now clear a hole surrounding the central floor volume
 			for (int y = 0; y < bLength; y++)
 				for (int x = holeLimits[y][0] + 1; x <= holeLimits[y][1] - 1; x++)
-					if (layers[z][x][y] != ALIVE && !BlockProperties.get(getBlockIdLocal(x, z, y)).isArtificial)
+					if (layers[z][x][y] != ALIVE && !BlockProperties.get(getBlockIdLocal(x, z, y)).isArtificial())
 						setBlockLocal(x, z, y, Blocks.air);
 			//then gradually taper hole limits...
 			if (z % 2 == 0) {
@@ -201,6 +201,7 @@ public final class BuildingCellularAutomaton extends Building {
 				populateFloor(floors.get(m)[0], floors.get(m)[1]);
 			} while (random.nextFloat() < 1.0f - MEAN_SIDE_LENGTH_PER_POPULATE / MathHelper.sqrt_float(floors.get(m)[1]));
 		}
+		flushDelayed();
 	}
 
 	public boolean plan(boolean bury, int MinHeightBeforeOscillation) {
@@ -373,13 +374,13 @@ public final class BuildingCellularAutomaton extends Building {
 	private void makeFloorAt(int x, int z, int y, boolean[][] layout) {
 		if (layout[x][y])
 			return;
-		if (BlockProperties.get(getBlockIdLocal(x, z, y)).isArtificial && BlockProperties.get(getBlockIdLocal(x, z + 1, y)).isArtificial) { //pillar
-			if (!BlockProperties.get(getBlockIdLocal(x, z + 2, y)).isArtificial)
+		if (BlockProperties.get(getBlockIdLocal(x, z, y)).isArtificial() && BlockProperties.get(getBlockIdLocal(x, z + 1, y)).isArtificial()) { //pillar
+			if (!BlockProperties.get(getBlockIdLocal(x, z + 2, y)).isArtificial())
 				setBlockLocal(x, z + 2, y, bRule);
 			return;
 		}
-		if (!BlockProperties.get(getBlockIdLocal(x, z - 1, y)).isArtificial) { //raise to floor
-            BlockAndMeta idAndMeta = bRule.getNonAirBlock(world.rand);
+		if (!BlockProperties.get(getBlockIdLocal(x, z - 1, y)).isArtificial()) { //raise to floor
+            BlockAndMeta idAndMeta = bRule.getNonAirBlock(random);
 			setBlockWithLightingLocal(x, z - 1, y, idAndMeta, true);
 		}
         removeBlockWithLighting(x, z, y);

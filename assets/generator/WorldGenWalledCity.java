@@ -56,10 +56,10 @@ public final class WorldGenWalledCity extends WorldGeneratorThread {
 	//****************************************  FUNCTION - generate  *************************************************************************************//
 	@Override
 	public boolean generate(int i0, int j0, int k0) {
-		ows = TemplateWall.pickBiomeWeightedWallStyle(((PopulatorWalledCity) master).cityStyles, world, i0, k0, world.rand, false);
+		ows = TemplateWall.pickBiomeWeightedWallStyle(((PopulatorWalledCity) master).cityStyles, world, i0, k0, random, false);
 		if (ows == null)
 			return false;
-		sws = TemplateWall.pickBiomeWeightedWallStyle(ows.streets, world, i0, k0, world.rand, false);
+		sws = TemplateWall.pickBiomeWeightedWallStyle(ows.streets, world, i0, k0, random, false);
 		if (sws == null)
 			return false;
 		if (!((PopulatorWalledCity) master).cityIsSeparated(world, i0, k0, cityType))
@@ -72,7 +72,7 @@ public final class WorldGenWalledCity extends WorldGeneratorThread {
 		if (ows.MinL < PopulatorWalledCity.MIN_CITY_LENGTH)
 			ows.MinL = PopulatorWalledCity.MIN_CITY_LENGTH;
 		walls = new BuildingWall[4];
-		ows.setFixedRules(world.rand);
+		ows.setFixedRules(random);
 		//plan walls[0]
 		walls[0] = new BuildingWall(ID, this, ows, dir[0], axXHand, ows.MinL + random.nextInt(ows.MaxL - ows.MinL), false, i0, j0, k0).setMinJ(minJ);
 		walls[0].plan(1, 0, BuildingWall.DEFAULT_LOOKAHEAD, true);
@@ -99,7 +99,7 @@ public final class WorldGenWalledCity extends WorldGeneratorThread {
 		walls[2].setTarget(walls[2].getIJKPt(0, 0, distToTarget));
 		walls[2].plan(1, 0, BuildingWall.DEFAULT_LOOKAHEAD, false);
 		if (walls[2].bLength < walls[2].y_targ) {
-			//if(BuildingWall.DEBUG) FMLLog.getLogger().info("Abandoning on 3rd wall "+walls[2].IDString()+" planned length "+walls[2].bLength+" less than targeted length "+walls[2].y_targ+". Reason: "+walls[2].failString());
+			master.logOrPrint("Abandoning on 3rd wall "+walls[2].IDString()+" planned length "+walls[2].bLength+" less than targeted length "+walls[2].y_targ+". Reason: "+walls[2].failString(), "INFO");
 			return false;
 		}
 		//plan walls[3]
@@ -115,10 +115,9 @@ public final class WorldGenWalledCity extends WorldGeneratorThread {
 		walls[3].setTarget(walls[0].getIJKPt(-1 - ows.TowerXOffset, 0, -1 - ows.TowerXOffset));
 		walls[3].plan(1, 0, BuildingWall.DEFAULT_LOOKAHEAD, false);
 		if (walls[3].bLength < walls[3].y_targ) {
-			//if(BuildingWall.DEBUG)  FMLLog.getLogger().info("Abandoning on 4th wall "+walls[3].IDString()+" planned length "+walls[3].bLength+" less than targeted "+walls[3].y_targ+". Reason: "+walls[3].failString());
+			master.logOrPrint("Abandoning on 4th wall "+walls[3].IDString()+" planned length "+walls[3].bLength+" less than targeted "+walls[3].y_targ+". Reason: "+walls[3].failString(), "INFO");
 			return false;
 		}
-		//if(BuildingWall.DEBUG) FMLLog.getLogger().info("smoothingwalls");
 		//smoothing
 		for (BuildingWall w : walls)
 			w.smooth(ows.ConcaveDownSmoothingScale, ows.ConcaveUpSmoothingScale, true);
@@ -162,7 +161,7 @@ public final class WorldGenWalledCity extends WorldGeneratorThread {
 					cityArea++;
 					if (j2 == Building.HIT_WATER)
 						waterArea++;
-					if (((PopulatorWalledCity) master).RejectOnPreexistingArtifacts && ows.LevelInterior && BlockProperties.get(world.getBlock(i2, j2, k2)).isArtificial) {
+					if (((PopulatorWalledCity) master).RejectOnPreexistingArtifacts && ows.LevelInterior && BlockProperties.get(world.getBlock(i2, j2, k2)).isArtificial()) {
 						master.logOrPrint("Rejected " + ows.name + " city " + ID + ", found previous construction in city zone!", "WARNING");
 						return false;
 					}
@@ -184,8 +183,7 @@ public final class WorldGenWalledCity extends WorldGeneratorThread {
 		walls[0].setCursor(0);
 		int[] cityCenter = new int[] { (walls[0].i1 + walls[1].i1 + walls[2].i1 + walls[3].i1) / 4, 0, (walls[0].k1 + walls[1].k1 + walls[2].k1 + walls[3].k1) / 4 };
 		cityCenter[1] = Building.findSurfaceJ(world, cityCenter[0], cityCenter[1], Building.WORLD_MAX_Y, false, 3);
-		((PopulatorWalledCity) master).cityLocations.get(world).add(new int[] { cityCenter[0], cityCenter[2], cityType });
-		((PopulatorWalledCity) master).saveCityLocations(world);
+		((PopulatorWalledCity) master).saveCityLocations(world, new int[] { cityCenter[0], cityCenter[2], cityType });
 		//=================================== Build it! =========================================
 		((PopulatorWalledCity) master).chatBuildingCity(
 				"** Building city... **",
@@ -193,7 +191,7 @@ public final class WorldGenWalledCity extends WorldGeneratorThread {
 						+ walls[0].localCoordString(0, 0, 0) + " and " + walls[2].localCoordString(0, 0, 0) + " ******\n");
 		if (ows.LevelInterior)
 			levelCity();
-		TemplateWall avenueWS = TemplateWall.pickBiomeWeightedWallStyle(ows.streets, world, i0, k0, world.rand, false);
+		TemplateWall avenueWS = TemplateWall.pickBiomeWeightedWallStyle(ows.streets, world, i0, k0, random, false);
 		LinkedList<BuildingWall> radialAvenues = new LinkedList<BuildingWall>();
 		//layout
 		layout = new int[Math.abs(corner1[0] - corner2[0])][Math.abs(corner1[2] - corner2[2])];
@@ -280,7 +278,7 @@ public final class WorldGenWalledCity extends WorldGeneratorThread {
 			int[] pt = randInteriorPoint();
 			if (pt != null) {
 				pt[1]++;//want block above surface block
-				sws = TemplateWall.pickBiomeWeightedWallStyle(ows.streets, world, i0, k0, world.rand, true);
+				sws = TemplateWall.pickBiomeWeightedWallStyle(ows.streets, world, i0, k0, random, true);
 				if (pt[1] != -1) {
 					//streets
 					BuildingDoubleWall street = new BuildingDoubleWall(ID + tries, this, sws, Building.Direction.from(random), Building.R_HAND, pt);

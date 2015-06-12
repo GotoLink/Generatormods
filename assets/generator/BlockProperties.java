@@ -27,34 +27,44 @@ public final class BlockProperties {
     /**
      * All the studied block properties
      */
-    public final boolean isWater,isStair,isDoor,isTree,isFlowing,isWallable,isOre,isGround,isArtificial,isLight,isLoaded,isDelayed;
+    public final boolean isWater,isStair,isTree,isFlowing,isWallable,isOre,isLoaded,isDelayed;
+    private boolean isGround,isArtificial;
 
     /**
      * Build the properties for the given block and store them into the internal map
      */
     private BlockProperties(Block block){
-        // Lava is considered to NOT be a liquid, and is therefore not
-        // wallable. This is so we can build cities on the lava surface.
+        // Lava is considered to NOT be a liquid, and is therefore not wallable. This is so we can build cities on the lava surface.
         isWater = block.getMaterial() == Material.water || block == Blocks.ice;
         isStair = block instanceof BlockStairs;
-        isDoor = block instanceof BlockDoor;
         isTree = block instanceof BlockLog || block instanceof IShearable || block instanceof BlockSnow;
         isFlowing = isWater ||  block.getMaterial() == Material.lava || block instanceof BlockDynamicLiquid || block instanceof BlockFalling;
         isWallable = isWater || block instanceof BlockAir || isTree || block instanceof BlockWeb || block instanceof BlockPumpkin
                 || block instanceof BlockMelon || block instanceof BlockHugeMushroom || block instanceof IPlantable;
-        isOre = block == Blocks.clay || block instanceof BlockRedstoneOre || block instanceof BlockOre;
+        isOre = block instanceof BlockClay || block instanceof BlockRedstoneOre || block instanceof BlockOre;
         isGround = block == Blocks.stone || block instanceof BlockDirt || block instanceof BlockGrass
                 || block instanceof BlockGravel || block instanceof BlockSand || block instanceof BlockNetherrack || block instanceof BlockSoulSand || block instanceof BlockMycelium;
-        // Define by what it is not. Not IS_WALLABLE and not a naturally
-        // occurring solid block (obsidian/bedrock are exceptions)
+        // Define by what it is not. Not IS_WALLABLE and not a naturally occurring solid block (obsidian/bedrock are exceptions)
         isArtificial = !(isWallable || isOre || isGround);
-        isLight = block instanceof BlockTorch || block instanceof BlockGlowstone;
-        isDelayed = isStair || isFlowing || isLight || block == Blocks.air || block instanceof BlockLever || block instanceof BlockSign
+        isDelayed = isStair || isFlowing || block instanceof BlockTorch || block instanceof BlockGlowstone || block instanceof BlockDoor || block instanceof BlockLever || block instanceof BlockSign
                 || block instanceof BlockFire || block instanceof BlockButton || block instanceof BlockVine || block instanceof BlockRedstoneWire || block instanceof BlockDispenser
                 || block instanceof BlockFurnace;
         // Define by what it is not.
         isLoaded = !(isWallable || isFlowing || block instanceof BlockTorch || block instanceof BlockLadder);
         props.put(block, this);
+    }
+
+    public void setBiomeGround(){
+        isGround = true;
+        isArtificial = false;
+    }
+
+    public boolean isGround(){
+        return isGround;
+    }
+
+    public boolean isArtificial() {
+        return isArtificial;
     }
 
     /**

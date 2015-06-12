@@ -252,7 +252,7 @@ public class Building {
 		else
 			pt[0]--;
 		EntityPainting entitypainting = new EntityPainting(world, pt[0], pt[1], pt[2], PAINTING_DIR_TO_FACEDIR[dir]);
-		if (!world.isRemote && entitypainting.onValidSurface())
+		if (entitypainting.onValidSurface())
 			world.spawnEntityInWorld(entitypainting);
 	}
 
@@ -345,7 +345,7 @@ public class Building {
 
 	protected final boolean isArtificialWallBlock(int x, int z, int y) {
 		Block blockId = getBlockIdLocal(x, z, y);
-		return BlockProperties.get(blockId).isArtificial && !(blockId == Blocks.sandstone && (getBlockIdLocal(x, z + 1, y) == Blocks.sand || getBlockIdLocal(x, z + 2, y) == Blocks.sand));
+		return BlockProperties.get(blockId).isArtificial() && !(blockId == Blocks.sandstone && (getBlockIdLocal(x, z + 1, y) instanceof BlockSand || getBlockIdLocal(x, z + 2, y) instanceof BlockSand));
 	}
 
 	protected final boolean isDoorway(int x, int z, int y) {
@@ -399,7 +399,7 @@ public class Building {
         Block blkId1 = getBlockIdLocal(x, z, y), blkId2 = getBlockIdLocal(x, z - 1, y);
         // return ((blkId1==0 || blkId1==STEP_ID) && IS_WALL_BLOCK[blkId2] &&
         // blkId2!=LADDER_ID);
-        return blkId1 == Blocks.air && BlockProperties.get(blkId2).isArtificial && blkId2 != Blocks.ladder;
+        return blkId1 == Blocks.air && BlockProperties.get(blkId2).isArtificial() && blkId2 != Blocks.ladder;
     }
 
     protected final boolean isStairBlock(int x, int z, int y) {
@@ -416,7 +416,7 @@ public class Building {
 	}
 
 	protected final boolean isWallBlock(int x, int z, int y) {
-		return BlockProperties.get(world.getBlock(i0 + yI * y + xI * x, j0 + z, k0 + yK * y + xK * x)).isArtificial;
+		return BlockProperties.get(world.getBlock(i0 + yI * y + xI * x, j0 + z, k0 + yK * y + xK * x)).isArtificial();
 	}
 
     public final void flushDelayed(){
@@ -458,10 +458,10 @@ public class Building {
 		// }
 		if (blc == Blocks.air && block[3]>=PAINTING_BLOCK_OFFSET)//Remember:Paintings are not blocks
 			setPainting(block, block[3]-PAINTING_BLOCK_OFFSET);
-		else if (blc == Blocks.torch) {
-			if (Blocks.torch.canPlaceBlockAt(world, block[0], block[1], block[2]))
+		else if (blc instanceof BlockTorch) {
+			if (blc.canPlaceBlockAt(world, block[0], block[1], block[2]))
 				world.setBlock(block[0], block[1], block[2], blc, block[3], 3);// force lighting update
-		} else if (blc == Blocks.glowstone)
+		} else if (blc instanceof BlockGlowstone)
 			world.setBlock(block[0], block[1], block[2], blc, block[3], 3);// force lighting update
 		else if(blc!=null) {
             if((randLightingHash[(block[0] & 0x7) | (block[1] & 0x38) | (block[2] & 0x1c0)]))
@@ -469,6 +469,9 @@ public class Building {
             else
                 setBlockAndMetaNoLighting(world, block[0], block[1], block[2], blc, block[3], 3);
         }
+		if (blc instanceof BlockDoor) {
+			addDoorToNewListIfAppropriate(block[0], block[1], block[2]);
+		}
 	}
 
     protected BlockAndMeta getDelayedStair(Block blc, int...block){
@@ -478,7 +481,7 @@ public class Building {
         if(world.getHeightValue(dirX, dirZ)>block[1]) {
             Block adjId = world.getBlock(dirX, block[1], dirZ);
             Block aboveID = world.getBlock(block[0], block[1] + 1, block[2]);
-            if (BlockProperties.get(aboveID).isGround && BlockProperties.get(adjId).isGround) {
+            if (BlockProperties.get(aboveID).isGround() && BlockProperties.get(adjId).isGround()) {
                 return new BlockAndMeta(blc, block[3]).stairToSolid();
             } else if (!BlockProperties.get(adjId).isWallable || !BlockProperties.get(aboveID).isWallable) {
                 return new BlockAndMeta(null, 0); // solid or liquid non-wall block. In this case, just don't build the stair (aka preserve block).
@@ -511,9 +514,6 @@ public class Building {
             world.setBlock(pt[0], pt[1], pt[2], blockID, rotateMetadata(blockID, metadata), 2);
         } else {
             setBlockAndMetaNoLighting(world, pt[0], pt[1], pt[2], blockID, rotateMetadata(blockID, metadata), 2);
-        }
-        if (BlockProperties.get(blockID).isDoor) {
-            addDoorToNewListIfAppropriate(pt[0], pt[1], pt[2]);
         }
 	}
 
@@ -556,9 +556,6 @@ public class Building {
 			world.setBlock(pt[0], pt[1], pt[2], blockID, rotateMetadata(blockID, metadata), 3);
 		else
 			setBlockAndMetaNoLighting(world, pt[0], pt[1], pt[2], blockID, rotateMetadata(blockID, metadata), 3);
-		if (BlockProperties.get(blockID).isDoor) {
-			addDoorToNewListIfAppropriate(pt[0], pt[1], pt[2]);
-		}
 	}
 
 	protected final void setOrigin(int i0_, int j0_, int k0_) {
@@ -602,7 +599,7 @@ public class Building {
         }else if(blockID instanceof BlockChest){
 			setLootChest(pt, blockID, metadata, extra);
         }else{
-			world.setBlock(pt[0], pt[1], pt[2], blockID, metadata, 2);
+			setBlockLocal(x, z, y, blockID, metadata);
 		}
 	}
 
@@ -657,7 +654,7 @@ public class Building {
 		if (newID == Blocks.air && old.isAir(world, pt[0], pt[1], pt[2]))
 			return true;
 		// if block is a chest empty it
-		if (!(newID instanceof ITileEntityProvider) && old instanceof ITileEntityProvider) {
+		if (old instanceof ITileEntityProvider && !(newID instanceof ITileEntityProvider)) {
 			TileEntity tileentity = world.getTileEntity(pt[0], pt[1], pt[2]);
 			if(tileentity instanceof IInventory) {
 				for (int m = 0; m < ((IInventory)tileentity).getSizeInventory(); m++)
@@ -672,7 +669,7 @@ public class Building {
 			return new ItemStack(bRule.primaryBlock.get(), random.nextInt(10), bRule.primaryBlock.getMeta());
 		}
 		RandomLoot[] itempool = wgt.chestItems.get(chestType);
-		int idx = RandomPicker.pickWeightedOption(world.rand, itempool);
+		int idx = RandomPicker.pickWeightedOption(random, itempool);
         return itempool[idx].getLoot(random);
 	}
 
@@ -694,7 +691,7 @@ public class Building {
 			}
 			return STAIRS_DIR_TO_META[orientDirToBDir(STAIRS_META_TO_DIR[metadata])] + tempdata;
 		}
-		if (BlockProperties.get(blockID).isDoor) {
+		else if (blockID instanceof BlockDoor) {
 			// think of door metas applying to doors with hinges on the left
 			// that open in (when seen facing in)
 			// in this case, door metas match the dir in which the door opens
@@ -708,21 +705,21 @@ public class Building {
 			}
 			return DOOR_DIR_TO_META[orientDirToBDir(DOOR_META_TO_DIR[metadata % DOOR_META_TO_DIR.length])] + tempdata;
 		}
-		if(blockID==Blocks.lever||blockID==Blocks.stone_button||blockID==Blocks.wooden_button){
+		else if(blockID instanceof BlockLever||blockID instanceof BlockButton){
 			// check to see if this is flagged as thrown
 			if (metadata - 8 > 0) {
 				tempdata += 8;
 				metadata -= 8;
 			}
-			if (metadata == 0 || (blockID==Blocks.lever && metadata >= 5))
+			if (metadata == 0 || (blockID instanceof BlockLever && metadata >= 5))
 				return metadata + tempdata;
 			return BUTTON_DIR_TO_META[orientDirToBDir(STAIRS_META_TO_DIR[metadata - 1])] + tempdata;
-        }else if(blockID==Blocks.torch||blockID==Blocks.redstone_torch||blockID==Blocks.unlit_redstone_torch){
+        }else if(blockID instanceof BlockTorch){
 			if (metadata == 0 || metadata >= 5) {
 				return metadata;
 			}
 			return BUTTON_DIR_TO_META[orientDirToBDir(STAIRS_META_TO_DIR[metadata - 1])];
-        }else if(blockID==Blocks.ladder||blockID==Blocks.dispenser||blockID==Blocks.furnace||blockID==Blocks.lit_furnace||blockID==Blocks.wall_sign||blockID==Blocks.piston||blockID==Blocks.piston_extension||blockID==Blocks.chest||blockID==Blocks.hopper||blockID==Blocks.dropper){
+        }else if(blockID instanceof BlockLadder||blockID instanceof BlockDispenser||blockID instanceof BlockFurnace||blockID==Blocks.wall_sign||blockID==Blocks.piston||blockID==Blocks.piston_extension||blockID instanceof BlockChest||blockID==Blocks.hopper||blockID==Blocks.dropper){
 			if (blockID==Blocks.piston|| blockID==Blocks.piston_extension) {
 				if (metadata - 8 >= 0) {
 					// pushed or not, sticky or not
@@ -733,7 +730,7 @@ public class Building {
 			if (metadata <= 1)
 				return metadata + tempdata;
 			return LADDER_DIR_TO_META[orientDirToBDir(LADDER_META_TO_DIR[metadata - 2])] + tempdata;
-        }else if(blockID==Blocks.rail||blockID==Blocks.golden_rail||blockID==Blocks.detector_rail||blockID==Blocks.activator_rail){
+        }else if(blockID instanceof BlockRailBase){
 			switch (bDir) {
 			case NORTH:
 				// flat tracks
@@ -872,23 +869,22 @@ public class Building {
 					return bHand == 1 ? 8 : 9;
 				}
 			}
-        }else if(blockID==Blocks.bed||blockID==Blocks.fence_gate||blockID==Blocks.tripwire_hook||blockID==Blocks.pumpkin||blockID==Blocks.lit_pumpkin||blockID==Blocks.powered_repeater||blockID==Blocks.unpowered_repeater){
+        }else if(blockID==Blocks.bed||blockID==Blocks.fence_gate||blockID==Blocks.tripwire_hook||blockID instanceof BlockPumpkin||blockID instanceof BlockRedstoneRepeater){
 			while (metadata >= 4) {
 				tempdata += 4;
                 metadata -= 4;
 			}
-			if (blockID==Blocks.trapdoor)
+			if (blockID instanceof BlockTrapDoor)
 				return TRAPDOOR_DIR_TO_META[orientDirToBDir(TRAPDOOR_META_TO_DIR[metadata])] + tempdata;
 			else
 				return BED_DIR_TO_META[orientDirToBDir(BED_META_TO_DIR[metadata])] + tempdata;
-        }else if(blockID==Blocks.vine){
+        }else if(blockID instanceof BlockVine){
 			if (metadata == 0)
 				return 0;
 			else if (metadata == 1 || metadata == 2 || metadata == 4 || metadata == 8)
 				return VINES_DIR_TO_META[(bDir.ordinal() + VINES_META_TO_DIR[metadata]) % VINES_DIR_TO_META.length];
 			else
-				return 1; // default case since vine do not have to have correct
-			// metadata
+				return 1; // default case since vine do not have to have correct metadata
         }else if(blockID==Blocks.standing_sign){
 			// sign posts
 			switch (bDir) {
@@ -1095,7 +1091,7 @@ public class Building {
 
 	// &&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setLootChest
 	protected void setLootChest(int[] pt, Block chestBlock, int meta, String chestType) {
-		if (world.setBlock(pt[0], pt[1], pt[2], chestBlock, meta, 2)) {
+		if (world.setBlock(pt[0], pt[1], pt[2], chestBlock, rotateMetadata(chestBlock, meta), 2)) {
 			TileEntityChest chest = (TileEntityChest) world.getTileEntity(pt[0], pt[1], pt[2]);
 			if (chest != null && wgt.chestTries != null && wgt.chestTries.containsKey(chestType)) {
 				for (int m = 0; m < wgt.chestTries.get(chestType); m++) {
@@ -1173,7 +1169,7 @@ public class Building {
 					jinit = minecraftHeight;
 				for (int j = jinit; j >= 0; j--) {
 					Block blockId = world.getBlock(i, j, k);
-					if (!BlockProperties.get(blockId).isWallable && (wallIsSurface || !BlockProperties.get(blockId).isArtificial))
+					if (!BlockProperties.get(blockId).isWallable && (wallIsSurface || !BlockProperties.get(blockId).isArtificial()))
 						return j;
 					if (waterSurfaceBuffer != IGNORE_WATER && BlockProperties.get(blockId).isWater)
 						return BlockProperties.get(world.getBlock(i, j - waterSurfaceBuffer, k)).isWater ? HIT_WATER : j;
@@ -1209,7 +1205,7 @@ public class Building {
 	// ******************** STATIC FUNCTIONS
 	// ******************************************************************************************************************************************//
 	protected static void fillDown(int[] lowPt, int jtop, World world) {
-		while (BlockProperties.get(world.getBlock(lowPt[0], lowPt[1], lowPt[2])).isArtificial)
+		while (BlockProperties.get(world.getBlock(lowPt[0], lowPt[1], lowPt[2])).isArtificial())
 			lowPt[1]--;
 		Block oldSurfaceBlockId = world.getBlock(lowPt[0], lowPt[1], lowPt[2]);
 		if (BlockProperties.get(oldSurfaceBlockId).isOre)

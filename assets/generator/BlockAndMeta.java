@@ -82,7 +82,7 @@ public class BlockAndMeta extends Tuple {
     }
 
     public BlockAndMeta toStep(){
-        if (!BlockProperties.get(get()).isArtificial)
+        if (!BlockProperties.get(get()).isArtificial())
             return this;
         if(get()==Blocks.sandstone){
             return new BlockAndMeta(Blocks.stone_slab, 1);
