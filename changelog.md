@@ -1,3 +1,8 @@
+== CARuins, GreatWall and WalledCity Generator 0.1.8 ==
+* Minor fixes and optimizations
+* Improved build command
+* Better biome support
+
 == CARuins, GreatWall and WalledCity Generator 0.1.7 ==
 * Fixed few crashes with building/tower generation
 * Added support for json data in chest items
