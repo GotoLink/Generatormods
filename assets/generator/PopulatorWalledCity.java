@@ -54,6 +54,7 @@ public final class PopulatorWalledCity extends BuildingExplorationHandler {
 	public Map<Integer, List<VillageDoorInfo>> cityDoors;
 	public LinkedList<int[]> citiesBuiltMessages = new LinkedList<int[]>();
 	private Map<World, File> cityFiles;
+	private boolean generating;
 
 	//****************************  FUNCTION - addCityToVillages*************************************************************************************//
 	@SuppressWarnings("unchecked")
@@ -130,19 +131,23 @@ public final class PopulatorWalledCity extends BuildingExplorationHandler {
 	//****************************  FUNCTION - generate *************************************************************************************//
 	@Override
 	public final void generate(World world, Random random, int i, int k) {
-		if (CityBuiltMessage && world.playerEntities != null)
-			while (citiesBuiltMessages.size() > 0)
-				chatCityBuilt(citiesBuiltMessages.remove());
-		if (cityStyles.size() > 0 && cityIsSeparated(world, i, k, world.provider.dimensionId) && random.nextFloat() < GlobalFrequency) {
-			(new WorldGenWalledCity(this, world, random, i, k, TriesPerChunk, GlobalFrequency)).run();
-		}
-		if (undergroundCityStyles.size() > 0 && cityIsSeparated(world, i, k, CITY_TYPE_UNDERGROUND) && random.nextFloat() < UndergroundGlobalFrequency) {
-			WorldGeneratorThread wgt = new WorldGenUndergroundCity(this, world, random, i, k, 1, UndergroundGlobalFrequency);
-			int maxSpawnHeight = Building.findSurfaceJ(world, i, k, Building.WORLD_MAX_Y, false, Building.IGNORE_WATER) - WorldGenUndergroundCity.MAX_DIAM / 2 - 5; //44 at sea level
-			int minSpawnHeight = MAX_FOG_HEIGHT + WorldGenUndergroundCity.MAX_DIAM / 2 - 8; //34, a pretty thin margin. Too thin for underocean cities?
-			if (minSpawnHeight <= maxSpawnHeight)
-				wgt.setSpawnHeight(minSpawnHeight, maxSpawnHeight, false);
-			(wgt).run();
+		if(!generating) {
+			generating = true;
+			if (CityBuiltMessage && world.playerEntities != null)
+				while (citiesBuiltMessages.size() > 0)
+					chatCityBuilt(citiesBuiltMessages.remove());
+			if (cityStyles.size() > 0 && cityIsSeparated(world, i, k, world.provider.dimensionId) && random.nextFloat() < GlobalFrequency) {
+				(new WorldGenWalledCity(this, world, random, i, k, TriesPerChunk, GlobalFrequency)).run();
+			}
+			if (undergroundCityStyles.size() > 0 && cityIsSeparated(world, i, k, CITY_TYPE_UNDERGROUND) && random.nextFloat() < UndergroundGlobalFrequency) {
+				WorldGeneratorThread wgt = new WorldGenUndergroundCity(this, world, random, i, k, 1, UndergroundGlobalFrequency);
+				int maxSpawnHeight = Building.findSurfaceJ(world, i, k, Building.WORLD_MAX_Y, false, Building.IGNORE_WATER) - WorldGenUndergroundCity.MAX_DIAM / 2 - 5; //44 at sea level
+				int minSpawnHeight = MAX_FOG_HEIGHT + WorldGenUndergroundCity.MAX_DIAM / 2 - 8; //34, a pretty thin margin. Too thin for underocean cities?
+				if (minSpawnHeight <= maxSpawnHeight)
+					wgt.setSpawnHeight(minSpawnHeight, maxSpawnHeight, false);
+				(wgt).run();
+			}
+			generating = false;
 		}
 	}
 
@@ -236,7 +241,11 @@ public final class PopulatorWalledCity extends BuildingExplorationHandler {
 	}
 
 	//****************************  FUNCTION - saveCityLocations *************************************************************************************//
-	public void saveCityLocations(World world) {
+	public void saveCityLocations(World world, int[] data) {
+		if(!cityLocations.containsKey(world)){
+			updateWorldExplored(world);
+		}
+		cityLocations.get(world).add(data);
 		PrintWriter pw = null;
 		try {
 			pw = new PrintWriter(new BufferedWriter(new FileWriter(cityFiles.get(world), true)));
@@ -268,7 +277,8 @@ public final class PopulatorWalledCity extends BuildingExplorationHandler {
 		if (cityFiles.isEmpty() || !cityFiles.containsKey(world))
 			cityFiles.put(world, cityFile);
 		try {
-			if (!cityFile.createNewFile() && !cityLocations.containsKey(world))
+			cityFile.createNewFile();
+			if (!cityLocations.containsKey(world))
 				cityLocations.put(world, getCityLocs(cityFile));
 		} catch (IOException e) {
 			logOrPrint(e.getMessage(), "WARNING");
