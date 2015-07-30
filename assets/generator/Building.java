@@ -368,10 +368,7 @@ public class Building {
 				}
 			}
 			for (int y1 = ybuffer; y1 < bLength - 1; y1++) {
-				if (isArtificialWallBlock(0, z1, y1)) {
-					return true;
-				}
-				if (isArtificialWallBlock(bWidth - 1, z1, y1)) {
+				if (isArtificialWallBlock(0, z1, y1) || isArtificialWallBlock(bWidth - 1, z1, y1)) {
 					return true;
 				}
 			}
@@ -448,7 +445,7 @@ public class Building {
 						return; // did not find a surface we can attach to
 					}
 				}
-				block[4] = dir == -1 ? 0 : VINES_DIR_TO_META[dir];
+				block[3] = dir == -1 ? 0 : VINES_DIR_TO_META[dir];
 			}
 		}
 		// It seems Minecraft orients torches automatically, so I shouldn't have to do anything...
