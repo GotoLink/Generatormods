@@ -17,7 +17,7 @@ buildscript {
 apply plugin: 'forge'
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
-version = "0.1.8"
+version = "0.1.9"
 minecraft {
     version = "1.7.10-10.13.2.1286"
     runDir = "eclipse"

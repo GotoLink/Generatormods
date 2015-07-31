@@ -1,3 +1,13 @@
+== CARuins, GreatWall and WalledCity Generator 0.1.9 ==
+* Fixed crashes when using vines in templates
+* Fixed 'preserve' rule not always applying in walls generation
+* Added base_layer_mode option for wall templates
+** used to defined how bottom layers are added under walls
+** 0 for no added layers
+** 1 for default layer making (bottom of first layer, or 'layer:base')
+** 2 for bottom of each layer
+** 3 in 'layer:base', where each line is linked to each layer
+
 == CARuins, GreatWall and WalledCity Generator 0.1.8 ==
 * Minor fixes and optimizations
 * Improved build command
