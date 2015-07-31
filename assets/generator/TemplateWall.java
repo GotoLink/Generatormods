@@ -26,11 +26,24 @@ import java.util.*;
  * The class includes static functions used to load template folders and link together hierarchical templates.
  */
 public final class TemplateWall extends TemplateTML {
+	public enum BaseMode{
+		NONE,
+		DEFAULT,
+		LAYER_BOTTOM,
+		NAMED;
+		public static BaseMode fromInt(int i){
+			BaseMode[] vals = values();
+			if(i >= 0){
+				return vals[i % vals.length];
+			}
+			return DEFAULT;
+		}
+	}
 	public final static String BUILDING_DIRECTORY_NAME = "buildings";
 	public final static int[] ALL_BIOMES = null;
 	public final static int NO_RULE = -1;
 	public final static int MAX_STREET_DENSITY = 20;
-	public TemplateTML makeDefaultTower, makeCARuin;
+	public final TemplateTML makeDefaultTower, makeCARuin;
 	//USER MODIFIABLE PARAMETERS, values below are defaults
 	public int[] Biomes = ALL_BIOMES;
 	public boolean underground = false;
@@ -41,6 +54,7 @@ public final class TemplateWall extends TemplateTML {
 	public boolean LevelInterior = true;
 	public int WHeight = 7, WWidth = 5, WalkHeight = 0; //WalkHeight is the height in the template (embed will be subtracted)
 	public int MinL = 15, MaxL = 1000;
+	public BaseMode LayerBase = BaseMode.DEFAULT;
 	//default tower parameters
 	public TemplateRule TowerRule = TemplateRule.RULE_NOT_PROVIDED, SpawnerRule = TemplateRule.RULE_NOT_PROVIDED, ChestRule = TemplateRule.RULE_NOT_PROVIDED,
 			CARuinRule = TemplateRule.RULE_NOT_PROVIDED;
@@ -52,12 +66,9 @@ public final class TemplateWall extends TemplateTML {
 	public float CircularProb = 0.3F;
 	private int SqrMinHeight = 11, SqrMaxHeight = 15, SqrMinWidth = 7, SqrMaxWidth = 7, CircMinHeight = 11, CircMaxHeight = 15, CircMinWidth = 7, CircMaxWidth = 7;
 	private int[] SqrRoofStyles = { 4, 1, 1, 1, 1, 0, 0 }, CircRoofStyles = { 3, 0, 0, 0, 1, 1, 0 };
-	private TemplateRule SqrRoofRule = null, CircRoofRule = null;
+	private TemplateRule SqrRoofRule = TemplateRule.RULE_NOT_PROVIDED, CircRoofRule = TemplateRule.RULE_NOT_PROVIDED;
 	//CARuin parameters
-	public int CARuinWeight = 0;
-	public int CARuinContainerWidth = 15;
-	public int CARuinMinHeight = 20;
-	public int CARuinMaxHeight = 35;
+	public int CARuinWeight = 0, CARuinContainerWidth = 15, CARuinMinHeight = 20, CARuinMaxHeight = 35;
 	ArrayList<CARule> CARuinAutomataRules = null;
 
 	//****************************************  CONSTRUCTOR - WallStyle*************************************************************************************//
@@ -83,7 +94,7 @@ public final class TemplateWall extends TemplateTML {
 	}
 
 	//****************************************  FUNCTION - loadTowerParameters *************************************************************************************//
-	public void readTowerParameters() throws Exception {
+	private void readTowerParameters() throws Exception {
 		float mobProb = 0.0F, pigZombieProb = 0.0F, endermanProb = 0.0F, caveSpiderProb = 0.0F; //deprecated, for backwards compatibility
 		if (extraOptions.containsKey("biomes"))
 			Biomes = BuildingExplorationHandler.readNamedCheckList(lw, Biomes, "=", extraOptions.get("biomes"), BuildingExplorationHandler.BIOME_NAMES, "ALL");
@@ -109,6 +120,8 @@ public final class TemplateWall extends TemplateTML {
 			MakeEndTowers = BuildingExplorationHandler.readIntParam(lw, 1, "=", extraOptions.get("make_end_towers")) == 1;
 		if (extraOptions.containsKey("make_underground_entranceways"))
 			MakeUndergroundEntranceways = BuildingExplorationHandler.readIntParam(lw, 1, "=", extraOptions.get("make_underground_entranceways")) == 1;
+		if (extraOptions.containsKey("base_layer_mode"))
+			LayerBase = BaseMode.fromInt(BuildingExplorationHandler.readIntParam(lw, 1, "=", extraOptions.get("base_layer_mode")));
 		if (extraOptions.containsKey("merge_walls"))
 			MergeWalls = BuildingExplorationHandler.readIntParam(lw, 0, "=", extraOptions.get("merge_walls")) == 1;
 		if (extraOptions.containsKey("lateral_smoothing_scale"))
@@ -220,8 +233,8 @@ public final class TemplateWall extends TemplateTML {
 			CARuinRule = TowerRule;
 		if (CARuinMaxHeight < CARuinMinHeight)
 			CARuinMaxHeight = CARuinMinHeight;
-		if (TowerRule == null)
-			throw new Exception("No valid rule provided for tower block!");
+		if (TowerRule == TemplateRule.RULE_NOT_PROVIDED)
+			lw.println("Warning, no valid rule provided for tower block, default to stone!");
 		//spawner rule logic
 		if (SpawnerRule == TemplateRule.RULE_NOT_PROVIDED) {
 			//try the deprecated mob probabilities
@@ -431,6 +444,7 @@ public final class TemplateWall extends TemplateTML {
 		while (itr.hasNext()) {
 			TemplateWall cs = itr.next();
 			cs.streets = cs.loadChildStyles("street_templates", streetTemplateMap);
+			cs.extraOptions.clear();
 			if (cs.streets.size() == 0 && !cs.underground) {
 				itr.remove();
 				explorationHandler.lw.println("No valid street styles for " + cs.name + ". Disabling this city style.");

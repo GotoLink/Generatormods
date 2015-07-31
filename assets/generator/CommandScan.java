@@ -74,7 +74,7 @@ public final class CommandScan extends CommandBase{
             try{
             if(template.createNewFile()){
                 blocks.clear();
-                blocks.add(new BlockAndMeta(Blocks.air, 0));
+                blocks.add(Building.HOLE_BLOCK_LIGHTING);
                 HashMap<Integer, List<Integer>> layers = new HashMap<Integer, List<Integer>>();
                 rules.clear();
                 HashSet<String> biomes = new HashSet<String>();

@@ -31,11 +31,10 @@ public class TemplateTML {
 	public boolean[][] templateLayout = null;
 	public boolean buildOverStreets = false;
 	public HashMap<String, int[][]> namedLayers = null;
-	public HashMap<String, String> extraOptions = null;
-	public BuildingExplorationHandler explorationHandler = null;
-	public String name = "";
+	protected HashMap<String, String> extraOptions = null;
+	protected BuildingExplorationHandler explorationHandler = null;
+	public final String name;
 	protected boolean readInWaterHeight = false;
-	public int templateTypeCode = TML_CODE;
 	public int height = 0, length = 0, width = 0, weight = 1, embed = 1, leveling = 4, cutIn = 0, waterHeight = 3;
 	//public int[] targets;
 	//public int overhang = 0, primary=4, w_off=0, l_off=0, lbuffer =0;
@@ -45,12 +44,11 @@ public class TemplateTML {
 	public TemplateTML(File file, BuildingExplorationHandler beh) throws Exception {
 		// load in the given file as a template
 		explorationHandler = beh;
-		BufferedReader br;
 		name = file.getName();
 		lw = beh.lw;
 		ArrayList<String> lines = new ArrayList<String>();
-		br = new BufferedReader(new FileReader(file));
 		try {
+			BufferedReader br = new BufferedReader(new FileReader(file));
 			for (String read = br.readLine(); read != null; read = br.readLine())
 				lines.add(read);
 			br.close();
@@ -61,8 +59,14 @@ public class TemplateTML {
 	}
 
 	//a dummy constructor for use by TemplateWall for default towers/ CARuins
-	public TemplateTML(int code, int weight_) {
-		templateTypeCode = code;
+	protected TemplateTML(int code, int weight_) {
+		if(code == DEFAULT_TOWER_CODE){
+			name = "Internal Default Tower";
+		}else if(code == CA_RUIN_CODE){
+			name = "Internal CA Ruin";
+		}else{
+			name = "Internal Template";
+		}
 		weight = weight_;
 	}
 
@@ -97,17 +101,15 @@ public class TemplateTML {
 				//if layer has a label, put it in separate table. Otherwise add to main template.
 				String[] layerData = line.split(":");
 				if (layerData.length == 1) {
-					layers.add(new int[length][width]);
 					try {
-						parseLayer(itr, layers.get(layers.size() - 1), true);
+						layers.add(parseLayer(itr, true));
 					} catch (Exception e) {
 						throw new Exception("Error reading layer " + layerN + ": " + e.toString());
 					}
 					layerN++;
 				} else if (layerData.length == 2) {
-					namedLayers.put(layerData[1], new int[length][width]);
 					try {
-						parseLayer(itr, namedLayers.get(layerData[1]), false);
+						namedLayers.put(layerData[1], parseLayer(itr, false));
 					} catch (Exception e) {
 						throw new Exception("Error reading layer \"" + layerData[1] + "\": " + e.toString());
 					}
@@ -166,7 +168,8 @@ public class TemplateTML {
 	}
 
 	//****************************  FUNCTION - parseLayer *************************************************************************************//
-	private void parseLayer(Iterator<String> itr, int[][] layer, boolean isFixedLength) throws Exception {
+	private int[][] parseLayer(Iterator<String> itr, boolean isFixedLength) throws Exception {
+		int[][] layer = new int[length][width];
 		// add in data until we reach the end of the layer
 		int lengthN = length - 1;
 		for (String line = itr.next(); itr.hasNext() && !line.startsWith("endlayer"); line = itr.next()) {
@@ -182,7 +185,8 @@ public class TemplateTML {
 			lengthN--;
 		}
 		if (lengthN >= 0 && isFixedLength)
-			throw new Exception("# of lines in layer was  < length=" + length + " specified in dimensions.");
+			throw new Exception("# of lines in layer was < length=" + length + " specified in dimensions.");
+		return layer;
 	}
 
 	//****************************  FUNCTION - buildLayout *************************************************************************************//

@@ -120,9 +120,6 @@ public final class BuildingWall extends Building {
 		BlockAndMeta idAndMeta;
 		int layer[][];
 		//get named layers
-		int base[] = ws.template[0][0]; //defaults to bottom line of first layer
-		if (ws.namedLayers.containsKey("base"))
-			base = (ws.namedLayers.get("base"))[ws.length - 1];
 		int[][] shifted, shiftedLeft, shiftedRight, shiftedUp, shiftedDown;
 		shifted = ws.namedLayers.containsKey("shifted") ? ws.namedLayers.get("shifted") : ws.template[0];
 		shiftedLeft = ws.namedLayers.containsKey("shifted_left") ? ws.namedLayers.get("shifted_left") : shifted;
@@ -159,7 +156,7 @@ public final class BuildingWall extends Building {
 						continue;
 					} else
 						keepWallFromAbove = false;
-					if (idAndMeta.get() == Blocks.air && idAndMeta instanceof BlockExtended && ((BlockExtended) idAndMeta).info.equals(TemplateRule.SPECIAL_STAIR)) {
+					if (idAndMeta instanceof BlockExtended && ((BlockExtended) idAndMeta).info.equals(TemplateRule.SPECIAL_STAIR)) {
 						if (!wallBlockPresent && !BlockProperties.get(getBlockIdLocal(x1, z1, 0)).isWater) {
 							if (n0 > 0 && zArray[n0 - 1] > zArray[n0]) { //stairs, going down
 								if ((n0 == 1 || zArray[n0 - 2] == zArray[n0 - 1]) && (n0 == bLength - 1 || zArray[n0] == zArray[n0 + 1]))
@@ -181,7 +178,7 @@ public final class BuildingWall extends Building {
 										&& (wallBlockPresent || isFloor(bWidth, WalkHeight - 1, 0) || isWallBlock(bWidth, WalkHeight - 2, 0)))) {
 							continue;
 						}
-						if (idAndMeta.get() == Blocks.air && idAndMeta.getMeta() == 0 && z1 < bHeight)
+						if (idAndMeta.equals(HOLE_BLOCK_LIGHTING) && z1 < bHeight)
                             removeBlockWithLighting(x1, z1, 0); //force lighting update for holes
 						else
 							setBlockLocal(x1, z1, 0, idAndMeta); //straightforward build from template
@@ -189,18 +186,29 @@ public final class BuildingWall extends Building {
 				}
 			}
 			//base
-			for (int x1 = 0; x1 < bWidth; x1++)
-				buildDown(x1, -1 - ws.embed, 0, ws.rules[base[x1]], ws.leveling, Math.min(2, ws.embed), 3);
+			if(ws.LayerBase != TemplateWall.BaseMode.NONE) {
+				int base[];
+				if(ws.LayerBase == TemplateWall.BaseMode.DEFAULT) {
+					base = ws.template[0][0];//defaults to bottom line of first layer
+					if (ws.namedLayers.containsKey("base"))
+						base = (ws.namedLayers.get("base"))[ws.length - 1];//top line of "base" layer
+				}else{
+					base = layer[0];//defaults to bottom line of the layer
+					if (ws.LayerBase == TemplateWall.BaseMode.NAMED && ws.namedLayers.containsKey("base") && layer == ws.template[lN])
+						base = (ws.namedLayers.get("base"))[ws.length - 1 - lN];
+				}
+				for (int x1 = 0; x1 < bWidth; x1++)
+					buildDown(x1, -1 - ws.embed, 0, ws.rules[base[x1]], ws.leveling, Math.min(2, ws.embed), 3);
+			}
 			clearTrees();
 			mergeWallLayer();
 			//DEBUGGING, creates signs with ID/distance info
 			/*
-			 * if(DEBUG_SIGNS && (n0) % 10==0){ //String[] lines=new
-			 * String[]{IDString
+			 * if(DEBUG_SIGNS && (n0) % 10==0){
+			 * //String[] lines=new String[]{IDString
 			 * ().split(" ")[0],IDString().split(" ")[1],"Dist:"+n+
-			 * " / "+planL,globalCoordString(1,WalkHeight,0)}; String[]
-			 * lines=new
-			 * String[]{IDString().split(" ")[0],xArray[n0]+"","Dist:"+n0+
+			 * " / "+planL,globalCoordString(1,WalkHeight,0)};
+			 * String[] lines=new String[]{IDString().split(" ")[0],xArray[n0]+"","Dist:"+n0+
 			 * " / "+bLength,localCoordString(1,WalkHeight,0)};
 			 * setSignOrPost(1,WalkHeight,0,true,8,lines);
 			 * setSignOrPost(-1,WalkHeight-1,0,false,3,lines);
@@ -765,7 +773,9 @@ public final class BuildingWall extends Building {
 		circular = circular_;
 		if (ws != null) {
 			roofStyle = ws.pickRoofStyle(circular, random);
-			towerRule = ws.TowerRule.getFixedRule(random);
+			if(ws.TowerRule != TemplateRule.RULE_NOT_PROVIDED) {
+				towerRule = ws.TowerRule.getFixedRule(random);
+			}
 			roofRule = ws.getRoofRule(circular);
 			if (roofRule != TemplateRule.RULE_NOT_PROVIDED)
 				roofRule = roofRule.getFixedRule(random);
